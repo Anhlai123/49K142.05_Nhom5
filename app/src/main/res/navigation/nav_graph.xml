@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.nhom5.LoginFragment"
+        android:label="Đăng nhập"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.nhom5.FirstFragment"
+        android:label="Trang chủ"
+        tools:layout="@layout/fragment_first" />
+
+    <fragment
+        android:id="@+id/navigation_orders"
+        android:name="com.example.nhom5.SecondFragment"
+        android:label="Đơn đặt"
+        tools:layout="@layout/fragment_second" />
+
+    <fragment
+        android:id="@+id/navigation_schedule"
+        android:name="com.example.nhom5.ScheduleFragment"
+        android:label="Lịch sân"
+        tools:layout="@layout/fragment_schedule">
+        <action
+            android:id="@+id/action_navigation_schedule_to_bookingConfirmationFragment"
+            app:destination="@id/bookingConfirmationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_customers"
+        android:name="com.example.nhom5.CustomerFragment"
+        android:label="Khách hàng"
+        tools:layout="@layout/fragment_customers">
+        <action
+            android:id="@+id/action_navigation_customers_to_customerDetailFragment"
+            app:destination="@id/customerDetailFragment" />
+        <action
+            android:id="@+id/action_navigation_customers_to_addCustomerFragment"
+            app:destination="@id/addCustomerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_more"
+        android:name="com.example.nhom5.MoreFragment"
+        android:label="Khác"
+        tools:layout="@layout/fragment_more">
+        <action
+            android:id="@+id/action_navigation_more_to_courtManagementFragment"
+            app:destination="@id/courtManagementFragment" />
+        <action
+            android:id="@+id/action_navigation_more_to_courtTypeManagementFragment"
+            app:destination="@id/courtTypeManagementFragment" />
+        <action
+            android:id="@+id/action_navigation_more_to_priceManagementFragment"
+            app:destination="@id/priceManagementFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerDetailFragment"
+        android:name="com.example.nhom5.CustomerDetailFragment"
+        android:label="Chi tiết khách hàng"
+        tools:layout="@layout/fragment_customer_details" />
+
+    <fragment
+        android:id="@+id/addCustomerFragment"
+        android:name="com.example.nhom5.AddCustomerFragment"
+        android:label="Thêm khách hàng"
+        tools:layout="@layout/fragment_add_customer" />
+
+    <fragment
+        android:id="@+id/bookingConfirmationFragment"
+        android:name="com.example.nhom5.BookingConfirmationFragment"
+        android:label="Đặt sân">
+        <argument
+            android:name="courtName"
+            app:argType="string" />
+        <argument
+            android:name="startTime"
+            app:argType="string" />
+        <argument
+            android:name="date"
+            app:argType="string" />
+        <argument
+            android:name="pricePerHour"
+            app:argType="integer"
+            android:defaultValue="60000" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/courtManagementFragment"
+        android:name="com.example.nhom5.CourtManagementFragment"
+        android:label="Quản lý sân"
+        tools:layout="@layout/fragment_court_management" />
+
+    <fragment
+        android:id="@+id/courtTypeManagementFragment"
+        android:name="com.example.nhom5.CourtTypeManagementFragment"
+        android:label="Quản lý loại sân"
+        tools:layout="@layout/fragment_court_type_management" />
+
+    <fragment
+        android:id="@+id/priceManagementFragment"
+        android:name="com.example.nhom5.PriceManagementFragment"
+        android:label="Quản lý bảng giá"
+        tools:layout="@layout/fragment_price_management">
+        <action
+            android:id="@+id/action_priceManagementFragment_to_addPriceFragment"
+            app:destination="@id/addPriceFragment" />
+        <action
+            android:id="@+id/action_priceManagementFragment_to_updatePriceFragment"
+            app:destination="@id/updatePriceFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addPriceFragment"
+        android:name="com.example.nhom5.AddPriceFragment"
+        android:label="Thêm bảng giá"
+        tools:layout="@layout/fragment_add_price" />
+
+    <fragment
+        android:id="@+id/updatePriceFragment"
+        android:name="com.example.nhom5.UpdatePriceFragment"
+        android:label="Cập nhật bảng giá"
+        tools:layout="@layout/fragment_update_price" />
+
+</navigation>

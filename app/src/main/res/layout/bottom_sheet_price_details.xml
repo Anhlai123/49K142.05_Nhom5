@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_bottom_sheet">
+
+        <!-- Header Green -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/header_layout"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@drawable/bg_bottom_sheet_header_green"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_marginTop="8dp"
+                android:background="#80FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="Chi tiết bảng giá"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/btn_close"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/header_layout">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Thông tin chung fields -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RelativeLayout style="@style/PriceDetailRowStyle">
+                        <TextView android:text="Mã bảng giá" style="@style/PriceDetailLabelStyle" />
+                        <TextView android:id="@+id/tv_price_id" android:text="BG001" style="@style/PriceDetailValueStyle" />
+                    </RelativeLayout>
+
+                    <View style="@style/PriceDetailDividerStyle" />
+
+                    <RelativeLayout style="@style/PriceDetailRowStyle">
+                        <TextView android:text="Tên bảng giá" style="@style/PriceDetailLabelStyle" />
+                        <TextView android:id="@+id/tv_price_name" android:text="Sân bóng đá - Tiêu chuẩn" style="@style/PriceDetailValueStyle" />
+                    </RelativeLayout>
+
+                    <View style="@style/PriceDetailDividerStyle" />
+
+                    <RelativeLayout style="@style/PriceDetailRowStyle">
+                        <TextView android:text="Loại sân áp dụng" style="@style/PriceDetailLabelStyle" />
+                        <TextView android:id="@+id/tv_court_type" android:text="Sân bóng đá" style="@style/PriceDetailValueStyle" />
+                    </RelativeLayout>
+
+                    <View style="@style/PriceDetailDividerStyle" />
+
+                    <RelativeLayout style="@style/PriceDetailRowStyle">
+                        <TextView android:text="Phạm vi" style="@style/PriceDetailLabelStyle" />
+                        <TextView android:id="@+id/tv_scope" android:text="Tất cả sân thuộc loại" style="@style/PriceDetailValueStyle" />
+                    </RelativeLayout>
+
+                    <View style="@style/PriceDetailDividerStyle" />
+
+                    <RelativeLayout style="@style/PriceDetailRowStyle">
+                        <TextView android:text="Ngày hiệu lực" style="@style/PriceDetailLabelStyle" />
+                        <TextView android:id="@+id/tv_start_date" android:text="2026-01-01" style="@style/PriceDetailValueStyle" />
+                    </RelativeLayout>
+
+                    <View style="@style/PriceDetailDividerStyle" />
+
+                    <RelativeLayout style="@style/PriceDetailRowStyle">
+                        <TextView android:text="Ngày kết thúc" style="@style/PriceDetailLabelStyle" />
+                        <TextView android:id="@+id/tv_end_date" android:text="Không giới hạn" style="@style/PriceDetailValueStyle" />
+                    </RelativeLayout>
+
+                    <View style="@style/PriceDetailDividerStyle" />
+
+                    <RelativeLayout style="@style/PriceDetailRowStyle">
+                        <TextView android:text="Ngày áp dụng" style="@style/PriceDetailLabelStyle" />
+                        <LinearLayout
+                            android:id="@+id/layout_days"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:orientation="horizontal">
+                            <TextView style="@style/DayPillSmallStyle" android:text="T2" />
+                            <TextView style="@style/DayPillSmallStyle" android:text="T3" />
+                            <TextView style="@style/DayPillSmallStyle" android:text="T4" />
+                            <TextView style="@style/DayPillSmallStyle" android:text="T5" />
+                            <TextView style="@style/DayPillSmallStyle" android:text="T6" />
+                        </LinearLayout>
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Chi tiết khung giờ"
+                    android:textColor="#212121"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <!-- Time Frames -->
+                <LinearLayout
+                    android:id="@+id/layout_time_frames"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical">
+
+                    <!-- Frame 1 -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:background="@drawable/bg_search_bar"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_time_range_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="11:00 - 17:00"
+                            android:textColor="#212121"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Buổi chiều"
+                            android:textColor="#9E9E9E"
+                            android:textSize="13sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tv_time_range_1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="150.000đ"
+                            android:textColor="@color/primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- Frame 2 -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_search_bar"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_time_range_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="17:00 - 22:00"
+                            android:textColor="#212121"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giờ vàng"
+                            android:textColor="#9E9E9E"
+                            android:textSize="13sp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tv_time_range_2" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="200.000đ"
+                            android:textColor="@color/primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
