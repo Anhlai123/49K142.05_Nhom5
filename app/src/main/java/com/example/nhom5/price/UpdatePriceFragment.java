@@ -67,7 +67,6 @@ public class UpdatePriceFragment extends Fragment {
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnSave.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnAddFrame.setOnClickListener(v -> {
-            // Giữ nguyên nút thêm khung giờ.
         });
     }
 
