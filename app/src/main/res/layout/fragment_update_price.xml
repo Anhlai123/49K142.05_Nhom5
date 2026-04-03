@@ -172,7 +172,7 @@
                         android:background="@drawable/bg_pill_active"
                         android:gravity="center"
                         android:text="✓ Tất cả sân"
-                        android:textColor="@color/primary"
+                        android:textColor="@color/white"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
