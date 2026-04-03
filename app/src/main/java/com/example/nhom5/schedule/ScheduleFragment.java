@@ -121,7 +121,10 @@ public class ScheduleFragment extends Fragment {
         String slot = (String) tv.getTag();
         SlotStatus currentStatus = getSlotStatus(slot);
 
-        if (currentStatus == SlotStatus.BOOKED) return;
+        if (currentStatus == SlotStatus.BOOKED) {
+            showBookedBottomSheet();
+            return;
+        }
 
         if (currentStatus == SlotStatus.SELECTED) {
             selectedSlots.remove(slot);
@@ -139,8 +142,18 @@ public class ScheduleFragment extends Fragment {
             
             selectedSlots.add(slot);
             updateSlotUI(tv, SlotStatus.SELECTED, true);
-            showBookingBottomSheet("Sân Cầu Lông 2", tv, slot);
+            showBookingConfirmation("Sân Cầu Lông 2", "13/01/2026", slot);
         }
+    }
+
+    private void showBookedBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_booked_bottom_sheet, null);
+        
+        view.findViewById(R.id.btn_close_booked).setOnClickListener(v -> bottomSheetDialog.dismiss());
+
+        bottomSheetDialog.setContentView(view);
+        bottomSheetDialog.show();
     }
 
     private void updateSlotUI(TextView tv, SlotStatus status, boolean animate) {
@@ -150,7 +163,7 @@ public class ScheduleFragment extends Fragment {
             case BOOKED:
                 bgColor = Color.parseColor("#FFEBEE");
                 textColor = Color.parseColor("#FF0000");
-                tv.setEnabled(false);
+                tv.setEnabled(true);
                 break;
             case SELECTED:
                 bgColor = Color.parseColor("#FFF9C4");
@@ -214,23 +227,16 @@ public class ScheduleFragment extends Fragment {
         textColorAnimation.start();
     }
 
-    private void showBookingBottomSheet(String courtName, TextView selectedTv, String slot) {
+    private void showBookingConfirmation(String court, String day, String time) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
         View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.layout_confirm_booking, null);
         
         TextView tvTitle = bottomSheetView.findViewById(R.id.tvCourtTitle);
-        tvTitle.setText(courtName);
+        tvTitle.setText(court + " - " + day + " " + time);
         
         bottomSheetView.findViewById(R.id.btnConfirmBooking).setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
             Navigation.findNavController(getView()).navigate(R.id.action_navigation_schedule_to_bookingConfirmationFragment);
-        });
-
-        bottomSheetDialog.setOnDismissListener(dialog -> {
-            if (selectedSlots.contains(slot)) {
-                selectedSlots.remove(slot);
-                updateSlotUI(selectedTv, SlotStatus.AVAILABLE, true);
-            }
         });
 
         bottomSheetDialog.setContentView(bottomSheetView);
@@ -287,6 +293,8 @@ public class ScheduleFragment extends Fragment {
             row.addView(courtTv);
 
             for (int j = 0; j < numTimeSlots; j++) {
+                final int courtIndex = i;
+                final int timeIndex = j;
                 View cell = new View(getContext());
                 TableRow.LayoutParams params = new TableRow.LayoutParams(
                         (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics()),
@@ -296,10 +304,16 @@ public class ScheduleFragment extends Fragment {
                 cell.setBackgroundResource(R.drawable.bg_grid_cell);
                 
                 // Random mock data
-                if (Math.random() < 0.1) {
+                boolean isBooked = Math.random() < 0.1;
+                boolean isMaintenance = Math.random() < 0.05;
+                if (isBooked) {
                     cell.setBackgroundResource(R.drawable.bg_booked_status);
-                } else if (Math.random() < 0.05) {
+                    cell.setOnClickListener(v -> showBookedBottomSheet());
+                } else if (isMaintenance) {
                     cell.setBackgroundResource(R.drawable.bg_maintenance_status);
+                } else {
+                    // Empty, make clickable
+                    cell.setOnClickListener(v -> showBookingConfirmation("Sân Cầu Lông " + (courtIndex + 1), "13/01/2026", getTimeForSlot(timeIndex)));
                 }
                 
                 row.addView(cell);
@@ -325,5 +339,15 @@ public class ScheduleFragment extends Fragment {
         tv.setTextSize(11);
         if (isHeader) tv.setTypeface(null, Typeface.BOLD);
         return tv;
+    }
+
+    private String getTimeForSlot(int j) {
+        String[] times = {
+                "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", 
+                "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+                "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
+                "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"
+        };
+        return times[j];
     }
 }
