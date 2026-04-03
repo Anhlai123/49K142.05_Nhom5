@@ -103,7 +103,7 @@ public class UpdatePriceFragment extends Fragment {
 
     private void styleScopePill(TextView view, boolean selected) {
         view.setBackgroundResource(selected ? R.drawable.bg_pill_active : R.drawable.bg_pill_inactive);
-        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.primary : R.color.inactive));
+        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.white : R.color.inactive));
     }
 
     private void setupCourtTypePicker() {
