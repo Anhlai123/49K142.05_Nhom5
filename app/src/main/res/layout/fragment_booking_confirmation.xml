@@ -1,9 +1,337 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <!--
-        Layout này không còn được sử dụng vì Fragment đã chuyển sang dùng Jetpack Compose.
-        Vui lòng xem BookingConfirmationFragment.kt
-    -->
-</FrameLayout>
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#00A63E"
+            app:titleTextColor="@android:color/white">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_back"
+                    app:tint="@android:color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="Đặt sân"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/btnEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16.dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_edit"
+                    app:tint="@android:color/white" />
+            </RelativeLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16.dp">
+
+            <!-- Court Info Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="24.dp"
+                app:cardElevation="4.dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20.dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/tvCourtNameHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sân Cầu Lông 2"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvPriceHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="60.000/h"
+                            android:textColor="#00A63E"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Loại: Cầu lông"
+                        android:textColor="#888888"
+                        android:textSize="14sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="16.dp"
+                        android:background="#EEEEEE" />
+
+                    <GridLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="2">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:drawablePadding="8.dp"
+                            android:text="📐 13.4m x 6.1m"
+                            android:textColor="#666666" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:drawablePadding="8.dp"
+                            android:text="🌲 Sân gỗ chuẩn"
+                            android:textColor="#666666" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:layout_marginTop="8.dp"
+                            android:drawablePadding="8.dp"
+                            android:text="❄️ Có điều hòa"
+                            android:textColor="#666666" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:layout_marginTop="8.dp"
+                            android:drawablePadding="8.dp"
+                            android:text="💡 Đèn LED"
+                            android:textColor="#666666" />
+                    </GridLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Booking Info Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8.dp"
+                app:cardCornerRadius="24.dp"
+                app:cardElevation="2.dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20.dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thông tin lịch đặt mới"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ngày đặt: 13/01/2026"
+                        android:textColor="#888888"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20.dp"
+                        android:text="Sân &amp; Thời gian"
+                        android:textColor="#888888"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8.dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvCourtField"
+                            android:layout_width="0dp"
+                            android:layout_height="56.dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_field"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16.dp"
+                            android:text="Sân Cầu Lông 2" />
+
+                        <View
+                            android:layout_width="12.dp"
+                            android:layout_height="0dp" />
+
+                        <TextView
+                            android:id="@+id/tvTimeField"
+                            android:layout_width="0dp"
+                            android:layout_height="56.dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_field"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16.dp"
+                            android:text="07:00 - 08:00" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20.dp"
+                        android:text="Tổng giờ &amp; Tổng tiền"
+                        android:textColor="#888888"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8.dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvHoursField"
+                            android:layout_width="0dp"
+                            android:layout_height="56.dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_field"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16.dp"
+                            android:text="1h00" />
+
+                        <View
+                            android:layout_width="12.dp"
+                            android:layout_height="0dp" />
+
+                        <TextView
+                            android:id="@+id/tvPriceField"
+                            android:layout_width="0dp"
+                            android:layout_height="56.dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_field"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16.dp"
+                            android:text="60.000 đ"
+                            android:textColor="@android:color/holo_red_dark" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20.dp"
+                        android:text="Thông tin khách hàng"
+                        android:textColor="#888888"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/etName"
+                        android:layout_width="match_parent"
+                        android:layout_height="56.dp"
+                        android:layout_marginTop="8.dp"
+                        android:background="@drawable/bg_input_field"
+                        android:hint="Họ và tên"
+                        android:paddingHorizontal="16.dp"
+                        android:singleLine="true" />
+
+                    <EditText
+                        android:id="@+id/etPhone"
+                        android:layout_width="match_parent"
+                        android:layout_height="56.dp"
+                        android:layout_marginTop="12.dp"
+                        android:background="@drawable/bg_input_field"
+                        android:hint="Số điện thoại"
+                        android:inputType="phone"
+                        android:paddingHorizontal="16.dp"
+                        android:singleLine="true" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="32.dp"
+                        android:layout_marginBottom="8.dp"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnCancel"
+                            android:layout_width="0dp"
+                            android:layout_height="56.dp"
+                            android:layout_weight="1"
+                            android:backgroundTint="#F1F3F4"
+                            android:text="HỦY BỎ"
+                            android:textColor="#6C757D"
+                            android:textStyle="bold"
+                            app:cornerRadius="12.dp" />
+
+                        <View
+                            android:layout_width="16.dp"
+                            android:layout_height="0dp" />
+
+                        <Button
+                            android:id="@+id/btnConfirm"
+                            android:layout_width="0dp"
+                            android:layout_height="56.dp"
+                            android:layout_weight="1.5"
+                            android:backgroundTint="#00A63E"
+                            android:text="ĐẶT NGAY"
+                            android:textColor="@android:color/white"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="12.dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
