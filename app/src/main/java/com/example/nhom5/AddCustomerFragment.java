@@ -61,7 +61,7 @@ public class AddCustomerFragment extends Fragment {
                 viewModel.addCustomer(new CustomerFragment.Customer(name, id, phone));
                 
                 // Show success dialog
-                SuccessDialogFragment dialog = SuccessDialogFragment.newInstance(() -> {
+                SuccessDialogFragment dialog = SuccessDialogFragment.newInstance("Lưu thông tin khách hàng thành công", () -> {
                     Navigation.findNavController(view).navigateUp();
                 });
                 dialog.show(getParentFragmentManager(), "success_dialog");
