@@ -15,9 +15,11 @@ public class SuccessDialogFragment extends DialogFragment {
 
     private DialogSuccessBinding binding;
     private Runnable onExitCallback;
+    private String message;
 
-    public static SuccessDialogFragment newInstance(Runnable onExitCallback) {
+    public static SuccessDialogFragment newInstance(String message, Runnable onExitCallback) {
         SuccessDialogFragment fragment = new SuccessDialogFragment();
+        fragment.message = message;
         fragment.onExitCallback = onExitCallback;
         return fragment;
     }
@@ -35,6 +37,11 @@ public class SuccessDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        if (message != null) {
+            binding.tvSuccessMessage.setText(message);
+        }
+
         binding.btnExit.setOnClickListener(v -> {
             dismiss();
             if (onExitCallback != null) {
