@@ -26,7 +26,6 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,7 +40,7 @@ public class UpdatePriceFragment extends Fragment {
     private final Set<String> selectedDays = new LinkedHashSet<>();
     private final Set<String> selectedCourts = new LinkedHashSet<>();
     private final LinkedHashMap<String, List<String>> courtOptions = new LinkedHashMap<>();
-    private String currentCourtType = "Sân Cầu lông";
+    private String currentCourtType = "Sân cầu lông";
     private boolean allCourtsSelected = true;
 
     @Nullable
@@ -73,7 +72,7 @@ public class UpdatePriceFragment extends Fragment {
     }
 
     private void initCourtOptions() {
-        courtOptions.put("Sân Cầu lông", Arrays.asList("Sân 1", "Sân 2", "Sân 3", "Sân 4"));
+        courtOptions.put("Sân cầu lông", Arrays.asList("Sân 1", "Sân 2", "Sân 3", "Sân 4"));
         courtOptions.put("Sân bóng đá", Arrays.asList("Sân 1", "Sân 2", "Sân 3"));
         courtOptions.put("Sân Tennis", Arrays.asList("Sân 1", "Sân 2"));
     }
@@ -83,7 +82,7 @@ public class UpdatePriceFragment extends Fragment {
         binding.etEndDate.setText(getString(R.string.default_end_date));
         binding.etStartTime.setText(getString(R.string.default_start_time));
         binding.etEndTime.setText(getString(R.string.default_end_time));
-        Collections.addAll(selectedDays, DAY_KEYS);
+        selectedDays.clear();
         refreshDayStates();
     }
 
@@ -104,7 +103,7 @@ public class UpdatePriceFragment extends Fragment {
 
     private void styleScopePill(TextView view, boolean selected) {
         view.setBackgroundResource(selected ? R.drawable.bg_pill_active : R.drawable.bg_pill_inactive);
-        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.primary : R.color.inactive));
+        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.white : R.color.inactive));
     }
 
     private void setupCourtTypePicker() {
