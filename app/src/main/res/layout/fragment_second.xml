@@ -78,7 +78,7 @@
                     android:paddingHorizontal="20dp"
                     android:paddingVertical="8dp"
                     android:text="Tất cả"
-                    android:textColor="@color/white"
+                    android:textColor="@color/primary"
                     android:textSize="14sp" />
 
                 <TextView
