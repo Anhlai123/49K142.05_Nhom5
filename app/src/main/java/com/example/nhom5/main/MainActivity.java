@@ -5,7 +5,6 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.ui.NavigationUI;
 
 import com.example.nhom5.R;
 import com.example.nhom5.databinding.ActivityMainBinding;
@@ -20,7 +19,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
+
+        binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_home) {
+                navController.popBackStack(R.id.navigation_home, false);
+                navController.navigate(R.id.navigation_home);
+            } else if (itemId == R.id.navigation_orders) {
+                navController.popBackStack(R.id.navigation_orders, false);
+                navController.navigate(R.id.navigation_orders);
+            } else if (itemId == R.id.navigation_schedule) {
+                navController.popBackStack(R.id.navigation_schedule, false);
+                navController.navigate(R.id.navigation_schedule);
+            } else if (itemId == R.id.navigation_customers) {
+                navController.popBackStack(R.id.navigation_customers, false);
+                navController.navigate(R.id.navigation_customers);
+            } else if (itemId == R.id.navigation_more) {
+                navController.popBackStack(R.id.navigation_more, false);
+                navController.navigate(R.id.navigation_more);
+            }
+            return true;
+        });
 
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int id = destination.getId();
