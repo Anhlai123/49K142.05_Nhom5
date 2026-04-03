@@ -171,6 +171,7 @@
                     app:layout_constraintTop_toBottomOf="@id/label_scope">
 
                     <TextView
+                        android:id="@+id/pill_all_scope"
                         android:layout_width="0dp"
                         android:layout_height="44dp"
                         android:layout_marginEnd="8dp"
@@ -178,9 +179,12 @@
                         android:background="@drawable/bg_pill_active"
                         android:gravity="center"
                         android:text="✓ Tất cả sân"
-                        android:textColor="@color/primary" />
+                        android:textColor="@color/primary"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                     <TextView
+                        android:id="@+id/pill_specific_scope"
                         android:layout_width="0dp"
                         android:layout_height="44dp"
                         android:layout_marginStart="8dp"
@@ -188,7 +192,9 @@
                         android:background="@drawable/bg_pill_inactive"
                         android:gravity="center"
                         android:text="Sân cụ thể"
-                        android:textColor="#757575" />
+                        android:textColor="#757575"
+                        android:clickable="true"
+                        android:focusable="true" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -237,13 +243,13 @@
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal"
                     app:layout_constraintTop_toBottomOf="@id/label_days">
-                    <TextView style="@style/DayPillStyle" android:text="T2" android:background="@drawable/bg_search_bar" android:textColor="#BDBDBD"/>
-                    <TextView style="@style/DayPillStyle" android:text="T3" android:background="@drawable/bg_search_bar" android:textColor="#BDBDBD"/>
-                    <TextView style="@style/DayPillStyle" android:text="T4" android:background="@drawable/bg_search_bar" android:textColor="#BDBDBD"/>
-                    <TextView style="@style/DayPillStyle" android:text="T5" android:background="@drawable/bg_search_bar" android:textColor="#BDBDBD"/>
-                    <TextView style="@style/DayPillStyle" android:text="T6" android:background="@drawable/bg_search_bar" android:textColor="#BDBDBD"/>
-                    <TextView style="@style/DayPillStyle" android:text="T7" android:background="@drawable/bg_search_bar" android:textColor="#BDBDBD"/>
-                    <TextView style="@style/DayPillStyle" android:text="CN" android:background="@drawable/bg_search_bar" android:textColor="#BDBDBD"/>
+                    <TextView android:id="@+id/day_t2" style="@style/DayPillStyle" android:text="T2" android:background="@drawable/bg_day_pill_inactive" android:textColor="@color/inactive" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/day_t3" style="@style/DayPillStyle" android:text="T3" android:background="@drawable/bg_day_pill_inactive" android:textColor="@color/inactive" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/day_t4" style="@style/DayPillStyle" android:text="T4" android:background="@drawable/bg_day_pill_inactive" android:textColor="@color/inactive" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/day_t5" style="@style/DayPillStyle" android:text="T5" android:background="@drawable/bg_day_pill_inactive" android:textColor="@color/inactive" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/day_t6" style="@style/DayPillStyle" android:text="T6" android:background="@drawable/bg_day_pill_inactive" android:textColor="@color/inactive" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/day_t7" style="@style/DayPillStyle" android:text="T7" android:background="@drawable/bg_day_pill_inactive" android:textColor="@color/inactive" android:clickable="true" android:focusable="true"/>
+                    <TextView android:id="@+id/day_cn" style="@style/DayPillStyle" android:text="CN" android:background="@drawable/bg_day_pill_inactive" android:textColor="@color/inactive" android:clickable="true" android:focusable="true"/>
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -292,12 +298,12 @@
 
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giờ bắt đầu" android:textSize="11sp" android:textColor="#757575"/>
-                        <EditText android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="4dp" android:background="@drawable/bg_input_field" android:paddingHorizontal="12dp" android:textSize="13sp"/>
+                        <EditText android:id="@+id/et_start_time" android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="4dp" android:background="@drawable/bg_input_field" android:hint="HH:mm" android:inputType="time" android:paddingHorizontal="12dp" android:textSize="13sp"/>
                     </LinearLayout>
 
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giờ kết thúc" android:textSize="11sp" android:textColor="#757575"/>
-                        <EditText android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="4dp" android:background="@drawable/bg_input_field" android:paddingHorizontal="12dp" android:textSize="13sp"/>
+                        <EditText android:id="@+id/et_end_time" android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="4dp" android:background="@drawable/bg_input_field" android:hint="HH:mm" android:inputType="time" android:paddingHorizontal="12dp" android:textSize="13sp"/>
                     </LinearLayout>
                 </LinearLayout>
 
