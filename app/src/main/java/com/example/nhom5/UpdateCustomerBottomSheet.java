@@ -33,13 +33,12 @@ public class UpdateCustomerBottomSheet extends BottomSheetDialogFragment {
             binding.tvId.setText(customer.id);
             binding.etName.setText(customer.name);
             binding.etPhone.setText(customer.phone);
-            // Email and Notes could be added to Customer class if needed
         }
 
         binding.btnCancel.setOnClickListener(v -> dismiss());
         binding.btnSave.setOnClickListener(v -> {
-            // Show success dialog
-            SuccessDialogFragment dialog = SuccessDialogFragment.newInstance(() -> {
+            // Show success dialog with message
+            SuccessDialogFragment dialog = SuccessDialogFragment.newInstance("Cập nhật thông tin khách hàng thành công", () -> {
                 dismiss();
             });
             dialog.show(getParentFragmentManager(), "success_dialog");
