@@ -7,6 +7,14 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="no_courts_to_choose">Không có sân để chọn</string>
+    <string name="no_courts_selected">Chưa chọn sân nào</string>
+    <string name="selected_courts_summary">Đã chọn: %1$s</string>
+    <string name="default_start_date">01/01/2026</string>
+    <string name="default_end_date">31/12/2026</string>
+    <string name="default_start_time">07:00</string>
+    <string name="default_end_time">08:00</string>
+
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus

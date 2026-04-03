@@ -76,12 +76,27 @@ public class PriceManagementFragment extends Fragment {
         sheetBinding.tvPriceId.setText(price.getId());
         sheetBinding.tvPriceName.setText(price.getTitle());
         sheetBinding.tvCourtType.setText(price.getCourtType());
-        sheetBinding.tvStartDate.setText(price.getDateRange().split(" ~ ")[0]);
-        sheetBinding.tvEndDate.setText(price.getDateRange().split(" ~ ")[1]);
+        String[] dateParts = price.getDateRange().split(" ~ ");
+        sheetBinding.tvStartDate.setText(dateParts.length > 0 ? dateParts[0] : "");
+        sheetBinding.tvEndDate.setText(dateParts.length > 1 ? dateParts[1] : "Vô thời hạn");
+
+        List<String> activeDays = price.getActiveDays();
+        int dayCount = sheetBinding.layoutDays.getChildCount();
+        for (int i = 0; i < dayCount; i++) {
+            android.widget.TextView dayView = (android.widget.TextView) sheetBinding.layoutDays.getChildAt(i);
+            String dayLabel = dayView.getText().toString();
+            setDayState(dayView, activeDays.contains(dayLabel));
+        }
 
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
 
         bottomSheetDialog.show();
+    }
+
+    private void setDayState(android.widget.TextView view, boolean active) {
+        if (view == null) return;
+        view.setBackgroundResource(active ? R.drawable.bg_pill_active : R.drawable.bg_day_pill_inactive);
+        view.setTextColor(requireContext().getColor(active ? R.color.white : R.color.inactive));
     }
 
     private void showDeleteConfirmBottomSheet(PriceRecord price) {
