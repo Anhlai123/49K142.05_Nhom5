@@ -85,6 +85,10 @@
         android:name="com.example.nhom5.booking.BookingConfirmationFragment"
         android:label="Đặt sân">
         <argument
+            android:name="courtId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+        <argument
             android:name="courtName"
             app:argType="string" />
         <argument
