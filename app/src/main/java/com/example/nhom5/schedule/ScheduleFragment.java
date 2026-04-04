@@ -173,7 +173,7 @@ public class ScheduleFragment extends Fragment {
                 } else if ("maintenance".equalsIgnoreCase(slot.getStatus())) {
                     cell.setBackgroundResource(R.drawable.bg_maintenance_status);
                 } else {
-                    cell.setOnClickListener(v -> showBookingConfirmation(court.getCourtName(), schedule.getDate(), slot.getStartTime()));
+                    cell.setOnClickListener(v -> showBookingConfirmation(court.getCourtName(), court.getCourtId(), schedule.getDate(), slot.getStartTime()));
                 }
                 row.addView(cell);
             }
@@ -259,7 +259,7 @@ public class ScheduleFragment extends Fragment {
                 } else if (isMaintenance) {
                     cell.setBackgroundResource(R.drawable.bg_maintenance_status);
                 } else {
-                    cell.setOnClickListener(v -> showBookingConfirmation("Sân Cầu Lông " + (courtIndex + 1), "13/01/2026", getTimeForSlot(timeIndex)));
+                    cell.setOnClickListener(v -> showBookingConfirmation("Sân Cầu Lông " + (courtIndex + 1), courtIndex + 1, "13/01/2026", getTimeForSlot(timeIndex)));
                 }
                 row.addView(cell);
             }
@@ -338,7 +338,7 @@ public class ScheduleFragment extends Fragment {
             }
             selectedSlots.add(slot);
             updateSlotUI(tv, SlotStatus.SELECTED, true);
-            showBookingConfirmation("Sân Cầu Lông 2", "13/01/2026", slot);
+            showBookingConfirmation("Sân Cầu Lông 2", 2, "13/01/2026", slot);
         }
     }
 
@@ -382,7 +382,7 @@ public class ScheduleFragment extends Fragment {
         tv.setTextColor(textColor);
     }
 
-    private void showBookingConfirmation(String court, String day, String time) {
+    private void showBookingConfirmation(String court, int courtId, String day, String time) {
         if (getContext() == null) return;
         currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
         View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.layout_confirm_booking, null);
@@ -394,6 +394,7 @@ public class ScheduleFragment extends Fragment {
             currentDialog.dismiss();
             if (isAdded()) {
                 Bundle args = new Bundle();
+                args.putInt("courtId", courtId);
                 args.putString("courtName", court);
                 args.putString("date", day);
                 args.putString("startTime", time);
