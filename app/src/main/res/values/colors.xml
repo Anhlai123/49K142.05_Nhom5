@@ -34,4 +34,8 @@
 
     <color name="selected_slot_bg">#FFF9C4</color>
     <color name="selected_slot_text">#FBC02D</color>
+
+    <color name="available">#E8F5E9</color>
+    <color name="booked">#FFF1F1</color>
+    <color name="maintenance">#F5F5F5</color>
 </resources>

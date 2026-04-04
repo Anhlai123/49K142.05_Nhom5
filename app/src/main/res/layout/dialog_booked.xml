@@ -17,33 +17,44 @@
         <FrameLayout
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:background="@drawable/bg_circle_light_green">
+            android:background="@drawable/bg_circle_light_red">
 
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@android:drawable/checkbox_on_background"
-                app:tint="#00A63E" />
+                android:text="!"
+                android:textColor="#FF4D4F"
+                android:textSize="32sp"
+                android:textStyle="bold" />
         </FrameLayout>
 
         <TextView
-            android:id="@+id/tv_success_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:gravity="center"
-            android:text="Thành công"
+            android:text="Sân đã có người đặt"
             android:textColor="#1A202C"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/btn_exit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Vui lòng chọn sân khác!"
+            android:textColor="#718096"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/btn_close"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/bg_button_confirm"
+            android:backgroundTint="#FF4D4F"
             android:gravity="center"
             android:text="Đóng"
             android:textColor="@color/white"

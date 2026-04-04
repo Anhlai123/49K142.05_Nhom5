@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.nhom5.LoginFragment"
+        android:name="com.example.nhom5.auth.LoginFragment"
         android:label="Đăng nhập"
         tools:layout="@layout/fragment_login">
         <action
@@ -19,19 +19,19 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.nhom5.FirstFragment"
+        android:name="com.example.nhom5.main.FirstFragment"
         android:label="Trang chủ"
         tools:layout="@layout/fragment_first" />
 
     <fragment
         android:id="@+id/navigation_orders"
-        android:name="com.example.nhom5.SecondFragment"
+        android:name="com.example.nhom5.main.SecondFragment"
         android:label="Đơn đặt"
         tools:layout="@layout/fragment_second" />
 
     <fragment
         android:id="@+id/navigation_schedule"
-        android:name="com.example.nhom5.ScheduleFragment"
+        android:name="com.example.nhom5.schedule.ScheduleFragment"
         android:label="Lịch sân"
         tools:layout="@layout/fragment_schedule">
         <action
@@ -41,7 +41,7 @@
 
     <fragment
         android:id="@+id/navigation_customers"
-        android:name="com.example.nhom5.CustomerFragment"
+        android:name="com.example.nhom5.customer.CustomerFragment"
         android:label="Khách hàng"
         tools:layout="@layout/fragment_customers">
         <action
@@ -54,7 +54,7 @@
 
     <fragment
         android:id="@+id/navigation_more"
-        android:name="com.example.nhom5.MoreFragment"
+        android:name="com.example.nhom5.main.MoreFragment"
         android:label="Khác"
         tools:layout="@layout/fragment_more">
         <action
@@ -70,19 +70,19 @@
 
     <fragment
         android:id="@+id/customerDetailFragment"
-        android:name="com.example.nhom5.CustomerDetailFragment"
+        android:name="com.example.nhom5.customer.CustomerDetailFragment"
         android:label="Chi tiết khách hàng"
         tools:layout="@layout/fragment_customer_details" />
 
     <fragment
         android:id="@+id/addCustomerFragment"
-        android:name="com.example.nhom5.AddCustomerFragment"
+        android:name="com.example.nhom5.customer.AddCustomerFragment"
         android:label="Thêm khách hàng"
         tools:layout="@layout/fragment_add_customer" />
 
     <fragment
         android:id="@+id/bookingConfirmationFragment"
-        android:name="com.example.nhom5.BookingConfirmationFragment"
+        android:name="com.example.nhom5.booking.BookingConfirmationFragment"
         android:label="Đặt sân">
         <argument
             android:name="courtName"
@@ -101,19 +101,19 @@
 
     <fragment
         android:id="@+id/courtManagementFragment"
-        android:name="com.example.nhom5.CourtManagementFragment"
+        android:name="com.example.nhom5.court.CourtManagementFragment"
         android:label="Quản lý sân"
         tools:layout="@layout/fragment_court_management" />
 
     <fragment
         android:id="@+id/courtTypeManagementFragment"
-        android:name="com.example.nhom5.CourtTypeManagementFragment"
+        android:name="com.example.nhom5.courtype.CourtTypeManagementFragment"
         android:label="Quản lý loại sân"
         tools:layout="@layout/fragment_court_type_management" />
 
     <fragment
         android:id="@+id/priceManagementFragment"
-        android:name="com.example.nhom5.PriceManagementFragment"
+        android:name="com.example.nhom5.price.PriceManagementFragment"
         android:label="Quản lý bảng giá"
         tools:layout="@layout/fragment_price_management">
         <action
@@ -126,13 +126,13 @@
 
     <fragment
         android:id="@+id/addPriceFragment"
-        android:name="com.example.nhom5.AddPriceFragment"
+        android:name="com.example.nhom5.price.AddPriceFragment"
         android:label="Thêm bảng giá"
         tools:layout="@layout/fragment_add_price" />
 
     <fragment
         android:id="@+id/updatePriceFragment"
-        android:name="com.example.nhom5.UpdatePriceFragment"
+        android:name="com.example.nhom5.price.UpdatePriceFragment"
         android:label="Cập nhật bảng giá"
         tools:layout="@layout/fragment_update_price" />
 
