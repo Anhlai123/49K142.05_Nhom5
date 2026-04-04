@@ -15,6 +15,16 @@
     <string name="default_start_time">07:00</string>
     <string name="default_end_time">08:00</string>
 
+    <string name="booking_confirm_button">Xác nhận đặt sân</string>
+    <string name="booking_creating_button">Đang đặt lịch…</string>
+    <string name="booking_date_label">Ngày đặt: %1$s</string>
+    <string name="booking_time_range">%1$s - %2$s</string>
+    <string name="booking_price_per_hour">%1$s/h</string>
+    <string name="booking_success_message">Đặt sân thành công cho %1$s</string>
+    <string name="booking_connect_error">Không thể kết nối tới máy chủ</string>
+    <string name="booking_missing_court">Không tìm thấy sân để đặt lịch</string>
+    <string name="booking_missing_contact">Vui lòng nhập tên và số điện thoại</string>
+
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
