@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -31,18 +33,22 @@ public class AddCustomerFragment extends Fragment {
 
         viewModel = new ViewModelProvider(requireActivity()).get(CustomerViewModel.class);
 
-        // Auto-generated ID
-        binding.tvId.setText("KH00004");
+        binding.tvId.setText("Tự động tạo từ hệ thống");
 
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
+
+        viewModel.getLoading().observe(getViewLifecycleOwner(), isLoading ->
+                binding.btnSave.setEnabled(isLoading == null || !isLoading)
+        );
 
         binding.btnSave.setOnClickListener(v -> {
             boolean isValid = true;
 
             String name = binding.etName.getText().toString().trim();
             String phone = binding.etPhone.getText().toString().trim();
-            String id = binding.tvId.getText().toString();
+            String email = binding.etEmail.getText().toString().trim();
+            String notes = binding.etNotes.getText().toString().trim();
 
             if (name.isEmpty()) {
                 binding.tvErrorName.setVisibility(View.VISIBLE);
@@ -59,14 +65,26 @@ public class AddCustomerFragment extends Fragment {
             }
 
             if (isValid) {
-                // Add the new customer to the shared ViewModel
-                viewModel.addCustomer(new CustomerFragment.Customer(name, id, phone));
-                
-                // Show success dialog
-                SuccessDialogFragment dialog = SuccessDialogFragment.newInstance("Lưu thông tin khách hàng thành công", () -> {
-                    Navigation.findNavController(view).navigateUp();
+                viewModel.createCustomer(name, phone, email, notes, new CustomerViewModel.CreateCustomerCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (!isAdded()) {
+                            return;
+                        }
+                        SuccessDialogFragment dialog = SuccessDialogFragment.newInstance("Lưu thông tin khách hàng thành công", () -> {
+                            Navigation.findNavController(view).navigateUp();
+                        });
+                        dialog.show(getParentFragmentManager(), "success_dialog");
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        if (!isAdded()) {
+                            return;
+                        }
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                    }
                 });
-                dialog.show(getParentFragmentManager(), "success_dialog");
             }
         });
     }
