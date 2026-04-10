@@ -3,6 +3,11 @@ package com.example.nhom5.api;
 import com.example.nhom5.models.BookingRequest;
 import com.example.nhom5.models.BookingResponse;
 import com.example.nhom5.models.CourtScheduleResponse;
+import com.example.nhom5.models.CreateCustomerRequest;
+import com.example.nhom5.models.CustomerApiModel;
+import com.google.gson.JsonElement;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -22,4 +27,10 @@ public interface ApiService {
     // Đặt sân
     @POST("api/bookings/create_booking/")
     Call<BookingResponse> createBooking(@Body BookingRequest bookingRequest);
+
+    @GET("api/customers/")
+    Call<JsonElement> getCustomers();
+
+    @POST("api/customers/")
+    Call<CustomerApiModel> createCustomer(@Body CreateCustomerRequest request);
 }
