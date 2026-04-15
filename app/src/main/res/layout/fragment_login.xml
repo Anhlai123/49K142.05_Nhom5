@@ -252,7 +252,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Chua co tai khoan? Dang ky"
+                android:text="Chưa có tài khoản? Đăng ký"
                 android:textColor="#00A63E"
                 android:textSize="14sp"
                 android:textStyle="bold"

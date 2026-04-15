@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dang ky tai khoan"
+            android:text="Đăng ký tài khoản"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="#222222" />
@@ -23,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Nhap thong tin de tao tai khoan khach hang"
+            android:text="Nhập thông tin để tạo tài khoản khách hàng"
             android:textColor="#666666"
             android:textSize="14sp" />
 
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:background="@drawable/bg_input_field"
-            android:hint="Username"
+            android:hint="Tên đăng nhập"
             android:inputType="text"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
-            android:hint="Password"
+            android:hint="Mật khẩu"
             android:inputType="textPassword"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
-            android:hint="Ho va ten"
+            android:hint="Họ và tên"
             android:inputType="textPersonName"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
@@ -77,7 +77,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
-            android:hint="So dien thoai"
+            android:hint="Số điện thoại"
             android:inputType="phone"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
@@ -88,7 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
-            android:hint="Dia chi"
+            android:hint="Địa chỉ"
             android:inputType="textPostalAddress"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
@@ -99,7 +99,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="20dp"
             android:backgroundTint="#00A63E"
-            android:text="Dang ky"
+            android:text="Đăng ký"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textStyle="bold" />
@@ -110,7 +110,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            android:text="Da co tai khoan? Dang nhap"
+            android:text="Đã có tài khoản? Đăng nhập"
             android:textColor="#00A63E"
             android:textStyle="bold" />
 
