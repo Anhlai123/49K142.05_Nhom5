@@ -5,9 +5,10 @@ import com.example.nhom5.models.BookingResponse;
 import com.example.nhom5.models.CourtScheduleResponse;
 import com.example.nhom5.models.CreateCustomerRequest;
 import com.example.nhom5.models.CustomerApiModel;
+import com.example.nhom5.auth.model.RegisterRequest;
+import com.example.nhom5.auth.model.RegisterResponse;
 import com.google.gson.JsonElement;
 
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -16,6 +17,9 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface ApiService {
+
+    @POST("api/register/")
+    Call<RegisterResponse> register(@Body RegisterRequest request);
 
     // Lấy lịch sân
     @GET("api/courts/schedule/")

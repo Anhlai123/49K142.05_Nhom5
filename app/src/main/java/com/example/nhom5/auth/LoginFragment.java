@@ -1,5 +1,6 @@
 package com.example.nhom5.auth;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -31,6 +32,11 @@ public class LoginFragment extends Fragment {
         // Pre-filled values as requested initially
         binding.etUsername.setText("nhom5");
         binding.etPassword.setText("12345");
+
+        binding.tvGoRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), RegisterActivity.class);
+            startActivity(intent);
+        });
 
         binding.btnLogin.setOnClickListener(v -> {
             String username = binding.etUsername.getText().toString().trim();
