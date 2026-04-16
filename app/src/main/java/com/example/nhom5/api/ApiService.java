@@ -8,7 +8,8 @@ import com.example.nhom5.models.CustomerApiModel;
 import com.example.nhom5.auth.model.RegisterRequest;
 import com.example.nhom5.auth.model.RegisterResponse;
 import com.google.gson.JsonElement;
-
+import java.util.List;
+import com.example.nhom5.Bill.OrderModel;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -37,4 +38,7 @@ public interface ApiService {
 
     @POST("api/customers/")
     Call<CustomerApiModel> createCustomer(@Body CreateCustomerRequest request);
+
+    @GET("api/QL_DonDat/")
+    Call<List<OrderModel>> getOrderList();
 }
