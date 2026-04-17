@@ -116,18 +116,17 @@ public class CourtTypeManagementFragment extends Fragment {
 
     private void updateStatusUI(BottomSheetUpdateCourtTypeBinding sheetBinding, String status) {
         sheetBinding.statusActive.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusActive.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusActive.setTextColor(Color.parseColor("#757575"));
         
         sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusInactive.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusInactive.setTextColor(Color.parseColor("#757575"));
 
-        int activeColor = ContextCompat.getColor(requireContext(), R.color.primary);
         if ("Đang hoạt động".equals(status)) {
             sheetBinding.statusActive.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusActive.setTextColor(activeColor);
+            sheetBinding.statusActive.setTextColor(Color.WHITE);
         } else if ("Ngừng hoạt động".equals(status)) {
             sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusInactive.setTextColor(activeColor);
+            sheetBinding.statusInactive.setTextColor(Color.WHITE);
         }
     }
 

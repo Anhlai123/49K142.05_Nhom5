@@ -102,25 +102,25 @@ public class CourtManagementFragment extends Fragment {
     private void updateStatusUI(BottomSheetUpdateCourtBinding sheetBinding, String status) {
         // Reset all to inactive style
         sheetBinding.statusAvailable.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusAvailable.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusAvailable.setTextColor(Color.parseColor("#757575"));
         
         sheetBinding.statusMaintenance.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusMaintenance.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusMaintenance.setTextColor(Color.parseColor("#757575"));
         
         sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusInactive.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusInactive.setTextColor(Color.parseColor("#757575"));
 
         // Set active style for selected status
         int activeColor = ContextCompat.getColor(requireContext(), R.color.primary);
         if ("Sẵn sàng".equals(status)) {
             sheetBinding.statusAvailable.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusAvailable.setTextColor(activeColor);
+            sheetBinding.statusAvailable.setTextColor(Color.WHITE);
         } else if ("Đang bảo trì".equals(status)) {
             sheetBinding.statusMaintenance.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusMaintenance.setTextColor(activeColor);
+            sheetBinding.statusMaintenance.setTextColor(Color.WHITE);
         } else if ("Ngừng sử dụng".equals(status) || "Ngừng hoạt động".equals(status)) {
             sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusInactive.setTextColor(activeColor);
+            sheetBinding.statusInactive.setTextColor(Color.WHITE);
         }
     }
 

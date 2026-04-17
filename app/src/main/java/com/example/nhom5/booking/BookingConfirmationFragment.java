@@ -180,8 +180,17 @@ public class BookingConfirmationFragment extends Fragment {
 
                 btnConfirm.setEnabled(true);
                 btnConfirm.setText(R.string.booking_confirm_button);
-                Toast.makeText(requireContext(), getString(R.string.booking_connect_error), Toast.LENGTH_SHORT).show();
-                Log.e("BOOKING_API", "createBooking error", t);
+                
+                String errorMsg = "Lỗi kết nối: ";
+                if (t.getMessage() != null) {
+                    errorMsg += t.getMessage();
+                } else {
+                    errorMsg += "Không thể kết nối đến server";
+                }
+                
+                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show();
+                Log.e("BOOKING_API", "createBooking error: " + errorMsg, t);
+                t.printStackTrace();
             }
         });
     }
