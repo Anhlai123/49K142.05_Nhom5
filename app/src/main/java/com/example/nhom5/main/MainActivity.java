@@ -42,6 +42,11 @@ public class MainActivity extends AppCompatActivity {
         // This handles backstack, singleTop, and state saving correctly.
         NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
+        // Reset tab backstack when re-clicking the current tab
+        binding.bottomNavigation.setOnItemReselectedListener(item -> {
+            navController.popBackStack(item.getItemId(), false);
+        });
+
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             if (isFinishing()) return;
             int id = destination.getId();

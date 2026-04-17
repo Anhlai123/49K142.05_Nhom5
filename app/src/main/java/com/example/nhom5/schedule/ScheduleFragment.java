@@ -13,10 +13,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
+import android.app.DatePickerDialog;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,10 +55,18 @@ public class ScheduleFragment extends Fragment {
 
     private TableLayout tableLayout;
     private TextView tvScheduleTypeText;
+    private TextView tvSelectedDate;
+    private TextView tvSelectedCourtType;
     private View layoutBySchedule, layoutByCourt;
     private GridLayout timeGrid;
+    private TextView court1, court2, court3, court4;
     private ApiService apiService;
     private BottomSheetDialog currentDialog;
+    
+    private String selectedDateApi;
+    private Calendar selectedCalendar;
+    private int selectedCourtId = 2; // Default to Sân 2 as in XML
+    private int currentCourtTypeId = 1; // 1: Badminton, 2: Soccer
 
     // State management for By Court view
     private enum SlotStatus { AVAILABLE, BOOKED, SELECTED, MAINTENANCE }
@@ -64,6 +78,8 @@ public class ScheduleFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_schedule, container, false);
         tableLayout = view.findViewById(R.id.tableLayout);
         tvScheduleTypeText = view.findViewById(R.id.tvScheduleTypeText);
+        tvSelectedDate = view.findViewById(R.id.tvSelectedDate);
+        tvSelectedCourtType = view.findViewById(R.id.tvSelectedCourtType);
         layoutBySchedule = view.findViewById(R.id.layoutBySchedule);
         layoutByCourt = view.findViewById(R.id.layoutByCourt);
         timeGrid = view.findViewById(R.id.timeGrid);
@@ -71,11 +87,33 @@ public class ScheduleFragment extends Fragment {
         apiService = ApiClient.getApiService();
         
         view.findViewById(R.id.boxScheduleType).setOnClickListener(this::showFilterPopupMenu);
+        view.findViewById(R.id.boxDatePicker).setOnClickListener(v -> showDatePickerDialog());
+        view.findViewById(R.id.boxCourtType).setOnClickListener(this::showCourtTypePopupMenu);
+
+        court1 = view.findViewById(R.id.court1);
+        court2 = view.findViewById(R.id.court2);
+        court3 = view.findViewById(R.id.court3);
+        court4 = view.findViewById(R.id.court4);
+        setupCourtSelectionListeners();
+
+        // Initialize date to today
+        selectedCalendar = Calendar.getInstance();
+        SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        
+        selectedDateApi = apiFormat.format(selectedCalendar.getTime());
+        tvSelectedDate.setText(displayFormat.format(selectedCalendar.getTime()));
 
         // Load data from API
-        loadCourtSchedule("2026-04-03", 1);
+        // Moving this to onViewCreated for better layout stability
         
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        loadCourtSchedule(selectedDateApi, currentCourtTypeId);
     }
 
     private void loadCourtSchedule(String date, int courtTypeId) {
@@ -141,7 +179,7 @@ public class ScheduleFragment extends Fragment {
             CourtData court = courts.get(i);
             TableRow row = new TableRow(getContext());
             
-            // Date cell (Merged look)
+            // Date cell
             TextView dayTv = createCell(i == numCourts / 2 ? "Thứ 2" : "", false, 80);
             if (dayTv != null) {
                 if (i == 0) dayTv.setBackgroundResource(R.drawable.bg_day_top);
@@ -158,31 +196,58 @@ public class ScheduleFragment extends Fragment {
                 row.addView(courtTv);
             }
 
-            for (Slot slot : court.getSlots()) {
-                View cell = new View(getContext());
-                TableRow.LayoutParams params = new TableRow.LayoutParams(
-                        (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics()),
-                        (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
-                );
-                cell.setLayoutParams(params);
-                cell.setBackgroundResource(R.drawable.bg_grid_cell);
-
-                if ("booked".equalsIgnoreCase(slot.getStatus())) {
-                    cell.setBackgroundResource(R.drawable.bg_booked_status);
-                    cell.setOnClickListener(v -> showBookedBottomSheet());
-                } else if ("maintenance".equalsIgnoreCase(slot.getStatus())) {
-                    cell.setBackgroundResource(R.drawable.bg_maintenance_status);
+            List<Slot> slots = court.getSlots();
+            for (int k = 0; k < slots.size(); k++) {
+                Slot slot = slots.get(k);
+                String status = slot.getStatus();
+                
+                if ("booked".equalsIgnoreCase(status) || "maintenance".equalsIgnoreCase(status)) {
+                    // Start spanning
+                    int span = 1;
+                    int next = k + 1;
+                    while (next < slots.size() && status.equalsIgnoreCase(slots.get(next).getStatus())) {
+                        span++;
+                        next++;
+                    }
+                    
+                    TextView spanCell = createCell(status.equalsIgnoreCase("booked") ? "Đã đặt" : "Bảo trì", false, 60 * span);
+                    if (spanCell != null) {
+                        TableRow.LayoutParams params = (TableRow.LayoutParams) spanCell.getLayoutParams();
+                        params.span = span;
+                        spanCell.setLayoutParams(params);
+                        
+                        if (status.equalsIgnoreCase("booked")) {
+                            spanCell.setBackgroundResource(R.drawable.bg_booked_status);
+                            spanCell.setTextColor(Color.parseColor("#FF5252"));
+                            spanCell.setOnClickListener(v -> showBookedBottomSheet());
+                        } else {
+                            spanCell.setBackgroundResource(R.drawable.bg_maintenance_status);
+                            spanCell.setTextColor(Color.parseColor("#9E9E9E"));
+                        }
+                        spanCell.setTypeface(null, Typeface.BOLD);
+                        row.addView(spanCell);
+                    }
+                    
+                    k = next - 1; // Skip the spanned slots
                 } else {
+                    // Normal available slot
+                    View cell = new View(getContext());
+                    TableRow.LayoutParams params = new TableRow.LayoutParams(
+                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics()),
+                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
+                    );
+                    cell.setLayoutParams(params);
+                    cell.setBackgroundResource(R.drawable.bg_grid_cell);
                     cell.setOnClickListener(v -> showBookingConfirmation(court.getCourtName(), court.getCourtId(), schedule.getDate(), slot.getStartTime()));
+                    row.addView(cell);
                 }
-                row.addView(cell);
             }
             tableLayout.addView(row);
         }
     }
 
     private void setupMockGrid() {
-        if (!isAdded() || getContext() == null) return;
+        if (tableLayout == null || getContext() == null) return;
         tableLayout.removeAllViews();
         String[] times = {
                 "THỨ", "SÂN", 
@@ -243,28 +308,124 @@ public class ScheduleFragment extends Fragment {
             for (int j = 0; j < numTimeSlots; j++) {
                 final int courtIndex = i;
                 final int timeIndex = j;
-                View cell = new View(getContext());
-                TableRow.LayoutParams params = new TableRow.LayoutParams(
-                        (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics()),
-                        (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
-                );
-                cell.setLayoutParams(params);
-                cell.setBackgroundResource(R.drawable.bg_grid_cell);
                 
-                boolean isBooked = Math.random() < 0.1;
-                boolean isMaintenance = Math.random() < 0.05;
-                if (isBooked) {
-                    cell.setBackgroundResource(R.drawable.bg_booked_status);
-                    cell.setOnClickListener(v -> showBookedBottomSheet());
-                } else if (isMaintenance) {
-                    cell.setBackgroundResource(R.drawable.bg_maintenance_status);
+                // Randomly decide if this slot starts a booked or maintenance block
+                double rand = Math.random();
+                if ((rand < 0.1 || rand > 0.93) && j < numTimeSlots - 1) { // Don't start at the very last slot
+                    String status = rand < 0.1 ? "booked" : "maintenance";
+                    int span = (int) (Math.random() * 2) + 2; // span 2-3 cells
+                    if (j + span > numTimeSlots) span = numTimeSlots - j;
+                    if (span < 2) span = 2; // Force minimum 1 hour
+                    
+                    TextView spanCell = createCell(status.equalsIgnoreCase("booked") ? "Đã đặt" : "Bảo trì", false, 60 * span);
+                    if (spanCell != null) {
+                        TableRow.LayoutParams params = (TableRow.LayoutParams) spanCell.getLayoutParams();
+                        params.span = span;
+                        spanCell.setLayoutParams(params);
+                        
+                        if (status.equalsIgnoreCase("booked")) {
+                            spanCell.setBackgroundResource(R.drawable.bg_booked_status);
+                            spanCell.setTextColor(Color.parseColor("#FF5252"));
+                            spanCell.setOnClickListener(v -> showBookedBottomSheet());
+                        } else {
+                            spanCell.setBackgroundResource(R.drawable.bg_maintenance_status);
+                            spanCell.setTextColor(Color.parseColor("#9E9E9E"));
+                        }
+                        spanCell.setTypeface(null, Typeface.BOLD);
+                        row.addView(spanCell);
+                    }
+                    j += (span - 1);
                 } else {
+                    View cell = new View(getContext());
+                    TableRow.LayoutParams params = new TableRow.LayoutParams(
+                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics()),
+                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
+                    );
+                    cell.setLayoutParams(params);
+                    cell.setBackgroundResource(R.drawable.bg_grid_cell);
                     cell.setOnClickListener(v -> showBookingConfirmation("Sân Cầu Lông " + (courtIndex + 1), courtIndex + 1, "13/01/2026", getTimeForSlot(timeIndex)));
+                    row.addView(cell);
                 }
-                row.addView(cell);
             }
             tableLayout.addView(row);
         }
+    }
+
+    private void showDatePickerDialog() {
+        if (getContext() == null) return;
+        
+        int year = selectedCalendar.get(Calendar.YEAR);
+        int month = selectedCalendar.get(Calendar.MONTH);
+        int day = selectedCalendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), R.style.DatePickerTheme, (view, selectedYear, selectedMonth, selectedDay) -> {
+            selectedCalendar.set(selectedYear, selectedMonth, selectedDay);
+            
+            SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            
+            String displayStr = displayFormat.format(selectedCalendar.getTime());
+            selectedDateApi = apiFormat.format(selectedCalendar.getTime());
+            
+            tvSelectedDate.setText(displayStr);
+            
+            // Reload data
+            loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+            
+        }, year, month, day);
+        
+        datePickerDialog.show();
+    }
+
+    private void setupCourtSelectionListeners() {
+        View.OnClickListener listener = v -> {
+            int id = v.getId();
+            if (id == R.id.court1) selectedCourtId = 1;
+            else if (id == R.id.court2) selectedCourtId = 2;
+            else if (id == R.id.court3) selectedCourtId = 3;
+            else if (id == R.id.court4) selectedCourtId = 4;
+            
+            updateCourtSelectionUI();
+            setupTimeGrid(); // Refresh grid for the selected court
+        };
+
+        court1.setOnClickListener(listener);
+        court2.setOnClickListener(listener);
+        court3.setOnClickListener(listener);
+        court4.setOnClickListener(listener);
+    }
+
+    private void updateCourtSelectionUI() {
+        if (!isAdded()) return;
+        
+        TextView[] courts = {court1, court2, court3, court4};
+        for (int i = 0; i < courts.length; i++) {
+            if (i + 1 == selectedCourtId) {
+                courts[i].setBackgroundResource(R.drawable.bg_court_card_selected);
+                courts[i].setTextColor(ContextCompat.getColor(getContext(), R.color.primary));
+            } else {
+                courts[i].setBackgroundResource(R.drawable.bg_court_card);
+                courts[i].setTextColor(ContextCompat.getColor(getContext(), R.color.dark_green_text));
+            }
+        }
+    }
+
+    private void showCourtTypePopupMenu(View view) {
+        if (getContext() == null) return;
+        PopupMenu popupMenu = new PopupMenu(getContext(), view);
+        popupMenu.getMenu().add(0, 1, 0, "Sân Cầu Lông");
+        popupMenu.getMenu().add(0, 2, 1, "Sân Bóng Đá");
+        
+        popupMenu.setOnMenuItemClickListener(item -> {
+            String title = item.getTitle().toString();
+            tvSelectedCourtType.setText(title);
+            currentCourtTypeId = item.getItemId();
+            
+            // Reload data for the selected court type
+            loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+            return true;
+        });
+        popupMenu.show();
     }
 
     private void showFilterPopupMenu(View view) {
@@ -356,12 +517,12 @@ public class ScheduleFragment extends Fragment {
         int bgColor, textColor;
         switch (status) {
             case BOOKED:
-                bgColor = Color.parseColor("#FFEBEE");
-                textColor = Color.parseColor("#FF0000");
+                bgColor = ContextCompat.getColor(getContext(), R.color.booked_cell_bg);
+                textColor = Color.parseColor("#FF5252"); // Red
                 break;
             case SELECTED:
-                bgColor = Color.parseColor("#FFF9C4");
-                textColor = Color.parseColor("#FBC02D");
+                bgColor = ContextCompat.getColor(getContext(), R.color.selected_slot_bg);
+                textColor = ContextCompat.getColor(getContext(), R.color.selected_slot_text); // Yellow
                 break;
             default:
                 bgColor = Color.WHITE;
