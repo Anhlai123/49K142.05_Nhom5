@@ -11,9 +11,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
-    // Máy ảo MSI với IPv4: 192.168.0.113
-    // Chạy trên Android Emulator: sử dụng http://10.0.2.2:8080/
-    private static final String BASE_URL = "http://192.168.0.113:8080/";
+    // Chạy trên Android Emulator: sử dụng http://10.0.2.2:8000/ (mặc định cho Django)
+    private static final String BASE_URL = "http://10.0.2.2:8000/";
     private static final String TAG = "ApiClient";
     private static final int MAX_RETRIES = 3;
     private static final int RETRY_DELAY_MS = 1000;
