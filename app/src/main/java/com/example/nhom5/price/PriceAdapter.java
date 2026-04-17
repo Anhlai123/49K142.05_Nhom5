@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class PriceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<PriceRecord> priceList;
+    private List<PriceRecord> priceList;
     private final OnPriceActionListener listener;
 
     public interface OnPriceActionListener {
@@ -67,6 +67,11 @@ public class PriceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @Override
     public int getItemCount() {
         return priceList.size();
+    }
+
+    public void updateData(List<PriceRecord> newList) {
+        this.priceList = newList;
+        notifyDataSetChanged();
     }
 
     private static class PriceViewHolder extends RecyclerView.ViewHolder {

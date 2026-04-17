@@ -1,9 +1,12 @@
 package com.example.nhom5.price;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -11,13 +14,19 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
+import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.BottomSheetConfirmDeletePriceBinding;
 import com.example.nhom5.databinding.BottomSheetPriceDetailsBinding;
 import com.example.nhom5.databinding.FragmentPriceManagementBinding;
+import com.example.nhom5.models.PriceTableModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PriceManagementFragment extends Fragment {
 
@@ -40,15 +49,12 @@ public class PriceManagementFragment extends Fragment {
         binding.fabAdd.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_priceManagementFragment_to_addPriceFragment);
         });
+        
+        loadPriceTables();
     }
 
     private void setupRecyclerView() {
-        List<PriceRecord> priceList = new ArrayList<>();
-        priceList.add(new PriceRecord("BG001", "Sân Bóng đá - Tiêu chuẩn", "Sân bóng đá", "2026-01-01 ~ Vô thời hạn", "250.000đ - 300.000đ", Arrays.asList("T2", "T3", "T4", "T5", "T6", "T7", "CN"), "2 khung giờ"));
-        priceList.add(new PriceRecord("BG002", "Sân bóng đá - Cuối tuần", "Sân bóng đá", "2026-01-01 ~ Vô thời hạn", "250.000đ", Arrays.asList("T7", "CN"), "1 khung giờ"));
-        priceList.add(new PriceRecord("BG003", "Sân Cầu lông - Tiêu chuẩn", "Sân Cầu lông", "2026-01-01 ~ Vô thời hạn", "200.000đ - 250.000đ", Arrays.asList("T2", "T3", "T4", "T5", "T6", "T7", "CN"), "1 khung giờ"));
-
-        adapter = new PriceAdapter(priceList, new PriceAdapter.OnPriceActionListener() {
+        adapter = new PriceAdapter(new ArrayList<>(), new PriceAdapter.OnPriceActionListener() {
             @Override
             public void onView(PriceRecord price) {
                 showPriceDetailsBottomSheet(price);
@@ -66,6 +72,34 @@ public class PriceManagementFragment extends Fragment {
         });
         binding.rvPrices.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvPrices.setAdapter(adapter);
+    }
+
+    private void loadPriceTables() {
+        ApiClient.getApiService().getPriceTables().enqueue(new Callback<List<PriceTableModel>>() {
+            @Override
+            public void onResponse(Call<List<PriceTableModel>> call, Response<List<PriceTableModel>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<PriceRecord> records = new ArrayList<>();
+                    for (PriceTableModel model : response.body()) {
+                        records.add(new PriceRecord(
+                                String.valueOf(model.getId()),
+                                model.getPriceTableName(),
+                                model.getCourtTypeName(),
+                                model.getEffectiveDate() + " ~ Vô thời hạn",
+                                "Đang cập nhật...",
+                                Arrays.asList("T2", "T3", "T4", "T5", "T6", "T7", "CN"),
+                                "1 khung giờ"
+                        ));
+                    }
+                    adapter.updateData(records);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<PriceTableModel>> call, Throwable t) {
+                Log.e("API_ERROR", "Load prices failed: " + t.getMessage());
+            }
+        });
     }
 
     private void showPriceDetailsBottomSheet(PriceRecord price) {
@@ -106,8 +140,28 @@ public class PriceManagementFragment extends Fragment {
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnConfirm.setOnClickListener(v -> {
-            // Handle actual deletion here
-            bottomSheetDialog.dismiss();
+            try {
+                int id = Integer.parseInt(price.getId());
+                ApiClient.getApiService().deletePriceTable(id).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(getContext(), "Xóa bảng giá thành công", Toast.LENGTH_SHORT).show();
+                            loadPriceTables();
+                            bottomSheetDialog.dismiss();
+                        } else {
+                            Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "ID không hợp lệ", Toast.LENGTH_SHORT).show();
+            }
         });
 
         bottomSheetDialog.show();

@@ -118,28 +118,24 @@ public class CourtTypeManagementFragment extends Fragment {
                 return;
             }
 
-            // Create model with null or default duration if API requires it
             CourtTypeModel newType = new CourtTypeModel();
             newType.setName(name);
-            // newType.setDuration(0); // Optional: set a default if needed
 
             ApiClient.getApiService().createCourtType(newType).enqueue(new Callback<CourtTypeModel>() {
                 @Override
                 public void onResponse(Call<CourtTypeModel> call, Response<CourtTypeModel> response) {
                     if (response.isSuccessful()) {
                         Toast.makeText(getContext(), "Thêm loại sân thành công!", Toast.LENGTH_SHORT).show();
-                        loadCourtTypesFromServer(); // Tải lại danh sách
+                        loadCourtTypesFromServer();
                         bottomSheetDialog.dismiss();
                     } else {
-                        Toast.makeText(getContext(), "Lỗi từ Server: " + response.code(), Toast.LENGTH_SHORT).show();
-                        Log.e("API_ERROR", "Create failed: " + response.code());
+                        Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<CourtTypeModel> call, Throwable t) {
                     Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-                    Log.e("API_ERROR", t.getMessage());
                 }
             });
         });
@@ -154,24 +150,49 @@ public class CourtTypeManagementFragment extends Fragment {
 
         sheetBinding.tvTypeId.setText(courtType.getId());
         sheetBinding.etTypeName.setText(courtType.getName());
-        
-        // Hide or remove duration from update as well if requested, 
-        // but user specifically said "khi tạo mới" (when creating new).
-        // For now, I'll keep it in update unless specified otherwise.
-        if (courtType.getDuration() != null) {
-            sheetBinding.etDuration.setText(String.valueOf(courtType.getDuration()));
-        }
 
+        final String[] status = {courtType.getStatus().equals("Đang hoạt động") ? "ACTIVE" : "INACTIVE"};
         updateStatusUI(sheetBinding, courtType.getStatus());
 
-        sheetBinding.statusActive.setOnClickListener(v -> updateStatusUI(sheetBinding, "Đang hoạt động"));
-        sheetBinding.statusInactive.setOnClickListener(v -> updateStatusUI(sheetBinding, "Ngừng hoạt động"));
+        sheetBinding.statusActive.setOnClickListener(v -> {
+            status[0] = "ACTIVE";
+            updateStatusUI(sheetBinding, "Đang hoạt động");
+        });
+        sheetBinding.statusInactive.setOnClickListener(v -> {
+            status[0] = "INACTIVE";
+            updateStatusUI(sheetBinding, "Ngừng hoạt động");
+        });
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnSave.setOnClickListener(v -> {
-            // TODO: Implement update API call
-            bottomSheetDialog.dismiss();
+            String newName = sheetBinding.etTypeName.getText().toString().trim();
+            if (newName.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập tên loại sân", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            CourtTypeModel updatedType = new CourtTypeModel();
+            updatedType.setName(newName);
+            updatedType.setStatus(status[0]);
+
+            ApiClient.getApiService().updateCourtType(Integer.parseInt(courtType.getId()), updatedType).enqueue(new Callback<CourtTypeModel>() {
+                @Override
+                public void onResponse(Call<CourtTypeModel> call, Response<CourtTypeModel> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                        loadCourtTypesFromServer();
+                        bottomSheetDialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<CourtTypeModel> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         bottomSheetDialog.show();
@@ -182,11 +203,30 @@ public class CourtTypeManagementFragment extends Fragment {
         BottomSheetConfirmDeleteCourtTypeBinding sheetBinding = BottomSheetConfirmDeleteCourtTypeBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
-        sheetBinding.tvMessage.setText("Bạn có chắc chắn muốn xóa?");
+        sheetBinding.tvMessage.setText("Bạn có chắc chắn muốn xóa loại sân này?");
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnConfirm.setOnClickListener(v -> {
-            bottomSheetDialog.dismiss();
+            ApiClient.getApiService().deleteCourtType(Integer.parseInt(courtType.getId())).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Xóa thành công!", Toast.LENGTH_SHORT).show();
+                        loadCourtTypesFromServer();
+                        bottomSheetDialog.dismiss();
+                    } else if (response.code() == 500) {
+                        Toast.makeText(getContext(), "Không thể xóa: Loại sân này đang có dữ liệu liên quan (Sân hoặc Bảng giá). Hãy xóa chúng trước!", Toast.LENGTH_LONG).show();
+                        bottomSheetDialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         bottomSheetDialog.show();
@@ -199,10 +239,10 @@ public class CourtTypeManagementFragment extends Fragment {
         sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_inactive);
         sheetBinding.statusInactive.setTextColor(Color.parseColor("#757575"));
 
-        if ("Đang hoạt động".equals(status)) {
+        if ("Đang hoạt động".equals(status) || "ACTIVE".equals(status)) {
             sheetBinding.statusActive.setBackgroundResource(R.drawable.bg_pill_active);
             sheetBinding.statusActive.setTextColor(Color.WHITE);
-        } else if ("Ngừng hoạt động".equals(status)) {
+        } else if ("Ngừng hoạt động".equals(status) || "INACTIVE".equals(status)) {
             sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_active);
             sheetBinding.statusInactive.setTextColor(Color.WHITE);
         }
