@@ -38,19 +38,22 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
     public void onBindViewHolder(@NonNull CourtViewHolder holder, int position) {
         Court court = courtList.get(position);
         holder.tvName.setText(court.getName());
-        holder.tvId.setText(court.getId());
+        holder.tvId.setText("ID: " + court.getId());
         holder.tvType.setText(court.getType());
         
         String status = court.getStatus();
-        holder.tvStatus.setText(status);
         
-        if ("Sẵn sàng".equals(status)) {
+        // Chuyển đổi trạng thái từ Django sang tiếng Việt và đổi màu
+        if ("READY".equalsIgnoreCase(status)) {
+            holder.tvStatus.setText("Sân trống");
             holder.tvStatus.setBackgroundResource(R.drawable.status_bg_available);
             holder.tvStatus.setTextColor(Color.parseColor("#00A63E"));
-        } else if ("Đang bảo trì".equals(status)) {
+        } else if ("MAINTENANCE".equalsIgnoreCase(status)) {
+            holder.tvStatus.setText("Bảo trì");
             holder.tvStatus.setBackgroundResource(R.drawable.status_bg_cleaning);
             holder.tvStatus.setTextColor(Color.parseColor("#FFA000"));
         } else {
+            holder.tvStatus.setText("Ngừng dùng");
             holder.tvStatus.setBackgroundResource(R.drawable.status_bg_busy);
             holder.tvStatus.setTextColor(Color.parseColor("#D32F2F"));
         }
@@ -66,7 +69,12 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
 
     @Override
     public int getItemCount() {
-        return courtList.size();
+        return courtList != null ? courtList.size() : 0;
+    }
+
+    public void updateData(List<Court> newList) {
+        this.courtList = newList;
+        notifyDataSetChanged();
     }
 
     static class CourtViewHolder extends RecyclerView.ViewHolder {
