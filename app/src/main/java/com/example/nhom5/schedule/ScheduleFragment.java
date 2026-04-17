@@ -39,6 +39,7 @@ import com.example.nhom5.models.BookingRequest;
 import com.example.nhom5.models.BookingResponse;
 import com.example.nhom5.models.CourtData;
 import com.example.nhom5.models.CourtScheduleResponse;
+import com.example.nhom5.models.CourtTypeModel;
 import com.example.nhom5.models.Slot;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -66,7 +67,8 @@ public class ScheduleFragment extends Fragment {
     private String selectedDateApi;
     private Calendar selectedCalendar;
     private int selectedCourtId = 2; // Default to Sân 2 as in XML
-    private int currentCourtTypeId = 1; // 1: Badminton, 2: Soccer
+    private int currentCourtTypeId = 1; 
+    private List<CourtTypeModel> courtTypeList = new ArrayList<>();
 
     // State management for By Court view
     private enum SlotStatus { AVAILABLE, BOOKED, SELECTED, MAINTENANCE }
@@ -104,16 +106,37 @@ public class ScheduleFragment extends Fragment {
         selectedDateApi = apiFormat.format(selectedCalendar.getTime());
         tvSelectedDate.setText(displayFormat.format(selectedCalendar.getTime()));
 
-        // Load data from API
-        // Moving this to onViewCreated for better layout stability
-        
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        loadCourtTypes();
         loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+    }
+
+    private void loadCourtTypes() {
+        apiService.getCourtTypes().enqueue(new Callback<List<CourtTypeModel>>() {
+            @Override
+            public void onResponse(Call<List<CourtTypeModel>> call, Response<List<CourtTypeModel>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    courtTypeList = response.body();
+                    // Optional: Update UI to show the name of the current type if list is loaded
+                    for (CourtTypeModel type : courtTypeList) {
+                        if (type.getId() == currentCourtTypeId) {
+                            tvSelectedCourtType.setText(type.getName());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<CourtTypeModel>> call, Throwable t) {
+                Log.e("API_ERROR", "Failed to load court types: " + t.getMessage());
+            }
+        });
     }
 
     private void loadCourtSchedule(String date, int courtTypeId) {
@@ -413,10 +436,19 @@ public class ScheduleFragment extends Fragment {
     private void showCourtTypePopupMenu(View view) {
         if (getContext() == null) return;
         PopupMenu popupMenu = new PopupMenu(getContext(), view);
-        popupMenu.getMenu().add(0, 1, 0, "Sân Cầu Lông");
-        popupMenu.getMenu().add(0, 2, 1, "Sân Bóng Đá");
+        
+        if (courtTypeList.isEmpty()) {
+            popupMenu.getMenu().add(0, 0, 0, "Đang tải...");
+            loadCourtTypes(); // Try to reload if empty
+        } else {
+            for (CourtTypeModel type : courtTypeList) {
+                popupMenu.getMenu().add(0, type.getId(), 0, type.getName());
+            }
+        }
         
         popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 0) return false;
+
             String title = item.getTitle().toString();
             tvSelectedCourtType.setText(title);
             currentCourtTypeId = item.getItemId();

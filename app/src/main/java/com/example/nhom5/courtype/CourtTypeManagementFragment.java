@@ -2,9 +2,12 @@ package com.example.nhom5.courtype;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -12,13 +15,19 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
+import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.BottomSheetAddCourtTypeBinding;
 import com.example.nhom5.databinding.BottomSheetConfirmDeleteCourtTypeBinding;
 import com.example.nhom5.databinding.BottomSheetUpdateCourtTypeBinding;
 import com.example.nhom5.databinding.FragmentCourtTypeManagementBinding;
+import com.example.nhom5.models.CourtTypeModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CourtTypeManagementFragment extends Fragment {
 
@@ -42,12 +51,8 @@ public class CourtTypeManagementFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        List<CourtType> courtTypeList = new ArrayList<>();
-        courtTypeList.add(new CourtType("LOAISAN001", "Sân Bóng đá", "Đang hoạt động"));
-        courtTypeList.add(new CourtType("LOAISAN002", "Sân Cầu lông", "Đang hoạt động"));
-        courtTypeList.add(new CourtType("LOAISAN003", "Sân Tennis", "Đang hoạt động"));
-
-        adapter = new CourtTypeAdapter(courtTypeList, new CourtTypeAdapter.OnCourtTypeActionListener() {
+        // Khởi tạo với danh sách trống
+        adapter = new CourtTypeAdapter(new ArrayList<>(), new CourtTypeAdapter.OnCourtTypeActionListener() {
             @Override
             public void onEdit(CourtType courtType) {
                 showUpdateCourtTypeBottomSheet(courtType);
@@ -60,6 +65,42 @@ public class CourtTypeManagementFragment extends Fragment {
         });
         binding.rvCourtTypes.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvCourtTypes.setAdapter(adapter);
+        
+        // Gọi API lấy dữ liệu thật
+        loadCourtTypesFromServer();
+    }
+
+    private void loadCourtTypesFromServer() {
+        ApiClient.getApiService().getCourtTypes().enqueue(new Callback<List<CourtTypeModel>>() {
+            @Override
+            public void onResponse(Call<List<CourtTypeModel>> call, Response<List<CourtTypeModel>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<CourtTypeModel> apiData = response.body();
+                    List<CourtType> displayList = new ArrayList<>();
+                    
+                    // Chuyển đổi từ CourtTypeModel (API) sang CourtType (Adapter)
+                    for (CourtTypeModel model : apiData) {
+                        displayList.add(new CourtType(
+                            String.valueOf(model.getId()),
+                            model.getName(),
+                            "ACTIVE".equalsIgnoreCase(model.getStatus()) ? "Đang hoạt động" : "Ngừng hoạt động",
+                            model.getDuration()
+                        ));
+                    }
+                    adapter.updateData(displayList);
+                } else {
+                    Log.e("API_ERROR", "Response not successful: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<CourtTypeModel>> call, Throwable t) {
+                Log.e("API_ERROR", "Failed to fetch court types: " + t.getMessage());
+                if (isAdded()) {
+                    Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void showAddCourtTypeBottomSheet() {
@@ -70,8 +111,37 @@ public class CourtTypeManagementFragment extends Fragment {
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnSave.setOnClickListener(v -> {
-            // Handle save logic
-            bottomSheetDialog.dismiss();
+            String name = sheetBinding.etTypeName.getText().toString().trim();
+
+            if (name.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập tên loại sân", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Create model with null or default duration if API requires it
+            CourtTypeModel newType = new CourtTypeModel();
+            newType.setName(name);
+            // newType.setDuration(0); // Optional: set a default if needed
+
+            ApiClient.getApiService().createCourtType(newType).enqueue(new Callback<CourtTypeModel>() {
+                @Override
+                public void onResponse(Call<CourtTypeModel> call, Response<CourtTypeModel> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Thêm loại sân thành công!", Toast.LENGTH_SHORT).show();
+                        loadCourtTypesFromServer(); // Tải lại danh sách
+                        bottomSheetDialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi từ Server: " + response.code(), Toast.LENGTH_SHORT).show();
+                        Log.e("API_ERROR", "Create failed: " + response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<CourtTypeModel> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                    Log.e("API_ERROR", t.getMessage());
+                }
+            });
         });
 
         bottomSheetDialog.show();
@@ -84,6 +154,13 @@ public class CourtTypeManagementFragment extends Fragment {
 
         sheetBinding.tvTypeId.setText(courtType.getId());
         sheetBinding.etTypeName.setText(courtType.getName());
+        
+        // Hide or remove duration from update as well if requested, 
+        // but user specifically said "khi tạo mới" (when creating new).
+        // For now, I'll keep it in update unless specified otherwise.
+        if (courtType.getDuration() != null) {
+            sheetBinding.etDuration.setText(String.valueOf(courtType.getDuration()));
+        }
 
         updateStatusUI(sheetBinding, courtType.getStatus());
 
@@ -93,6 +170,7 @@ public class CourtTypeManagementFragment extends Fragment {
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnSave.setOnClickListener(v -> {
+            // TODO: Implement update API call
             bottomSheetDialog.dismiss();
         });
 
