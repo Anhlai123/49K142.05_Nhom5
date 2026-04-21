@@ -1,9 +1,11 @@
 package com.example.nhom5.price;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -11,18 +13,26 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
+import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.BottomSheetConfirmDeletePriceBinding;
 import com.example.nhom5.databinding.BottomSheetPriceDetailsBinding;
 import com.example.nhom5.databinding.FragmentPriceManagementBinding;
+import com.example.nhom5.models.PriceTableModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PriceManagementFragment extends Fragment {
 
     private FragmentPriceManagementBinding binding;
     private PriceAdapter adapter;
+    private List<PriceRecord> displayList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -36,6 +46,7 @@ public class PriceManagementFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupRecyclerView();
+        loadPriceData(); // Gọi API thay vì dùng dữ liệu mẫu
 
         binding.fabAdd.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_priceManagementFragment_to_addPriceFragment);
@@ -43,12 +54,7 @@ public class PriceManagementFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        List<PriceRecord> priceList = new ArrayList<>();
-        priceList.add(new PriceRecord("BG001", "Sân Bóng đá - Tiêu chuẩn", "Sân bóng đá", "2026-01-01 ~ Vô thời hạn", "250.000đ - 300.000đ", Arrays.asList("T2", "T3", "T4", "T5", "T6", "T7", "CN"), "2 khung giờ"));
-        priceList.add(new PriceRecord("BG002", "Sân bóng đá - Cuối tuần", "Sân bóng đá", "2026-01-01 ~ Vô thời hạn", "250.000đ", Arrays.asList("T7", "CN"), "1 khung giờ"));
-        priceList.add(new PriceRecord("BG003", "Sân Cầu lông - Tiêu chuẩn", "Sân Cầu lông", "2026-01-01 ~ Vô thời hạn", "200.000đ - 250.000đ", Arrays.asList("T2", "T3", "T4", "T5", "T6", "T7", "CN"), "1 khung giờ"));
-
-        adapter = new PriceAdapter(priceList, new PriceAdapter.OnPriceActionListener() {
+        adapter = new PriceAdapter(displayList, new PriceAdapter.OnPriceActionListener() {
             @Override
             public void onView(PriceRecord price) {
                 showPriceDetailsBottomSheet(price);
@@ -68,6 +74,55 @@ public class PriceManagementFragment extends Fragment {
         binding.rvPrices.setAdapter(adapter);
     }
 
+    private void loadPriceData() {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        
+        ApiClient.getApiService().getPriceTables().enqueue(new Callback<List<PriceTableModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<PriceTableModel>> call, @NonNull Response<List<PriceTableModel>> response) {
+                if (!isAdded()) return;
+                binding.progressBar.setVisibility(View.GONE);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    convertToPriceRecords(response.body());
+                } else {
+                    Toast.makeText(getContext(), "Không thể tải bảng giá", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<PriceTableModel>> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void convertToPriceRecords(List<PriceTableModel> apiData) {
+        displayList.clear();
+        for (PriceTableModel item : apiData) {
+            // Chuyển đổi từ Model API sang Model hiển thị của Adapter
+            PriceRecord record = new PriceRecord(
+                    String.valueOf(item.getId()),
+                    item.getName(),
+                    "Loại sân", // Bạn có thể bổ sung trường này vào API nếu cần
+                    "2026-01-01 ~ Vô thời hạn",
+                    "0đ",
+                    Arrays.asList("T2", "T3", "T4", "T5", "T6", "T7", "CN"),
+                    "Đang cập nhật"
+            );
+            displayList.add(record);
+        }
+        adapter.notifyDataSetChanged();
+        
+        if (displayList.isEmpty()) {
+            binding.tvEmpty.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvEmpty.setVisibility(View.GONE);
+        }
+    }
+
     private void showPriceDetailsBottomSheet(PriceRecord price) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
         BottomSheetPriceDetailsBinding sheetBinding = BottomSheetPriceDetailsBinding.inflate(getLayoutInflater());
@@ -76,20 +131,25 @@ public class PriceManagementFragment extends Fragment {
         sheetBinding.tvPriceId.setText(price.getId());
         sheetBinding.tvPriceName.setText(price.getTitle());
         sheetBinding.tvCourtType.setText(price.getCourtType());
-        String[] dateParts = price.getDateRange().split(" ~ ");
-        sheetBinding.tvStartDate.setText(dateParts.length > 0 ? dateParts[0] : "");
-        sheetBinding.tvEndDate.setText(dateParts.length > 1 ? dateParts[1] : "Vô thời hạn");
+        
+        String range = price.getDateRange();
+        if (range.contains(" ~ ")) {
+            String[] dateParts = range.split(" ~ ");
+            sheetBinding.tvStartDate.setText(dateParts[0]);
+            sheetBinding.tvEndDate.setText(dateParts[1]);
+        }
 
         List<String> activeDays = price.getActiveDays();
         int dayCount = sheetBinding.layoutDays.getChildCount();
         for (int i = 0; i < dayCount; i++) {
-            android.widget.TextView dayView = (android.widget.TextView) sheetBinding.layoutDays.getChildAt(i);
-            String dayLabel = dayView.getText().toString();
-            setDayState(dayView, activeDays.contains(dayLabel));
+            if (sheetBinding.layoutDays.getChildAt(i) instanceof android.widget.TextView) {
+                android.widget.TextView dayView = (android.widget.TextView) sheetBinding.layoutDays.getChildAt(i);
+                String dayLabel = dayView.getText().toString();
+                setDayState(dayView, activeDays.contains(dayLabel));
+            }
         }
 
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
-
         bottomSheetDialog.show();
     }
 
@@ -106,11 +166,29 @@ public class PriceManagementFragment extends Fragment {
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnConfirm.setOnClickListener(v -> {
-            // Handle actual deletion here
-            bottomSheetDialog.dismiss();
+            deletePriceTable(Integer.parseInt(price.getId()), bottomSheetDialog);
         });
 
         bottomSheetDialog.show();
+    }
+
+    private void deletePriceTable(int id, BottomSheetDialog dialog) {
+        ApiClient.getApiService().deletePriceTable(id).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Xóa thành công", Toast.LENGTH_SHORT).show();
+                    loadPriceData(); // Tải lại danh sách
+                }
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Toast.makeText(getContext(), "Lỗi xóa: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }
+        });
     }
 
     @Override

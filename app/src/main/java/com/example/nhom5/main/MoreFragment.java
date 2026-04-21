@@ -1,5 +1,7 @@
 package com.example.nhom5.main;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +29,57 @@ public class MoreFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Setup click listeners for menu items
+        displayUserInfo();
+        setupMenuVisibility();
+        setupActions();
+    }
+
+    private void displayUserInfo() {
+        if (getContext() == null) return;
+        SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String fullName = pref.getString("fullName", "Người dùng");
+        String role = pref.getString("role", "customer");
+        String username = pref.getString("username", "");
+
+        if (binding.tvUserName != null) binding.tvUserName.setText(fullName);
+        if (binding.tvUserRole != null) {
+            String roleDisplay = "Khách hàng";
+            // Ưu tiên username admin
+            if ("admin".equalsIgnoreCase(username) || "admin".equalsIgnoreCase(role)) roleDisplay = "Quản trị viên";
+            else if ("staff".equalsIgnoreCase(role)) roleDisplay = "Nhân viên";
+            
+            binding.tvUserRole.setText(roleDisplay);
+        }
+    }
+
+    private void setupMenuVisibility() {
+        if (getContext() == null) return;
+        SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String role = pref.getString("role", "customer");
+        String username = pref.getString("username", "");
+
+        // ĐỒNG BỘ LOGIC: Nếu username là admin HOẶC role là admin/staff thì là Manager
+        boolean isManager = "admin".equalsIgnoreCase(username.trim()) 
+                         || "admin".equalsIgnoreCase(role.trim()) 
+                         || "staff".equalsIgnoreCase(role.trim())
+                         || "1".equals(role.trim());
+
+        if (isManager) {
+            binding.btnManageCourts.setVisibility(View.VISIBLE);
+            binding.btnManageCourtTypes.setVisibility(View.VISIBLE);
+            binding.btnManagePrices.setVisibility(View.VISIBLE);
+        } else {
+            binding.btnManageCourts.setVisibility(View.GONE);
+            binding.btnManageCourtTypes.setVisibility(View.GONE);
+            binding.btnManagePrices.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupActions() {
+        binding.btnMyProfile.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_navigation_more_to_profileFragment);
+        });
+
         binding.btnManageCourts.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_navigation_more_to_courtManagementFragment);
         });
@@ -40,11 +92,22 @@ public class MoreFragment extends Fragment {
             Navigation.findNavController(v).navigate(R.id.action_navigation_more_to_priceManagementFragment);
         });
 
-        // Logout listener
-        binding.btnLogout.setOnClickListener(v -> {
-            // Navigate back to login screen and clear backstack
-            Navigation.findNavController(v).navigate(R.id.loginFragment);
-        });
+        binding.btnLogout.setOnClickListener(v -> logout());
+    }
+
+    private void logout() {
+        SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        pref.edit().clear().commit();
+        if (getView() != null) {
+            Navigation.findNavController(getView()).navigate(R.id.loginFragment);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        displayUserInfo();
+        setupMenuVisibility();
     }
 
     @Override
