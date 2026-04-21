@@ -72,4 +72,12 @@
         <item name="android:background">@drawable/bg_day_pill_active</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <!-- Custom Theme for DatePickerDialog -->
+    <style name="DatePickerTheme" parent="Theme.Material3.Light.Dialog">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorAccent">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:textColorPrimaryInverse">@color/white</item>
+    </style>
 </resources>

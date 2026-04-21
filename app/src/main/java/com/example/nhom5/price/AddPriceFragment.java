@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,9 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
-import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.FragmentAddPriceBinding;
-import com.example.nhom5.models.PriceTableModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
@@ -34,10 +31,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class AddPriceFragment extends Fragment {
 
@@ -71,42 +64,9 @@ public class AddPriceFragment extends Fragment {
 
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        
-        binding.btnSave.setOnClickListener(v -> savePriceTable());
-        
+        binding.btnSave.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnAddFrame.setOnClickListener(v -> {
-            // Logic cho khung giờ bổ sung
-        });
-    }
-
-    private void savePriceTable() {
-        String name = binding.etPriceName.getText().toString().trim();
-        if (name.isEmpty()) {
-            Toast.makeText(getContext(), "Vui lòng nhập tên bảng giá", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        PriceTableModel priceTable = new PriceTableModel();
-        priceTable.setName(name);
-
-        binding.btnSave.setEnabled(false);
-        ApiClient.getApiService().createPriceTable(priceTable).enqueue(new Callback<PriceTableModel>() {
-            @Override
-            public void onResponse(@NonNull Call<PriceTableModel> call, @NonNull Response<PriceTableModel> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Thêm bảng giá thành công", Toast.LENGTH_SHORT).show();
-                    Navigation.findNavController(requireView()).navigateUp();
-                } else {
-                    binding.btnSave.setEnabled(true);
-                    Toast.makeText(getContext(), "Lỗi khi thêm bảng giá", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<PriceTableModel> call, @NonNull Throwable t) {
-                binding.btnSave.setEnabled(true);
-                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+            // Giữ nguyên hành vi hiện tại, chỉ làm form dễ nhập hơn.
         });
     }
 
@@ -127,7 +87,11 @@ public class AddPriceFragment extends Fragment {
         styleScopePill(binding.btnScopeSpecific, !allCourts);
         binding.layoutSpecificCourts.setVisibility(allCourts ? View.GONE : View.VISIBLE);
         if (!allCourts) {
-            populateCourtChips(currentCourtType);
+            if (selectedCourts.isEmpty()) {
+                populateCourtChips(currentCourtType);
+            } else {
+                populateCourtChips(currentCourtType);
+            }
         }
     }
 
@@ -165,7 +129,11 @@ public class AddPriceFragment extends Fragment {
         List<String> courts = courtOptions.get(courtType);
         if (courts == null) courts = new ArrayList<>();
         selectedCourts.retainAll(courts);
-        
+        if (courts == null || courts.isEmpty()) {
+            binding.tvSelectedCourtsSummary.setText(getString(R.string.no_courts_to_choose));
+            return;
+        }
+
         for (String court : courts) {
             MaterialButton chip = new MaterialButton(requireContext());
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -206,9 +174,9 @@ public class AddPriceFragment extends Fragment {
 
     private void updateCourtSummary() {
         if (selectedCourts.isEmpty()) {
-            binding.tvSelectedCourtsSummary.setText("Chưa chọn sân cụ thể");
+            binding.tvSelectedCourtsSummary.setText(getString(R.string.no_courts_selected));
         } else {
-            binding.tvSelectedCourtsSummary.setText("Sân đã chọn: " + TextUtils.join(", ", selectedCourts));
+            binding.tvSelectedCourtsSummary.setText(getString(R.string.selected_courts_summary, TextUtils.join(", ", selectedCourts)));
         }
     }
 

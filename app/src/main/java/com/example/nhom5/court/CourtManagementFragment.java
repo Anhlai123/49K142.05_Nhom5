@@ -2,28 +2,39 @@ package com.example.nhom5.court;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
+import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.BottomSheetAddCourtBinding;
 import com.example.nhom5.databinding.BottomSheetConfirmDeleteCourtBinding;
+import com.example.nhom5.databinding.BottomSheetSelectCourtTypeBinding;
 import com.example.nhom5.databinding.BottomSheetUpdateCourtBinding;
 import com.example.nhom5.databinding.FragmentCourtManagementBinding;
+import com.example.nhom5.models.CourtTypeModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CourtManagementFragment extends Fragment {
 
     private FragmentCourtManagementBinding binding;
     private CourtAdapter adapter;
+    private CourtTypeModel selectedCourtType;
+    private String selectedStatus;
 
     @Nullable
     @Override
@@ -46,14 +57,77 @@ public class CourtManagementFragment extends Fragment {
         BottomSheetAddCourtBinding sheetBinding = BottomSheetAddCourtBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
+        selectedCourtType = null;
+
+        sheetBinding.btnSelectType.setOnClickListener(v -> showSelectCourtTypeBottomSheet(sheetBinding));
+
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnSave.setOnClickListener(v -> {
-            // Handle save logic
-            bottomSheetDialog.dismiss();
+            String courtName = sheetBinding.etCourtName.getText().toString().trim();
+            if (courtName.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập tên sân", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (selectedCourtType == null) {
+                Toast.makeText(getContext(), "Vui lòng chọn loại sân", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Court newCourt = new Court(courtName, selectedCourtType.getId(), "READY");
+            
+            ApiClient.getApiService().createCourt(newCourt).enqueue(new Callback<Court>() {
+                @Override
+                public void onResponse(Call<Court> call, Response<Court> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Thêm sân thành công!", Toast.LENGTH_SHORT).show();
+                        loadCourtsFromServer();
+                        bottomSheetDialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Court> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                    Log.e("API_ERROR", t.getMessage());
+                }
+            });
         });
 
         bottomSheetDialog.show();
+    }
+
+    private void showSelectCourtTypeBottomSheet(BottomSheetAddCourtBinding addCourtBinding) {
+        BottomSheetDialog selectDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
+        BottomSheetSelectCourtTypeBinding selectBinding = BottomSheetSelectCourtTypeBinding.inflate(getLayoutInflater());
+        selectDialog.setContentView(selectBinding.getRoot());
+
+        selectBinding.btnClose.setOnClickListener(v -> selectDialog.dismiss());
+
+        ApiClient.getApiService().getCourtTypes().enqueue(new Callback<List<CourtTypeModel>>() {
+            @Override
+            public void onResponse(Call<List<CourtTypeModel>> call, Response<List<CourtTypeModel>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    CourtTypeSelectionAdapter selectionAdapter = new CourtTypeSelectionAdapter(response.body(), item -> {
+                        selectedCourtType = item;
+                        addCourtBinding.tvSelectedType.setText(item.getName());
+                        addCourtBinding.tvSelectedType.setTextColor(Color.BLACK);
+                        selectDialog.dismiss();
+                    });
+                    selectBinding.rvCourtTypes.setLayoutManager(new LinearLayoutManager(getContext()));
+                    selectBinding.rvCourtTypes.setAdapter(selectionAdapter);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<CourtTypeModel>> call, Throwable t) {
+                Toast.makeText(getContext(), "Không thể tải danh sách loại sân", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        selectDialog.show();
     }
 
     private void showUpdateCourtBottomSheet(Court court) {
@@ -61,23 +135,56 @@ public class CourtManagementFragment extends Fragment {
         BottomSheetUpdateCourtBinding sheetBinding = BottomSheetUpdateCourtBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
-        // Fill data
-        sheetBinding.tvCourtId.setText(court.getId());
+        sheetBinding.tvCourtId.setText(String.valueOf(court.getId()));
         sheetBinding.etCourtName.setText(court.getName());
         sheetBinding.tvSelectedType.setText(court.getType());
 
-        // Initialize status selection
-        updateStatusUI(sheetBinding, court.getStatus());
+        selectedStatus = court.getStatus();
+        updateStatusUI(sheetBinding, selectedStatus);
 
-        sheetBinding.statusAvailable.setOnClickListener(v -> updateStatusUI(sheetBinding, "Sẵn sàng"));
-        sheetBinding.statusMaintenance.setOnClickListener(v -> updateStatusUI(sheetBinding, "Đang bảo trì"));
-        sheetBinding.statusInactive.setOnClickListener(v -> updateStatusUI(sheetBinding, "Ngừng sử dụng"));
+        sheetBinding.statusAvailable.setOnClickListener(v -> {
+            selectedStatus = "READY";
+            updateStatusUI(sheetBinding, "Sẵn sàng");
+        });
+        sheetBinding.statusMaintenance.setOnClickListener(v -> {
+            selectedStatus = "MAINTENANCE";
+            updateStatusUI(sheetBinding, "Đang bảo trì");
+        });
+        sheetBinding.statusInactive.setOnClickListener(v -> {
+            selectedStatus = "INACTIVE";
+            updateStatusUI(sheetBinding, "Ngừng sử dụng");
+        });
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnSave.setOnClickListener(v -> {
-            // Handle update logic
-            bottomSheetDialog.dismiss();
+            String newName = sheetBinding.etCourtName.getText().toString().trim();
+            if (newName.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập tên sân", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Court updatedCourt = new Court();
+            updatedCourt.setName(newName);
+            updatedCourt.setStatus(selectedStatus);
+
+            ApiClient.getApiService().updateCourt(court.getId(), updatedCourt).enqueue(new Callback<Court>() {
+                @Override
+                public void onResponse(Call<Court> call, Response<Court> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                        loadCourtsFromServer();
+                        bottomSheetDialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi cập nhật: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Court> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         bottomSheetDialog.show();
@@ -92,59 +199,76 @@ public class CourtManagementFragment extends Fragment {
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnConfirm.setOnClickListener(v -> {
-            // Handle delete logic
-            bottomSheetDialog.dismiss();
+            ApiClient.getApiService().deleteCourt(court.getId()).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(getContext(), "Xóa sân thành công!", Toast.LENGTH_SHORT).show();
+                        loadCourtsFromServer();
+                        bottomSheetDialog.dismiss();
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         bottomSheetDialog.show();
     }
 
     private void updateStatusUI(BottomSheetUpdateCourtBinding sheetBinding, String status) {
-        // Reset all to inactive style
         sheetBinding.statusAvailable.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusAvailable.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusAvailable.setTextColor(Color.parseColor("#757575"));
         
         sheetBinding.statusMaintenance.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusMaintenance.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusMaintenance.setTextColor(Color.parseColor("#757575"));
         
         sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_inactive);
-        sheetBinding.statusInactive.setTextColor(Color.parseColor("#212121"));
+        sheetBinding.statusInactive.setTextColor(Color.parseColor("#757575"));
 
-        // Set active style for selected status
-        int activeColor = ContextCompat.getColor(requireContext(), R.color.primary);
-        if ("Sẵn sàng".equals(status)) {
+        if ("Sẵn sàng".equals(status) || "READY".equals(status)) {
             sheetBinding.statusAvailable.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusAvailable.setTextColor(activeColor);
-        } else if ("Đang bảo trì".equals(status)) {
+            sheetBinding.statusAvailable.setTextColor(Color.WHITE);
+        } else if ("Đang bảo trì".equals(status) || "MAINTENANCE".equals(status)) {
             sheetBinding.statusMaintenance.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusMaintenance.setTextColor(activeColor);
-        } else if ("Ngừng sử dụng".equals(status) || "Ngừng hoạt động".equals(status)) {
+            sheetBinding.statusMaintenance.setTextColor(Color.WHITE);
+        } else if ("Ngừng sử dụng".equals(status) || "INACTIVE".equals(status) || "Ngừng hoạt động".equals(status)) {
             sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_active);
-            sheetBinding.statusInactive.setTextColor(activeColor);
+            sheetBinding.statusInactive.setTextColor(Color.WHITE);
         }
     }
 
     private void setupRecyclerView() {
-        List<Court> courtList = new ArrayList<>();
-        courtList.add(new Court("SAN001", "Sân B1", "Sân bóng đá", "Sẵn sàng"));
-        courtList.add(new Court("SAN002", "Sân B2", "Sân bóng đá", "Sẵn sàng"));
-        courtList.add(new Court("SAN003", "Sân C1", "Sân cầu lông", "Đang bảo trì"));
-        courtList.add(new Court("SAN004", "Sân C2", "Sân cầu lông", "Sẵn sàng"));
-        courtList.add(new Court("SAN005", "Sân C3", "Sân cầu lông", "Ngừng sử dụng"));
-
-        adapter = new CourtAdapter(courtList, new CourtAdapter.OnCourtActionListener() {
+        adapter = new CourtAdapter(new ArrayList<>(), new CourtAdapter.OnCourtActionListener() {
             @Override
-            public void onEdit(Court court) {
-                showUpdateCourtBottomSheet(court);
-            }
-
+            public void onEdit(Court court) { showUpdateCourtBottomSheet(court); }
             @Override
-            public void onDelete(Court court) {
-                showDeleteConfirmBottomSheet(court);
-            }
+            public void onDelete(Court court) { showDeleteConfirmBottomSheet(court); }
         });
         binding.rvCourts.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvCourts.setAdapter(adapter);
+        loadCourtsFromServer();
+    }
+
+    private void loadCourtsFromServer() {
+        ApiClient.getApiService().getCourts().enqueue(new Callback<List<Court>>() {
+            @Override
+            public void onResponse(Call<List<Court>> call, Response<List<Court>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    adapter.updateData(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Court>> call, Throwable t) {
+                Log.e("API_ERROR", "Không thể lấy danh sách sân: " + t.getMessage());
+            }
+        });
     }
 
     @Override
