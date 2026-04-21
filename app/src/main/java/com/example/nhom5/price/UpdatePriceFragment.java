@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +20,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
+import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.FragmentUpdatePriceBinding;
+import com.example.nhom5.models.PriceTableModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
@@ -32,6 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class UpdatePriceFragment extends Fragment {
 
     private static final String[] DAY_KEYS = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
@@ -42,6 +49,7 @@ public class UpdatePriceFragment extends Fragment {
     private final LinkedHashMap<String, List<String>> courtOptions = new LinkedHashMap<>();
     private String currentCourtType = "Sân cầu lông";
     private boolean allCourtsSelected = true;
+    private int priceTableId = -1; // Cần ID để cập nhật
 
     @Nullable
     @Override
@@ -53,6 +61,12 @@ public class UpdatePriceFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        // Giả sử ID được truyền qua Arguments (bạn cần cập nhật adapter để gửi ID này)
+        if (getArguments() != null) {
+            priceTableId = getArguments().getInt("priceId", -1);
+        }
+
         initCourtOptions();
         setupScopeSelection();
         setupCourtTypePicker();
@@ -65,8 +79,45 @@ public class UpdatePriceFragment extends Fragment {
 
         binding.btnClose.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        binding.btnSave.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        
+        binding.btnSave.setOnClickListener(v -> updatePriceTable());
+        
         binding.btnAddFrame.setOnClickListener(v -> {
+        });
+    }
+
+    private void updatePriceTable() {
+        String name = binding.etPriceName.getText().toString().trim();
+        if (name.isEmpty()) {
+            Toast.makeText(getContext(), "Vui lòng nhập tên bảng giá", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        PriceTableModel priceTable = new PriceTableModel();
+        priceTable.setName(name);
+
+        binding.btnSave.setEnabled(false);
+        
+        // Nếu không có ID thực tế từ navigation, ta dùng một ID mặc định để demo (bạn nên fix adapter để truyền ID)
+        int idToUpdate = priceTableId != -1 ? priceTableId : 1; 
+
+        ApiClient.getApiService().updatePriceTable(idToUpdate, priceTable).enqueue(new Callback<PriceTableModel>() {
+            @Override
+            public void onResponse(@NonNull Call<PriceTableModel> call, @NonNull Response<PriceTableModel> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                } else {
+                    binding.btnSave.setEnabled(true);
+                    Toast.makeText(getContext(), "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PriceTableModel> call, @NonNull Throwable t) {
+                binding.btnSave.setEnabled(true);
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -77,10 +128,10 @@ public class UpdatePriceFragment extends Fragment {
     }
 
     private void initializeFormValues() {
-        binding.etStartDate.setText(getString(R.string.default_start_date));
-        binding.etEndDate.setText(getString(R.string.default_end_date));
-        binding.etStartTime.setText(getString(R.string.default_start_time));
-        binding.etEndTime.setText(getString(R.string.default_end_time));
+        binding.etStartDate.setText("01/01/2024");
+        binding.etEndDate.setText("31/12/2024");
+        binding.etStartTime.setText("05:00");
+        binding.etEndTime.setText("22:00");
         selectedDays.clear();
         refreshDayStates();
     }
@@ -134,10 +185,6 @@ public class UpdatePriceFragment extends Fragment {
         List<String> courts = courtOptions.get(courtType);
         if (courts == null) courts = new ArrayList<>();
         selectedCourts.retainAll(courts);
-        if (courts == null || courts.isEmpty()) {
-            binding.tvSelectedCourtsSummary.setText(getString(R.string.no_courts_to_choose));
-            return;
-        }
 
         for (String court : courts) {
             MaterialButton chip = new MaterialButton(requireContext());
@@ -179,9 +226,9 @@ public class UpdatePriceFragment extends Fragment {
 
     private void updateCourtSummary() {
         if (selectedCourts.isEmpty()) {
-            binding.tvSelectedCourtsSummary.setText(getString(R.string.no_courts_selected));
+            binding.tvSelectedCourtsSummary.setText("Chưa chọn sân");
         } else {
-            binding.tvSelectedCourtsSummary.setText(getString(R.string.selected_courts_summary, TextUtils.join(", ", selectedCourts)));
+            binding.tvSelectedCourtsSummary.setText("Sân đã chọn: " + TextUtils.join(", ", selectedCourts));
         }
     }
 

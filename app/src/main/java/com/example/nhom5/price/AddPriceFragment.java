@@ -4,14 +4,12 @@ import android.app.TimePickerDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,27 +19,18 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
-import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.FragmentAddPriceBinding;
-import com.example.nhom5.models.CourtTypeModel;
-import com.example.nhom5.models.PriceTableModel;
-import com.example.nhom5.models.PriceTableTimeSlotModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class AddPriceFragment extends Fragment {
 
@@ -51,10 +40,6 @@ public class AddPriceFragment extends Fragment {
     private final Set<String> selectedDays = new LinkedHashSet<>();
     private final Set<String> selectedCourts = new LinkedHashSet<>();
     private final LinkedHashMap<String, List<String>> courtOptions = new LinkedHashMap<>();
-    
-    private List<CourtTypeModel> courtTypeList = new ArrayList<>();
-    private CourtTypeModel selectedCourtTypeModel;
-    
     private String currentCourtType = "Sân cầu lông";
     private boolean allCourtsSelected = true;
 
@@ -77,115 +62,11 @@ public class AddPriceFragment extends Fragment {
         updateScopeUi(true);
         updateCourtTypeLabel(currentCourtType);
 
-        loadCourtTypes();
-
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        binding.btnSave.setOnClickListener(v -> savePriceTable());
+        binding.btnSave.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnAddFrame.setOnClickListener(v -> {
             // Giữ nguyên hành vi hiện tại, chỉ làm form dễ nhập hơn.
-        });
-    }
-
-    private void loadCourtTypes() {
-        ApiClient.getApiService().getCourtTypes().enqueue(new Callback<List<CourtTypeModel>>() {
-            @Override
-            public void onResponse(Call<List<CourtTypeModel>> call, Response<List<CourtTypeModel>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    courtTypeList = response.body();
-                    if (!courtTypeList.isEmpty()) {
-                        selectedCourtTypeModel = courtTypeList.get(0);
-                        currentCourtType = selectedCourtTypeModel.getName();
-                        updateCourtTypeLabel(currentCourtType);
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<CourtTypeModel>> call, Throwable t) {
-                Log.e("API_ERROR", "Load court types failed: " + t.getMessage());
-            }
-        });
-    }
-
-    private void savePriceTable() {
-        String name = binding.etPriceName.getText().toString().trim();
-        String startDateStr = binding.etStartDate.getText().toString().trim();
-        
-        if (name.isEmpty() || startDateStr.isEmpty() || selectedCourtTypeModel == null) {
-            Toast.makeText(getContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // 1. Create Price Table
-        PriceTableModel priceTable = new PriceTableModel();
-        priceTable.setPriceTableName(name);
-        priceTable.setCourtType(selectedCourtTypeModel.getId());
-        priceTable.setApplyScope(allCourtsSelected ? "ALL" : "SPECIFIC");
-        
-        // Convert dd/MM/yyyy to yyyy-MM-dd for Django
-        try {
-            SimpleDateFormat inFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            SimpleDateFormat outFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date date = inFormat.parse(startDateStr);
-            priceTable.setEffectiveDate(outFormat.format(date));
-        } catch (Exception e) {
-            priceTable.setEffectiveDate(startDateStr);
-        }
-
-        ApiClient.getApiService().createPriceTable(priceTable).enqueue(new Callback<PriceTableModel>() {
-            @Override
-            public void onResponse(Call<PriceTableModel> call, Response<PriceTableModel> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    int priceTableId = response.body().getId();
-                    saveTimeSlot(priceTableId);
-                } else {
-                    Toast.makeText(getContext(), "Lỗi tạo bảng giá: " + response.code(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<PriceTableModel> call, Throwable t) {
-                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void saveTimeSlot(int priceTableId) {
-        String startTime = binding.etStartTime.getText().toString().trim();
-        String endTime = binding.etEndTime.getText().toString().trim();
-        String priceStr = binding.etPrice.getText().toString().trim();
-
-        if (startTime.isEmpty() || endTime.isEmpty() || priceStr.isEmpty()) {
-            Toast.makeText(getContext(), "Bảng giá đã tạo, nhưng thiếu thông tin khung giờ", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(binding.getRoot()).navigateUp();
-            return;
-        }
-
-        PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
-        slot.setPriceTable(priceTableId);
-        slot.setStartTime(startTime);
-        slot.setEndTime(endTime);
-        slot.setUnitPrice(priceStr);
-        slot.setOrder(1);
-
-        ApiClient.getApiService().createPriceTableTimeSlot(slot).enqueue(new Callback<PriceTableTimeSlotModel>() {
-            @Override
-            public void onResponse(Call<PriceTableTimeSlotModel> call, Response<PriceTableTimeSlotModel> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Thêm bảng giá thành công", Toast.LENGTH_SHORT).show();
-                    Navigation.findNavController(binding.getRoot()).navigateUp();
-                } else {
-                    Toast.makeText(getContext(), "Lỗi tạo khung giờ", Toast.LENGTH_SHORT).show();
-                    Navigation.findNavController(binding.getRoot()).navigateUp();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<PriceTableTimeSlotModel> call, Throwable t) {
-                Toast.makeText(getContext(), "Lỗi kết nối khi tạo khung giờ", Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(binding.getRoot()).navigateUp();
-            }
         });
     }
 
@@ -221,31 +102,12 @@ public class AddPriceFragment extends Fragment {
 
     private void setupCourtTypePicker() {
         binding.btnSelectCourtType.setOnClickListener(v -> {
-            if (courtTypeList.isEmpty()) {
-                Toast.makeText(getContext(), "Đang tải dữ liệu loại sân...", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            
-            String[] typeNames = new String[courtTypeList.size()];
-            for (int i = 0; i < courtTypeList.size(); i++) {
-                typeNames[i] = courtTypeList.get(i).getName();
-            }
-            
-            int checkedItem = 0;
-            if (selectedCourtTypeModel != null) {
-                for (int i = 0; i < courtTypeList.size(); i++) {
-                    if (courtTypeList.get(i).getId().equals(selectedCourtTypeModel.getId())) {
-                        checkedItem = i;
-                        break;
-                    }
-                }
-            }
-
+            List<String> types = new ArrayList<>(courtOptions.keySet());
+            int checkedItem = Math.max(0, types.indexOf(currentCourtType));
             new AlertDialog.Builder(requireContext())
                     .setTitle("Chọn loại sân")
-                    .setSingleChoiceItems(typeNames, checkedItem, (dialog, which) -> {
-                        selectedCourtTypeModel = courtTypeList.get(which);
-                        currentCourtType = selectedCourtTypeModel.getName();
+                    .setSingleChoiceItems(types.toArray(new String[0]), checkedItem, (dialog, which) -> {
+                        currentCourtType = types.get(which);
                         updateCourtTypeLabel(currentCourtType);
                         selectedCourts.clear();
                         if (!allCourtsSelected) {

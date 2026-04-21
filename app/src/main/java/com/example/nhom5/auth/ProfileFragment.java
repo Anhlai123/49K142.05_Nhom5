@@ -49,8 +49,31 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        
+        // 1. Hiển thị thông tin từ máy ngay lập tức để người dùng thấy dữ liệu mới nhất
+        loadFromPrefs();
+        
+        // 2. Đồng bộ dữ liệu từ Server sau
         loadInitialData();
+        
         binding.btnSave.setOnClickListener(v -> saveChanges());
+    }
+
+    private void loadFromPrefs() {
+        if (getContext() == null) return;
+        SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        
+        String fullName = pref.getString("fullName", "");
+        String phone = pref.getString("phone", "");
+        String address = pref.getString("address", "");
+        String username = pref.getString("username", "");
+        String email = pref.getString("email", "");
+
+        if (!fullName.isEmpty()) binding.etFullName.setText(fullName);
+        if (!phone.isEmpty()) binding.etPhone.setText(phone);
+        if (!address.isEmpty()) binding.etAddress.setText(address);
+        if (!email.isEmpty()) binding.etEmail.setText(email);
+        if (!username.isEmpty()) binding.tvUsername.setText("@" + username);
     }
 
     private void loadInitialData() {
@@ -61,19 +84,22 @@ public class ProfileFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     UserDto user = response.body();
                     userEmail = user.getEmail();
-                    updateUI(user);
+                    
+                    // Chỉ cập nhật UI nếu dữ liệu từ server khác với những gì đang hiển thị (tránh bị reset ô nhập)
+                    if (binding.etFullName.getText().toString().isEmpty()) {
+                        updateUI(user);
+                    }
+                    
                     saveUserToPrefs(user);
                     findCustomerIdByEmail(userEmail);
                 } else {
                     setLoading(false);
-                    Toast.makeText(getContext(), "Không thể tải Profile", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<UserDto> call, @NonNull Throwable t) {
                 setLoading(false);
-                Toast.makeText(getContext(), "Lỗi kết nối Profile", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -110,6 +136,15 @@ public class ProfileFragment extends Fragment {
         }
 
         setLoading(true);
+        
+        // 3. LƯU VÀO MÁY NGAY LẬP TỨC (Optimistic Update)
+        UserDto tempUpdate = new UserDto();
+        tempUpdate.setFullName(fullName);
+        tempUpdate.setPhone(phone);
+        tempUpdate.setAddress(address);
+        tempUpdate.setEmail(email);
+        saveUserToPrefs(tempUpdate);
+
         CreateCustomerRequest customerReq = new CreateCustomerRequest(fullName, phone, email, address);
         
         if (customerId != -1) {
@@ -150,7 +185,6 @@ public class ProfileFragment extends Fragment {
                 UserDto finalUser = response.isSuccessful() && response.body() != null ? response.body() : userUpdate;
                 saveUserToPrefs(finalUser);
                 Toast.makeText(getContext(), "Đã lưu thay đổi thành công!", Toast.LENGTH_SHORT).show();
-                // Quay lại màn hình trước để thấy sự thay đổi
                 Navigation.findNavController(requireView()).navigateUp();
             }
 
@@ -171,7 +205,8 @@ public class ProfileFragment extends Fragment {
         if (user.getFullName() != null) editor.putString("fullName", user.getFullName());
         if (user.getPhone() != null) editor.putString("phone", user.getPhone());
         if (user.getAddress() != null) editor.putString("address", user.getAddress());
-        editor.commit(); // Dùng commit để lưu đồng bộ ngay lập tức
+        if (user.getEmail() != null) editor.putString("email", user.getEmail());
+        editor.commit(); // Ép buộc lưu ngay lập tức
     }
 
     private List<CustomerApiModel> parseCustomers(JsonElement root) {
@@ -186,6 +221,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void updateUI(UserDto user) {
+        if (binding == null) return;
         binding.etFullName.setText(user.getFullName());
         binding.etEmail.setText(user.getEmail());
         binding.etPhone.setText(user.getPhone());
