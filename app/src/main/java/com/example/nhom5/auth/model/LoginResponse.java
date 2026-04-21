@@ -24,4 +24,16 @@ public class LoginResponse {
     public void setUser(UserDto user) {
         this.user = user;
     }
+    @SerializedName("message")
+    private String message;
+    
+    @SerializedName("user")
+    private UserDto user;
+
+    @SerializedName("token")
+    private String token;
+
+    public String getMessage() { return message; }
+    public UserDto getUser() { return user; }
+    public String getToken() { return token; }
 }

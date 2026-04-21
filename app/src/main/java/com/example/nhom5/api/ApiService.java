@@ -18,6 +18,9 @@ import com.example.nhom5.models.PriceTableTimeSlotModel;
 import com.example.nhom5.models.OrderModel;
 import com.google.gson.JsonElement;
 import java.util.List;
+import com.google.gson.JsonElement;
+import java.util.List;
+import com.example.nhom5.Bill.OrderModel;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

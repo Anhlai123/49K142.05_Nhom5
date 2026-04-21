@@ -97,6 +97,31 @@
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/label_name" />
 
+    <!-- Thời lượng -->
+    <TextView
+        android:id="@+id/label_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Thời lượng (phút) *"
+        android:textColor="#212121"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/et_type_name" />
+
+    <EditText
+        android:id="@+id/et_duration"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="Nhập thời lượng"
+        android:inputType="number"
+        android:paddingHorizontal="16dp"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/label_duration" />
+
     <!-- Trạng thái -->
     <TextView
         android:id="@+id/label_status"
@@ -108,7 +133,7 @@
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_type_name" />
+        app:layout_constraintTop_toBottomOf="@id/et_duration" />
 
     <LinearLayout
         android:id="@+id/layout_status_selection"
@@ -127,7 +152,7 @@
             android:background="@drawable/bg_pill_active"
             android:gravity="center"
             android:text="Đang hoạt động"
-            android:textColor="@color/primary"
+            android:textColor="@color/white"
             android:textSize="13sp"
             android:textStyle="bold" />
 

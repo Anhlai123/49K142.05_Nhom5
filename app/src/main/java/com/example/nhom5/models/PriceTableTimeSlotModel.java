@@ -8,6 +8,10 @@ public class PriceTableTimeSlotModel {
 
     @SerializedName("price_table_id")
     private int priceTableId;
+    private Integer id;
+
+    @SerializedName("price_table")
+    private Integer priceTable;
 
     @SerializedName("start_time")
     private String startTime;
@@ -34,6 +38,28 @@ public class PriceTableTimeSlotModel {
 
     public void setPriceTableId(int priceTableId) {
         this.priceTableId = priceTableId;
+    @SerializedName("unit_price")
+    private String unitPrice;
+
+    @SerializedName("order")
+    private Integer order;
+
+    public PriceTableTimeSlotModel() {}
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getPriceTable() {
+        return priceTable;
+    }
+
+    public void setPriceTable(Integer priceTable) {
+        this.priceTable = priceTable;
     }
 
     public String getStartTime() {
@@ -58,5 +84,19 @@ public class PriceTableTimeSlotModel {
 
     public void setPrice(double price) {
         this.price = price;
+    public String getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(String unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Integer getOrder() {
+        return order;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
     }
 }

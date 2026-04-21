@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -51,10 +52,13 @@ public class PriceManagementFragment extends Fragment {
         binding.fabAdd.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_priceManagementFragment_to_addPriceFragment);
         });
+        
+        loadPriceTables();
     }
 
     private void setupRecyclerView() {
         adapter = new PriceAdapter(displayList, new PriceAdapter.OnPriceActionListener() {
+        adapter = new PriceAdapter(new ArrayList<>(), new PriceAdapter.OnPriceActionListener() {
             @Override
             public void onView(PriceRecord price) {
                 showPriceDetailsBottomSheet(price);
@@ -87,6 +91,24 @@ public class PriceManagementFragment extends Fragment {
                     convertToPriceRecords(response.body());
                 } else {
                     Toast.makeText(getContext(), "Không thể tải bảng giá", Toast.LENGTH_SHORT).show();
+    private void loadPriceTables() {
+        ApiClient.getApiService().getPriceTables().enqueue(new Callback<List<PriceTableModel>>() {
+            @Override
+            public void onResponse(Call<List<PriceTableModel>> call, Response<List<PriceTableModel>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<PriceRecord> records = new ArrayList<>();
+                    for (PriceTableModel model : response.body()) {
+                        records.add(new PriceRecord(
+                                String.valueOf(model.getId()),
+                                model.getPriceTableName(),
+                                model.getCourtTypeName(),
+                                model.getEffectiveDate() + " ~ Vô thời hạn",
+                                "Đang cập nhật...",
+                                Arrays.asList("T2", "T3", "T4", "T5", "T6", "T7", "CN"),
+                                "1 khung giờ"
+                        ));
+                    }
+                    adapter.updateData(records);
                 }
             }
 
@@ -121,6 +143,12 @@ public class PriceManagementFragment extends Fragment {
         } else {
             binding.tvEmpty.setVisibility(View.GONE);
         }
+    }
+
+            public void onFailure(Call<List<PriceTableModel>> call, Throwable t) {
+                Log.e("API_ERROR", "Load prices failed: " + t.getMessage());
+            }
+        });
     }
 
     private void showPriceDetailsBottomSheet(PriceRecord price) {
@@ -167,6 +195,28 @@ public class PriceManagementFragment extends Fragment {
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnConfirm.setOnClickListener(v -> {
             deletePriceTable(Integer.parseInt(price.getId()), bottomSheetDialog);
+            try {
+                int id = Integer.parseInt(price.getId());
+                ApiClient.getApiService().deletePriceTable(id).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(getContext(), "Xóa bảng giá thành công", Toast.LENGTH_SHORT).show();
+                            loadPriceTables();
+                            bottomSheetDialog.dismiss();
+                        } else {
+                            Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "ID không hợp lệ", Toast.LENGTH_SHORT).show();
+            }
         });
 
         bottomSheetDialog.show();

@@ -171,7 +171,7 @@
             android:background="@drawable/bg_pill_active"
             android:gravity="center"
             android:text="Sẵn sàng"
-            android:textColor="@color/primary"
+            android:textColor="@color/white"
             android:textSize="13sp"
             android:textStyle="bold" />
 

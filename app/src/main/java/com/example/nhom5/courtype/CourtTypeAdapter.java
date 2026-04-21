@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CourtTypeAdapter extends RecyclerView.Adapter<CourtTypeAdapter.CourtTypeViewHolder> {
 
-    private final List<CourtType> courtTypeList;
+    private List<CourtType> courtTypeList;
     private final OnCourtTypeActionListener listener;
 
     public interface OnCourtTypeActionListener {
@@ -43,6 +43,11 @@ public class CourtTypeAdapter extends RecyclerView.Adapter<CourtTypeAdapter.Cour
     @Override
     public int getItemCount() {
         return courtTypeList.size();
+    }
+
+    public void updateData(List<CourtType> newList) {
+        this.courtTypeList = newList;
+        notifyDataSetChanged();
     }
 
     static class CourtTypeViewHolder extends RecyclerView.ViewHolder {
