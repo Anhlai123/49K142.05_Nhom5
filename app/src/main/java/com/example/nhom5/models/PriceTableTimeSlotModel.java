@@ -4,11 +4,10 @@ import com.google.gson.annotations.SerializedName;
 
 public class PriceTableTimeSlotModel {
     @SerializedName("id")
-    private int id;
+    private Integer id;
 
     @SerializedName("price_table_id")
-    private int priceTableId;
-    private Integer id;
+    private Integer priceTableId;
 
     @SerializedName("price_table")
     private Integer priceTable;
@@ -22,22 +21,6 @@ public class PriceTableTimeSlotModel {
     @SerializedName("price")
     private double price;
 
-    public PriceTableTimeSlotModel() {}
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getPriceTableId() {
-        return priceTableId;
-    }
-
-    public void setPriceTableId(int priceTableId) {
-        this.priceTableId = priceTableId;
     @SerializedName("unit_price")
     private String unitPrice;
 
@@ -52,6 +35,14 @@ public class PriceTableTimeSlotModel {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getPriceTableId() {
+        return priceTableId;
+    }
+
+    public void setPriceTableId(Integer priceTableId) {
+        this.priceTableId = priceTableId;
     }
 
     public Integer getPriceTable() {
@@ -84,6 +75,8 @@ public class PriceTableTimeSlotModel {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
     public String getUnitPrice() {
         return unitPrice;
     }

@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://10.0.2.2:8000/";
     // Chạy trên Android Emulator: sử dụng http://10.0.2.2:8000/ (mặc định cho Django)
     private static final String BASE_URL = "http://10.0.2.2:8000/";
     private static final String TAG = "ApiClient";

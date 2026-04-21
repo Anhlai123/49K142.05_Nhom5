@@ -4,46 +4,19 @@ import com.google.gson.annotations.SerializedName;
 
 public class PriceTableCourtModel {
     @SerializedName("id")
-    private int id;
-
-    @SerializedName("price_table_id")
-    private int priceTableId;
-
-    @SerializedName("court_id")
-    private int courtId;
-
-    public PriceTableCourtModel() {}
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getPriceTableId() {
-        return priceTableId;
-    }
-
-    public void setPriceTableId(int priceTableId) {
-        this.priceTableId = priceTableId;
-    }
-
-    public int getCourtId() {
-        return courtId;
-    }
-
-    public void setCourtId(int courtId) {
-        this.courtId = courtId;
-    }
     private Integer id;
 
-    @SerializedName("price_table")
+    @SerializedName("price_table_id")
     private Integer priceTableId;
 
-    @SerializedName("court")
+    @SerializedName("court_id")
     private Integer courtId;
+
+    @SerializedName("price_table")
+    private Integer priceTable;
+
+    @SerializedName("court")
+    private Integer court;
 
     @SerializedName("court_name")
     private String courtName;
@@ -80,6 +53,22 @@ public class PriceTableCourtModel {
 
     public void setCourtId(Integer courtId) {
         this.courtId = courtId;
+    }
+
+    public Integer getPriceTable() {
+        return priceTable;
+    }
+
+    public void setPriceTable(Integer priceTable) {
+        this.priceTable = priceTable;
+    }
+
+    public Integer getCourt() {
+        return court;
+    }
+
+    public void setCourt(Integer court) {
+        this.court = court;
     }
 
     public String getCourtName() {
