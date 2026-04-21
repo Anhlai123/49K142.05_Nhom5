@@ -1,8 +1,11 @@
 package com.example.nhom5.api;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -11,6 +14,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
+    private static final String BASE_URL = "http://10.0.2.2:8000/";
     // Chạy trên Android Emulator: sử dụng http://10.0.2.2:8000/ (mặc định cho Django)
     private static final String BASE_URL = "http://10.0.2.2:8000/";
     private static final String TAG = "ApiClient";
@@ -18,9 +22,16 @@ public class ApiClient {
     private static final int RETRY_DELAY_MS = 1000;
 
     private static Retrofit retrofit = null;
+    private static Context mContext;
+
+    public static void init(Context context) {
+        mContext = context.getApplicationContext();
+    }
 
     public static Retrofit getClient() {
         if (retrofit == null) {
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
             // Logging Interceptor - để debug request/response
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(message -> {
                 Log.d(TAG, "HTTP: " + message);
@@ -58,6 +69,25 @@ public class ApiClient {
 
             // OkHttpClient với timeout, retry, và logging
             OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(logging)
+                    .addInterceptor(chain -> {
+                        Request originalRequest = chain.request();
+                        String path = originalRequest.url().encodedPath();
+
+                        // KHÔNG gửi token cho API login và register
+                        if (path.contains("/api/login/") || path.contains("/api/register/")) {
+                            return chain.proceed(originalRequest);
+                        }
+
+                        SharedPreferences prefs = mContext.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                        String token = prefs.getString("token", "");
+
+                        Request.Builder builder = originalRequest.newBuilder();
+                        if (!token.isEmpty()) {
+                            builder.addHeader("Authorization", "Token " + token);
+                        }
+                        return chain.proceed(builder.build());
+                    })
                     .addInterceptor(loggingInterceptor)
                     .addInterceptor(retryInterceptor)
                     .connectTimeout(30, TimeUnit.SECONDS)      // Timeout kết nối: 30 giây
@@ -79,6 +109,9 @@ public class ApiClient {
     }
 
     public static ApiService getApiService() {
+        if (mContext == null) {
+            throw new RuntimeException("ApiClient must be initialized with context before use");
+        }
         return getClient().create(ApiService.class);
     }
 

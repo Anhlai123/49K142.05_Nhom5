@@ -1,6 +1,7 @@
 package com.example.nhom5.auth;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +16,8 @@ import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.auth.model.RegisterRequest;
 import com.example.nhom5.auth.model.RegisterResponse;
+import com.example.nhom5.models.CreateCustomerRequest;
+import com.example.nhom5.models.CustomerApiModel;
 
 import org.json.JSONObject;
 
@@ -94,7 +97,7 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!isValidEmail(email)) {
             Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -107,70 +110,76 @@ public class RegisterActivity extends AppCompatActivity {
         return true;
     }
 
+    private boolean isValidEmail(String email) {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
     private void callRegisterApi(RegisterRequest request) {
         setLoading(true);
 
         ApiClient.getApiService().register(request).enqueue(new Callback<RegisterResponse>() {
             @Override
             public void onResponse(@NonNull Call<RegisterResponse> call, @NonNull Response<RegisterResponse> response) {
-                setLoading(false);
-
                 if (response.isSuccessful()) {
-                    String message = "Đăng ký thành công";
-                    RegisterResponse body = response.body();
-                    if (body != null && body.getMessage() != null && !body.getMessage().trim().isEmpty()) {
-                        message = body.getMessage();
-                    }
-                    Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_LONG).show();
-                    finish();
-                    return;
+                    // Sau khi đăng ký User thành công, tự động tạo thông tin Khách hàng
+                    createCustomerRecord(request);
+                } else {
+                    setLoading(false);
+                    String errorMessage = parseErrorMessage(response);
+                    Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
-
-                String errorMessage = parseErrorMessage(response);
-                Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onFailure(@NonNull Call<RegisterResponse> call, @NonNull Throwable t) {
                 setLoading(false);
-                Toast.makeText(
-                    RegisterActivity.this,
-                    "Không thể kết nối server: " + t.getLocalizedMessage(),
-                    Toast.LENGTH_LONG
-                ).show();
+                Toast.makeText(RegisterActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void createCustomerRecord(RegisterRequest request) {
+        CreateCustomerRequest customerRequest = new CreateCustomerRequest(
+                request.getFullName(),
+                request.getPhone(),
+                request.getEmail(),
+                request.getAddress() // Ghi địa chỉ vào phần ghi chú (notes) của khách hàng
+        );
+
+        ApiClient.getApiService().createCustomer(customerRequest).enqueue(new Callback<CustomerApiModel>() {
+            @Override
+            public void onResponse(@NonNull Call<CustomerApiModel> call, @NonNull Response<CustomerApiModel> response) {
+                setLoading(false);
+                Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_LONG).show();
+                finish();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CustomerApiModel> call, @NonNull Throwable t) {
+                setLoading(false);
+                // Vẫn cho phép thành công vì User đã được tạo
+                Toast.makeText(RegisterActivity.this, "Đăng ký thành công (Lỗi đồng bộ khách hàng)", Toast.LENGTH_LONG).show();
+                finish();
             }
         });
     }
 
     private String parseErrorMessage(Response<RegisterResponse> response) {
         try {
-            if (response.errorBody() == null) {
-                return "Đăng ký thất bại. Vui lòng thử lại";
-            }
-
+            if (response.errorBody() == null) return "Đăng ký thất bại";
             String raw = response.errorBody().string();
-            if (raw == null || raw.trim().isEmpty()) {
-                return "Đăng ký thất bại. Vui lòng thử lại";
-            }
-
             JSONObject json = new JSONObject(raw);
-            if (json.has("username")) return json.getJSONArray("username").optString(0);
-            if (json.has("email")) return json.getJSONArray("email").optString(0);
-            if (json.has("phone")) return json.getJSONArray("phone").optString(0);
-            if (json.has("password")) return json.getJSONArray("password").optString(0);
+            if (json.has("username")) return "Tên đăng nhập đã tồn tại";
+            if (json.has("email")) return "Email đã tồn tại";
             if (json.has("detail")) return json.optString("detail");
-
-            return "Đăng ký thất bại. Vui lòng kiểm tra thông tin";
+            return "Lỗi đăng ký: " + raw;
         } catch (Exception e) {
-            return "Đăng ký thất bại. Vui lòng thử lại";
+            return "Đăng ký thất bại";
         }
     }
 
     private void setLoading(boolean isLoading) {
         btnRegister.setEnabled(!isLoading);
         btnRegister.setText(isLoading ? "Đang xử lý..." : "Đăng ký");
-        tvBackToLogin.setVisibility(isLoading ? View.INVISIBLE : View.VISIBLE);
     }
 }
-
-

@@ -10,10 +10,14 @@ import com.example.nhom5.auth.model.LoginRequest;
 import com.example.nhom5.auth.model.LoginResponse;
 import com.example.nhom5.auth.model.RegisterRequest;
 import com.example.nhom5.auth.model.RegisterResponse;
+import com.example.nhom5.auth.model.UserDto;
 import com.example.nhom5.court.Court;
 import com.example.nhom5.models.PriceTableCourtModel;
 import com.example.nhom5.models.PriceTableModel;
 import com.example.nhom5.models.PriceTableTimeSlotModel;
+import com.example.nhom5.models.OrderModel;
+import com.google.gson.JsonElement;
+import java.util.List;
 import com.google.gson.JsonElement;
 import java.util.List;
 import com.example.nhom5.Bill.OrderModel;
@@ -22,6 +26,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -34,6 +39,12 @@ public interface ApiService {
 
     @POST("api/register/")
     Call<RegisterResponse> register(@Body RegisterRequest request);
+
+    @GET("api/profile/")
+    Call<UserDto> getProfile();
+
+    @PATCH("api/profile/")
+    Call<UserDto> updateProfile(@Body UserDto user);
 
     // Lấy danh sách loại sân
     @GET("api/court-types/")
@@ -83,6 +94,9 @@ public interface ApiService {
 
     @POST("api/customers/")
     Call<CustomerApiModel> createCustomer(@Body CreateCustomerRequest request);
+
+    @PATCH("api/customers/{id}/")
+    Call<CustomerApiModel> updateCustomer(@Path("id") int id, @Body CreateCustomerRequest request);
 
     @GET("api/QL_DonDat/")
     Call<List<OrderModel>> getOrderList();
