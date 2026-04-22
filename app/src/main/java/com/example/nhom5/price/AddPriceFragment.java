@@ -48,6 +48,8 @@ public class AddPriceFragment extends Fragment {
 
     private static final String TAG = "AddPriceFragment";
     private static final String[] DAY_KEYS = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+    // Map T2=1, ..., CN=7 (Chuẩn ISO/Server thông dụng)
+    private static final int[] SERVER_DAY_MAP = {1, 2, 3, 4, 5, 6, 7};
 
     private FragmentAddPriceBinding binding;
     private final Set<String> selectedDays = new LinkedHashSet<>();
@@ -191,8 +193,11 @@ public class AddPriceFragment extends Fragment {
             final String day = DAY_KEYS[i];
             TextView view = dayViews.get(i);
             view.setOnClickListener(v -> {
-                if (selectedDays.contains(day)) selectedDays.remove(day);
-                else selectedDays.add(day);
+                if (selectedDays.contains(day)) {
+                    selectedDays.remove(day);
+                } else {
+                    selectedDays.add(day);
+                }
                 setDayState(view, selectedDays.contains(day));
             });
         }
@@ -225,8 +230,8 @@ public class AddPriceFragment extends Fragment {
 
     private void validateAndSave() {
         String name = binding.etPriceName.getText().toString().trim();
-        String startDate = binding.etStartDate.getText().toString().trim();
-        String endDate = binding.etEndDate.getText().toString().trim();
+        String startDateStr = binding.etStartDate.getText().toString().trim();
+        String endDateStr = binding.etEndDate.getText().toString().trim();
         String startTime = binding.etStartTime.getText().toString().trim();
         String endTime = binding.etEndTime.getText().toString().trim();
         String priceStr = binding.etPrice.getText().toString().trim();
@@ -239,29 +244,34 @@ public class AddPriceFragment extends Fragment {
         PriceTableModel model = new PriceTableModel();
         model.setName(name);
         model.setCourtTypeId(selectedCourtType.getId());
-        model.setStartDate(convertToApiDate(startDate));
-        model.setEndDate(convertToApiDate(endDate));
+        model.setStartDate(convertToApiDate(startDateStr));
+        model.setEndDate(convertToApiDate(endDateStr));
         model.setAllCourts(allCourtsSelected);
 
-        // Chỉnh Day Mapping: T2=1, ..., CN=7 (Chuẩn ISO/Django)
+        // Map ngày cho server (T2=1, ..., CN=7)
         List<Integer> daysInt = new ArrayList<>();
         for (int i = 0; i < DAY_KEYS.length; i++) {
-            if (selectedDays.contains(DAY_KEYS[i])) daysInt.add(i + 1);
+            if (selectedDays.contains(DAY_KEYS[i])) {
+                daysInt.add(SERVER_DAY_MAP[i]);
+            }
         }
         model.setActiveDays(daysInt);
 
-        // Chuẩn hóa Time Slot HH:mm:ss
+        // Chuẩn hóa Time Slot
         PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
         slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
         slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
         slot.setPrice(Double.parseDouble(priceStr));
-        model.setTimeSlots(Arrays.asList(slot));
+        
+        List<PriceTableTimeSlotModel> slots = new ArrayList<>();
+        slots.add(slot);
+        model.setTimeSlots(slots);
 
         savePriceTable(model);
     }
 
     private String convertToApiDate(String uiDate) {
-        if (TextUtils.isEmpty(uiDate) || uiDate.contains("d")) return null;
+        if (TextUtils.isEmpty(uiDate) || uiDate.equals("dd/MM/yyyy")) return null;
         try {
             Date date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(uiDate);
             return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
@@ -305,11 +315,9 @@ public class AddPriceFragment extends Fragment {
                     sb.append(key).append(": ").append(json.get(key)).append("\n");
                 }
                 Toast.makeText(getContext(), sb.toString(), Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Lỗi: 400 Bad Request", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
         }
     }
 
