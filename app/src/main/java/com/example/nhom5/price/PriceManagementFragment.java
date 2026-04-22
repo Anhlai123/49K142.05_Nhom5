@@ -46,6 +46,11 @@ public class PriceManagementFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Thiết lập nút quay về
+        binding.btnBack.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigateUp();
+        });
+
         setupRecyclerView();
         loadPriceData();
 
