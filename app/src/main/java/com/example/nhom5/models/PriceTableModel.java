@@ -7,20 +7,23 @@ public class PriceTableModel {
     @SerializedName("id")
     private int id;
 
-    @SerializedName("name")
+    @SerializedName("price_table_name")
     private String name;
 
-    @SerializedName("court_type_id")
+    @SerializedName("court_type")
     private Integer courtTypeId;
 
-    @SerializedName("start_date")
+    @SerializedName("effective_date")
     private String startDate;
 
-    @SerializedName("end_date")
+    @SerializedName("expiry_date")
     private String endDate;
 
     @SerializedName("is_all_courts")
     private boolean isAllCourts;
+
+    @SerializedName("active_days")
+    private List<Integer> activeDays;
 
     @SerializedName("time_slots")
     private List<PriceTableTimeSlotModel> timeSlots;
@@ -44,6 +47,9 @@ public class PriceTableModel {
 
     public boolean isAllCourts() { return isAllCourts; }
     public void setAllCourts(boolean allCourts) { isAllCourts = allCourts; }
+
+    public List<Integer> getActiveDays() { return activeDays; }
+    public void setActiveDays(List<Integer> activeDays) { this.activeDays = activeDays; }
 
     public List<PriceTableTimeSlotModel> getTimeSlots() { return timeSlots; }
     public void setTimeSlots(List<PriceTableTimeSlotModel> timeSlots) { this.timeSlots = timeSlots; }

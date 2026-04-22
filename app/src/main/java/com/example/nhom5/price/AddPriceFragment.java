@@ -4,12 +4,13 @@ import android.app.TimePickerDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,28 +20,41 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
+import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.FragmentAddPriceBinding;
+import com.example.nhom5.models.CourtTypeModel;
+import com.example.nhom5.models.PriceTableModel;
+import com.example.nhom5.models.PriceTableTimeSlotModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
+
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class AddPriceFragment extends Fragment {
 
+    private static final String TAG = "AddPriceFragment";
     private static final String[] DAY_KEYS = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
 
     private FragmentAddPriceBinding binding;
     private final Set<String> selectedDays = new LinkedHashSet<>();
     private final Set<String> selectedCourts = new LinkedHashSet<>();
-    private final LinkedHashMap<String, List<String>> courtOptions = new LinkedHashMap<>();
-    private String currentCourtType = "Sân cầu lông";
+
+    private List<CourtTypeModel> courtTypeList = new ArrayList<>();
+    private CourtTypeModel selectedCourtType = null;
     private boolean allCourtsSelected = true;
 
     @Nullable
@@ -53,27 +67,41 @@ public class AddPriceFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        initCourtOptions();
+
+        loadCourtTypes();
         setupScopeSelection();
         setupCourtTypePicker();
         setupDaySelection();
         setupDatePickers();
         setupTimePickers();
         updateScopeUi(true);
-        updateCourtTypeLabel(currentCourtType);
 
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        binding.btnSave.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.btnSave.setOnClickListener(v -> validateAndSave());
+
         binding.btnAddFrame.setOnClickListener(v -> {
-            // Giữ nguyên hành vi hiện tại, chỉ làm form dễ nhập hơn.
+            Toast.makeText(getContext(), "Tính năng thêm nhiều khung giờ đang được phát triển", Toast.LENGTH_SHORT).show();
         });
     }
 
-    private void initCourtOptions() {
-        courtOptions.put("Sân cầu lông", Arrays.asList("Sân 1", "Sân 2", "Sân 3", "Sân 4"));
-        courtOptions.put("Sân bóng đá", Arrays.asList("Sân 1", "Sân 2", "Sân 3"));
-        courtOptions.put("Sân Tennis", Arrays.asList("Sân 1", "Sân 2"));
+    private void loadCourtTypes() {
+        ApiClient.getApiService().getCourtTypes().enqueue(new Callback<List<CourtTypeModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<CourtTypeModel>> call, @NonNull Response<List<CourtTypeModel>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    courtTypeList = response.body();
+                    if (!courtTypeList.isEmpty()) {
+                        selectedCourtType = courtTypeList.get(0);
+                        updateCourtTypeLabel(selectedCourtType.getName());
+                    }
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<List<CourtTypeModel>> call, @NonNull Throwable t) {
+                Log.e(TAG, "Failed to load court types", t);
+            }
+        });
     }
 
     private void setupScopeSelection() {
@@ -86,13 +114,7 @@ public class AddPriceFragment extends Fragment {
         styleScopePill(binding.btnScopeAll, allCourts);
         styleScopePill(binding.btnScopeSpecific, !allCourts);
         binding.layoutSpecificCourts.setVisibility(allCourts ? View.GONE : View.VISIBLE);
-        if (!allCourts) {
-            if (selectedCourts.isEmpty()) {
-                populateCourtChips(currentCourtType);
-            } else {
-                populateCourtChips(currentCourtType);
-            }
-        }
+        if (!allCourts) populateCourtChipsPlaceholder();
     }
 
     private void styleScopePill(TextView view, boolean selected) {
@@ -102,20 +124,20 @@ public class AddPriceFragment extends Fragment {
 
     private void setupCourtTypePicker() {
         binding.btnSelectCourtType.setOnClickListener(v -> {
-            List<String> types = new ArrayList<>(courtOptions.keySet());
-            int checkedItem = Math.max(0, types.indexOf(currentCourtType));
+            if (courtTypeList.isEmpty()) return;
+            String[] names = new String[courtTypeList.size()];
+            int checkedItem = 0;
+            for (int i = 0; i < courtTypeList.size(); i++) {
+                names[i] = courtTypeList.get(i).getName();
+                if (selectedCourtType != null && courtTypeList.get(i).getId().equals(selectedCourtType.getId())) checkedItem = i;
+            }
             new AlertDialog.Builder(requireContext())
                     .setTitle("Chọn loại sân")
-                    .setSingleChoiceItems(types.toArray(new String[0]), checkedItem, (dialog, which) -> {
-                        currentCourtType = types.get(which);
-                        updateCourtTypeLabel(currentCourtType);
-                        selectedCourts.clear();
-                        if (!allCourtsSelected) {
-                            populateCourtChips(currentCourtType);
-                        }
+                    .setSingleChoiceItems(names, checkedItem, (dialog, which) -> {
+                        selectedCourtType = courtTypeList.get(which);
+                        updateCourtTypeLabel(selectedCourtType.getName());
                         dialog.dismiss();
                     })
-                    .setNegativeButton("Huỷ", (dialog, which) -> dialog.dismiss())
                     .show();
         });
     }
@@ -124,46 +146,33 @@ public class AddPriceFragment extends Fragment {
         binding.tvSelectedCourtType.setText(courtType);
     }
 
-    private void populateCourtChips(String courtType) {
+    private void populateCourtChipsPlaceholder() {
         binding.layoutCourtChips.removeAllViews();
-        List<String> courts = courtOptions.get(courtType);
-        if (courts == null) courts = new ArrayList<>();
-        selectedCourts.retainAll(courts);
-        if (courts == null || courts.isEmpty()) {
-            binding.tvSelectedCourtsSummary.setText(getString(R.string.no_courts_to_choose));
-            return;
-        }
-
-        for (String court : courts) {
-            MaterialButton chip = new MaterialButton(requireContext());
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            );
-            params.setMarginEnd(dpToPx(8));
-            chip.setLayoutParams(params);
-            chip.setText(court);
-            chip.setAllCaps(false);
-            chip.setCheckable(true);
-            chip.setCornerRadius(dpToPx(20));
-            chip.setStrokeWidth(dpToPx(1));
-            chip.setTextSize(13f);
-            chip.setMinHeight(dpToPx(40));
-            chip.setPadding(dpToPx(14), dpToPx(6), dpToPx(14), dpToPx(6));
-            chip.setOnClickListener(v -> {
-                if (selectedCourts.contains(court)) {
-                    selectedCourts.remove(court);
-                    setCourtChipState(chip, false);
-                } else {
-                    selectedCourts.add(court);
-                    setCourtChipState(chip, true);
-                }
-                updateCourtSummary();
-            });
-            setCourtChipState(chip, selectedCourts.contains(court));
-            binding.layoutCourtChips.addView(chip);
+        for (String court : Arrays.asList("Sân 1", "Sân 2", "Sân 3", "Sân 4")) {
+            binding.layoutCourtChips.addView(createChip(court));
         }
         updateCourtSummary();
+    }
+
+    private MaterialButton createChip(String text) {
+        MaterialButton chip = new MaterialButton(requireContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, -2);
+        params.setMarginEnd(dpToPx(8));
+        chip.setLayoutParams(params);
+        chip.setText(text);
+        chip.setAllCaps(false);
+        chip.setCheckable(true);
+        chip.setCornerRadius(dpToPx(20));
+        chip.setStrokeWidth(dpToPx(1));
+        chip.setTextSize(13f);
+        chip.setOnClickListener(v -> {
+            if (selectedCourts.contains(text)) selectedCourts.remove(text);
+            else selectedCourts.add(text);
+            setCourtChipState(chip, selectedCourts.contains(text));
+            updateCourtSummary();
+        });
+        setCourtChipState(chip, selectedCourts.contains(text));
+        return chip;
     }
 
     private void setCourtChipState(MaterialButton chip, boolean selected) {
@@ -173,30 +182,19 @@ public class AddPriceFragment extends Fragment {
     }
 
     private void updateCourtSummary() {
-        if (selectedCourts.isEmpty()) {
-            binding.tvSelectedCourtsSummary.setText(getString(R.string.no_courts_selected));
-        } else {
-            binding.tvSelectedCourtsSummary.setText(getString(R.string.selected_courts_summary, TextUtils.join(", ", selectedCourts)));
-        }
+        binding.tvSelectedCourtsSummary.setText(selectedCourts.isEmpty() ? "Chưa chọn sân nào" : "Đã chọn: " + TextUtils.join(", ", selectedCourts));
     }
 
     private void setupDaySelection() {
-        List<TextView> dayViews = Arrays.asList(
-                binding.dayT2, binding.dayT3, binding.dayT4,
-                binding.dayT5, binding.dayT6, binding.dayT7, binding.dayCn
-        );
+        List<TextView> dayViews = Arrays.asList(binding.dayT2, binding.dayT3, binding.dayT4, binding.dayT5, binding.dayT6, binding.dayT7, binding.dayCn);
         for (int i = 0; i < dayViews.size(); i++) {
             final String day = DAY_KEYS[i];
             TextView view = dayViews.get(i);
             view.setOnClickListener(v -> {
-                if (selectedDays.contains(day)) {
-                    selectedDays.remove(day);
-                } else {
-                    selectedDays.add(day);
-                }
+                if (selectedDays.contains(day)) selectedDays.remove(day);
+                else selectedDays.add(day);
                 setDayState(view, selectedDays.contains(day));
             });
-            setDayState(view, false);
         }
     }
 
@@ -206,55 +204,115 @@ public class AddPriceFragment extends Fragment {
     }
 
     private void setupDatePickers() {
-        binding.etStartDate.setOnClickListener(v -> showDatePicker(binding.etStartDate, "Chọn ngày hiệu lực"));
-        binding.etEndDate.setOnClickListener(v -> showDatePicker(binding.etEndDate, "Chọn ngày kết thúc"));
+        binding.etStartDate.setOnClickListener(v -> showDatePicker(binding.etStartDate));
+        binding.etEndDate.setOnClickListener(v -> showDatePicker(binding.etEndDate));
     }
 
-    private void showDatePicker(android.widget.EditText target, String title) {
-        MaterialDatePicker<Long> picker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText(title)
-                .build();
-        picker.addOnPositiveButtonClickListener(selection -> target.setText(formatDate(selection)));
-        picker.show(getParentFragmentManager(), title.replace(" ", "_"));
-    }
-
-    private String formatDate(long selection) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        return sdf.format(selection);
+    private void showDatePicker(android.widget.EditText target) {
+        MaterialDatePicker<Long> picker = MaterialDatePicker.Builder.datePicker().build();
+        picker.addOnPositiveButtonClickListener(selection -> target.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(selection)));
+        picker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
     private void setupTimePickers() {
-        binding.etStartTime.setOnClickListener(v -> showTimePicker(binding.etStartTime, 7));
-        binding.etEndTime.setOnClickListener(v -> showTimePicker(binding.etEndTime, 8));
+        binding.etStartTime.setOnClickListener(v -> showTimePicker(binding.etStartTime));
+        binding.etEndTime.setOnClickListener(v -> showTimePicker(binding.etEndTime));
     }
 
-    private void showTimePicker(android.widget.EditText target, int defaultHour) {
-        int[] time = parseTime(target.getText() == null ? null : target.getText().toString(), defaultHour, 0);
-        new TimePickerDialog(requireContext(), (TimePicker view, int hourOfDay, int minute) ->
-                target.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)),
-                time[0], time[1], true).show();
+    private void showTimePicker(android.widget.EditText target) {
+        new TimePickerDialog(requireContext(), (view, hour, min) -> target.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, min)), 7, 0, true).show();
     }
 
-    private int[] parseTime(String value, int defaultHour, int defaultMinute) {
-        if (value == null || !value.matches("\\d{2}:\\d{2}")) {
-            return new int[]{defaultHour, defaultMinute};
+    private void validateAndSave() {
+        String name = binding.etPriceName.getText().toString().trim();
+        String startDate = binding.etStartDate.getText().toString().trim();
+        String endDate = binding.etEndDate.getText().toString().trim();
+        String startTime = binding.etStartTime.getText().toString().trim();
+        String endTime = binding.etEndTime.getText().toString().trim();
+        String priceStr = binding.etPrice.getText().toString().trim();
+
+        if (name.isEmpty() || selectedCourtType == null || priceStr.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
+            Toast.makeText(getContext(), "Vui lòng nhập đầy đủ thông tin bắt buộc", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        PriceTableModel model = new PriceTableModel();
+        model.setName(name);
+        model.setCourtTypeId(selectedCourtType.getId());
+        model.setStartDate(convertToApiDate(startDate));
+        model.setEndDate(convertToApiDate(endDate));
+        model.setAllCourts(allCourtsSelected);
+
+        // Chỉnh Day Mapping: T2=1, ..., CN=7 (Chuẩn ISO/Django)
+        List<Integer> daysInt = new ArrayList<>();
+        for (int i = 0; i < DAY_KEYS.length; i++) {
+            if (selectedDays.contains(DAY_KEYS[i])) daysInt.add(i + 1);
+        }
+        model.setActiveDays(daysInt);
+
+        // Chuẩn hóa Time Slot HH:mm:ss
+        PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
+        slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
+        slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
+        slot.setPrice(Double.parseDouble(priceStr));
+        model.setTimeSlots(Arrays.asList(slot));
+
+        savePriceTable(model);
+    }
+
+    private String convertToApiDate(String uiDate) {
+        if (TextUtils.isEmpty(uiDate) || uiDate.contains("d")) return null;
         try {
-            String[] parts = value.split(":");
-            return new int[]{Integer.parseInt(parts[0]), Integer.parseInt(parts[1])};
-        } catch (Exception ignored) {
-            return new int[]{defaultHour, defaultMinute};
+            Date date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(uiDate);
+            return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
+        } catch (Exception e) { return null; }
+    }
+
+    private void savePriceTable(PriceTableModel model) {
+        binding.btnSave.setEnabled(false);
+        binding.btnSave.setText("Đang lưu...");
+
+        ApiClient.getApiService().createPriceTable(model).enqueue(new Callback<PriceTableModel>() {
+            @Override
+            public void onResponse(@NonNull Call<PriceTableModel> call, @NonNull Response<PriceTableModel> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Lưu thành công!", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(binding.getRoot()).navigateUp();
+                } else {
+                    handleErrorResponse(response);
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<PriceTableModel> call, @NonNull Throwable t) {
+                binding.btnSave.setEnabled(true);
+                binding.btnSave.setText("Lưu Bảng giá");
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void handleErrorResponse(Response<PriceTableModel> response) {
+        binding.btnSave.setEnabled(true);
+        binding.btnSave.setText("Lưu Bảng giá");
+        try {
+            if (response.errorBody() != null) {
+                String errorJson = response.errorBody().string();
+                JSONObject json = new JSONObject(errorJson);
+                StringBuilder sb = new StringBuilder("Lỗi: ");
+                Iterator<String> keys = json.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    sb.append(key).append(": ").append(json.get(key)).append("\n");
+                }
+                Toast.makeText(getContext(), sb.toString(), Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Lỗi: 400 Bad Request", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
+    private int dpToPx(int dp) { return Math.round(dp * getResources().getDisplayMetrics().density); }
+    @Override public void onDestroyView() { super.onDestroyView(); binding = null; }
 }
