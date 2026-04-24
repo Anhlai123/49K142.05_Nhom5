@@ -52,7 +52,7 @@ public interface ApiService {
     Call<CourtTypeModel> createCourtType(@Body CourtTypeModel courtType);
 
     // Cập nhật loại sân
-    @PUT("api/court-types/{id}/")
+    @PATCH("api/court-types/{id}/")
     Call<CourtTypeModel> updateCourtType(@Path("id") int id, @Body CourtTypeModel courtType);
 
     // Xóa loại sân
@@ -68,7 +68,7 @@ public interface ApiService {
     Call<Court> createCourt(@Body Court court);
 
     // Cập nhật sân
-    @PUT("api/courts/{id}/")
+    @PATCH("api/courts/{id}/")
     Call<Court> updateCourt(@Path("id") int id, @Body Court court);
 
     // Xóa sân
@@ -105,7 +105,7 @@ public interface ApiService {
     @POST("api/price-tables/")
     Call<PriceTableModel> createPriceTable(@Body PriceTableModel priceTable);
 
-    @PUT("api/price-tables/{id}/")
+    @PATCH("api/price-tables/{id}/")
     Call<PriceTableModel> updatePriceTable(@Path("id") int id, @Body PriceTableModel priceTable);
 
     @DELETE("api/price-tables/{id}/")

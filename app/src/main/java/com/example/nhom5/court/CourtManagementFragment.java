@@ -2,10 +2,13 @@ package com.example.nhom5.court;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,6 +21,7 @@ import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.databinding.BottomSheetAddCourtBinding;
 import com.example.nhom5.databinding.BottomSheetConfirmDeleteCourtBinding;
+import com.example.nhom5.databinding.BottomSheetFilterCourtBinding;
 import com.example.nhom5.databinding.BottomSheetSelectCourtTypeBinding;
 import com.example.nhom5.databinding.BottomSheetUpdateCourtBinding;
 import com.example.nhom5.databinding.FragmentCourtManagementBinding;
@@ -36,6 +40,8 @@ public class CourtManagementFragment extends Fragment {
     private CourtAdapter adapter;
     private CourtTypeModel selectedCourtType;
     private String selectedStatus;
+    private List<Court> allCourts = new ArrayList<>();
+    private String currentFilterStatus = "ALL"; // ALL, READY, MAINTENANCE, INACTIVE
 
     @Nullable
     @Override
@@ -49,10 +55,76 @@ public class CourtManagementFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         setupRecyclerView();
+        setupSearch();
 
         binding.fabAdd.setOnClickListener(v -> showAddCourtBottomSheet());
-
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.btnFilter.setOnClickListener(v -> showFilterBottomSheet());
+    }
+
+    private void setupSearch() {
+        binding.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                applyFilters();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void showFilterBottomSheet() {
+        BottomSheetDialog filterDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
+        BottomSheetFilterCourtBinding filterBinding = BottomSheetFilterCourtBinding.inflate(getLayoutInflater());
+        filterDialog.setContentView(filterBinding.getRoot());
+
+        // Set initial state
+        switch (currentFilterStatus) {
+            case "READY": filterBinding.rbReady.setChecked(true); break;
+            case "MAINTENANCE": filterBinding.rbMaintenance.setChecked(true); break;
+            case "INACTIVE": filterBinding.rbInactive.setChecked(true); break;
+            default: filterBinding.rbAll.setChecked(true); break;
+        }
+
+        filterBinding.btnApplyFilter.setOnClickListener(v -> {
+            int checkedId = filterBinding.rgStatusFilter.getCheckedRadioButtonId();
+            if (checkedId == R.id.rb_ready) currentFilterStatus = "READY";
+            else if (checkedId == R.id.rb_maintenance) currentFilterStatus = "MAINTENANCE";
+            else if (checkedId == R.id.rb_inactive) currentFilterStatus = "INACTIVE";
+            else currentFilterStatus = "ALL";
+
+            applyFilters();
+            filterDialog.dismiss();
+        });
+
+        filterDialog.show();
+    }
+
+    private void applyFilters() {
+        String query = binding.etSearch.getText().toString().toLowerCase().trim();
+        List<Court> filteredList = new ArrayList<>();
+
+        for (Court court : allCourts) {
+            boolean matchesQuery = true;
+            if (!query.isEmpty()) {
+                String courtCode = court.getCode() != null ? court.getCode() : "";
+                matchesQuery = court.getName().toLowerCase().contains(query) || courtCode.toLowerCase().contains(query);
+            }
+
+            boolean matchesStatus = true;
+            if (!"ALL".equals(currentFilterStatus)) {
+                matchesStatus = currentFilterStatus.equalsIgnoreCase(court.getStatus());
+            }
+
+            if (matchesQuery && matchesStatus) {
+                filteredList.add(court);
+            }
+        }
+        adapter.updateData(filteredList);
     }
 
     private void showAddCourtBottomSheet() {
@@ -62,7 +134,16 @@ public class CourtManagementFragment extends Fragment {
 
         selectedCourtType = null;
 
-        sheetBinding.btnSelectType.setOnClickListener(v -> showSelectCourtTypeBottomSheet(sheetBinding));
+        sheetBinding.btnSelectType.setOnClickListener(v -> {
+            showSelectCourtTypeBottomSheet(new OnTypeSelectedListener() {
+                @Override
+                public void onSelected(CourtTypeModel item) {
+                    selectedCourtType = item;
+                    sheetBinding.tvSelectedType.setText(item.getName());
+                    sheetBinding.tvSelectedType.setTextColor(Color.BLACK);
+                }
+            });
+        });
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
         sheetBinding.btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
@@ -102,7 +183,11 @@ public class CourtManagementFragment extends Fragment {
         bottomSheetDialog.show();
     }
 
-    private void showSelectCourtTypeBottomSheet(BottomSheetAddCourtBinding addCourtBinding) {
+    private interface OnTypeSelectedListener {
+        void onSelected(CourtTypeModel item);
+    }
+
+    private void showSelectCourtTypeBottomSheet(OnTypeSelectedListener listener) {
         BottomSheetDialog selectDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
         BottomSheetSelectCourtTypeBinding selectBinding = BottomSheetSelectCourtTypeBinding.inflate(getLayoutInflater());
         selectDialog.setContentView(selectBinding.getRoot());
@@ -114,9 +199,7 @@ public class CourtManagementFragment extends Fragment {
             public void onResponse(Call<List<CourtTypeModel>> call, Response<List<CourtTypeModel>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     CourtTypeSelectionAdapter selectionAdapter = new CourtTypeSelectionAdapter(response.body(), item -> {
-                        selectedCourtType = item;
-                        addCourtBinding.tvSelectedType.setText(item.getName());
-                        addCourtBinding.tvSelectedType.setTextColor(Color.BLACK);
+                        listener.onSelected(item);
                         selectDialog.dismiss();
                     });
                     selectBinding.rvCourtTypes.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -138,24 +221,31 @@ public class CourtManagementFragment extends Fragment {
         BottomSheetUpdateCourtBinding sheetBinding = BottomSheetUpdateCourtBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
-        sheetBinding.tvCourtId.setText(String.valueOf(court.getId()));
+        sheetBinding.tvCourtId.setText(court.getCode() != null ? court.getCode() : String.valueOf(court.getId()));
         sheetBinding.etCourtName.setText(court.getName());
         sheetBinding.tvSelectedType.setText(court.getType());
+        sheetBinding.tvSelectedType.setTextColor(Color.BLACK);
 
+        selectedCourtType = null;
         selectedStatus = court.getStatus();
+        
+        sheetBinding.statusAvailable.setText("Sẵn sàng");
+        sheetBinding.statusMaintenance.setText("Đang bảo trì");
+        sheetBinding.statusInactive.setText("Ngừng sử dụng");
+
         updateStatusUI(sheetBinding, selectedStatus);
 
         sheetBinding.statusAvailable.setOnClickListener(v -> {
             selectedStatus = "READY";
-            updateStatusUI(sheetBinding, "Sẵn sàng");
+            updateStatusUI(sheetBinding, "READY");
         });
         sheetBinding.statusMaintenance.setOnClickListener(v -> {
             selectedStatus = "MAINTENANCE";
-            updateStatusUI(sheetBinding, "Đang bảo trì");
+            updateStatusUI(sheetBinding, "MAINTENANCE");
         });
         sheetBinding.statusInactive.setOnClickListener(v -> {
             selectedStatus = "INACTIVE";
-            updateStatusUI(sheetBinding, "Ngừng sử dụng");
+            updateStatusUI(sheetBinding, "INACTIVE");
         });
 
         sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
@@ -170,6 +260,9 @@ public class CourtManagementFragment extends Fragment {
             Court updatedCourt = new Court();
             updatedCourt.setName(newName);
             updatedCourt.setStatus(selectedStatus);
+            if (selectedCourtType != null) {
+                updatedCourt.setCourtTypeId(selectedCourtType.getId());
+            }
 
             ApiClient.getApiService().updateCourt(court.getId(), updatedCourt).enqueue(new Callback<Court>() {
                 @Override
@@ -234,13 +327,13 @@ public class CourtManagementFragment extends Fragment {
         sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_inactive);
         sheetBinding.statusInactive.setTextColor(Color.parseColor("#757575"));
 
-        if ("Sẵn sàng".equals(status) || "READY".equals(status)) {
+        if ("READY".equalsIgnoreCase(status) || "Sẵn sàng".equalsIgnoreCase(status)) {
             sheetBinding.statusAvailable.setBackgroundResource(R.drawable.bg_pill_active);
             sheetBinding.statusAvailable.setTextColor(Color.WHITE);
-        } else if ("Đang bảo trì".equals(status) || "MAINTENANCE".equals(status)) {
+        } else if ("MAINTENANCE".equalsIgnoreCase(status) || "Đang bảo trì".equalsIgnoreCase(status)) {
             sheetBinding.statusMaintenance.setBackgroundResource(R.drawable.bg_pill_active);
             sheetBinding.statusMaintenance.setTextColor(Color.WHITE);
-        } else if ("Ngừng sử dụng".equals(status) || "INACTIVE".equals(status) || "Ngừng hoạt động".equals(status)) {
+        } else if ("INACTIVE".equalsIgnoreCase(status) || "Ngừng sử dụng".equalsIgnoreCase(status)) {
             sheetBinding.statusInactive.setBackgroundResource(R.drawable.bg_pill_active);
             sheetBinding.statusInactive.setTextColor(Color.WHITE);
         }
@@ -263,7 +356,8 @@ public class CourtManagementFragment extends Fragment {
             @Override
             public void onResponse(Call<List<Court>> call, Response<List<Court>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter.updateData(response.body());
+                    allCourts = response.body();
+                    applyFilters();
                 }
             }
 
