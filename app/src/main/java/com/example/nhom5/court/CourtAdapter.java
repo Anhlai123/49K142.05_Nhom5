@@ -38,22 +38,28 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
     public void onBindViewHolder(@NonNull CourtViewHolder holder, int position) {
         Court court = courtList.get(position);
         holder.tvName.setText(court.getName());
-        holder.tvId.setText("ID: " + court.getId());
+        
+        // Ưu tiên hiển thị mã code (SAN001) thay vì ID số (1)
+        String displayCode = court.getCode();
+        if (displayCode == null || displayCode.trim().isEmpty()) {
+            displayCode = "ID: " + court.getId();
+        }
+        holder.tvId.setText(displayCode);
+        
         holder.tvType.setText(court.getType());
         
         String status = court.getStatus();
         
-        // Chuyển đổi trạng thái từ Django sang tiếng Việt và đổi màu
-        if ("READY".equalsIgnoreCase(status)) {
-            holder.tvStatus.setText("Sân trống");
+        if ("READY".equalsIgnoreCase(status) || "Sẵn sàng".equalsIgnoreCase(status)) {
+            holder.tvStatus.setText("Sẵn sàng");
             holder.tvStatus.setBackgroundResource(R.drawable.status_bg_available);
             holder.tvStatus.setTextColor(Color.parseColor("#00A63E"));
-        } else if ("MAINTENANCE".equalsIgnoreCase(status)) {
-            holder.tvStatus.setText("Bảo trì");
+        } else if ("MAINTENANCE".equalsIgnoreCase(status) || "Đang bảo trì".equalsIgnoreCase(status)) {
+            holder.tvStatus.setText("Đang bảo trì");
             holder.tvStatus.setBackgroundResource(R.drawable.status_bg_cleaning);
             holder.tvStatus.setTextColor(Color.parseColor("#FFA000"));
         } else {
-            holder.tvStatus.setText("Ngừng dùng");
+            holder.tvStatus.setText("Ngừng sử dụng");
             holder.tvStatus.setBackgroundResource(R.drawable.status_bg_busy);
             holder.tvStatus.setTextColor(Color.parseColor("#D32F2F"));
         }

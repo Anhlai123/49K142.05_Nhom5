@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center"
+        android:background="#E0E0E0" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Lọc theo trạng thái"
+        android:textColor="#212121"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/rg_status_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp">
+
+        <RadioButton
+            android:id="@+id/rb_all"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Tất cả"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rb_ready"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Sẵn sàng" />
+
+        <RadioButton
+            android:id="@+id/rb_maintenance"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Đang bảo trì" />
+
+        <RadioButton
+            android:id="@+id/rb_inactive"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Ngừng sử dụng" />
+    </RadioGroup>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_apply_filter"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/primary"
+        android:text="Áp dụng"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        app:cornerRadius="16dp" />
+
+</LinearLayout>
