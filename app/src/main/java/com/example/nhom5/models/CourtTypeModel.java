@@ -4,12 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public class CourtTypeModel {
     @SerializedName("id")
-    private Integer id; // Dùng Integer để có thể null
+    private Integer id;
 
-    @SerializedName("type_name")
-    private String typeName;
-
-    @SerializedName("code")
+    @SerializedName(value = "code", alternate = {"court_type_code"})
     private String code;
 
     @SerializedName("name")
@@ -23,13 +20,12 @@ public class CourtTypeModel {
 
     public CourtTypeModel() {}
 
-    public CourtTypeModel(Integer id, String typeName, String status) {
+    public CourtTypeModel(Integer id, String name, String status) {
         this.id = id;
-        this.typeName = typeName;
+        this.name = name;
         this.status = status;
     }
 
-    // Constructor dùng để thêm mới (chỉ cần name và duration)
     public CourtTypeModel(String name, Integer duration) {
         this.name = name;
         this.duration = duration;
@@ -42,51 +38,18 @@ public class CourtTypeModel {
         this.status = status;
     }
 
-    public Integer getId() {
-        return id;
-    }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
 
-    public String getTypeName() {
-        return typeName;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setTypeName(String typeName) {
-        this.typeName = typeName;
-    }
+    public Integer getDuration() { return duration; }
+    public void setDuration(Integer duration) { this.duration = duration; }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Integer duration) {
-        this.duration = duration;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }
