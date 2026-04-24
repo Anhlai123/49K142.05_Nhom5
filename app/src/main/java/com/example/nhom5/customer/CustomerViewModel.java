@@ -37,7 +37,6 @@ public class CustomerViewModel extends ViewModel {
 
     public CustomerViewModel() {
         customers.setValue(new ArrayList<>());
-        loadCustomers();
     }
 
     public LiveData<List<CustomerFragment.Customer>> getCustomers() {
@@ -64,10 +63,6 @@ public class CustomerViewModel extends ViewModel {
                 }
 
                 List<CustomerApiModel> parsedCustomers = parseCustomers(response.body());
-                if (parsedCustomers.isEmpty()) {
-                    errorMessage.setValue("API trả về dữ liệu không đúng định dạng danh sách khách hàng");
-                }
-
                 List<CustomerFragment.Customer> mappedList = new ArrayList<>();
                 for (CustomerApiModel item : parsedCustomers) {
                     mappedList.add(mapToUi(item));
@@ -98,13 +93,7 @@ public class CustomerViewModel extends ViewModel {
                     return;
                 }
 
-                List<CustomerFragment.Customer> currentList = customers.getValue();
-                if (currentList == null) {
-                    currentList = new ArrayList<>();
-                }
-                List<CustomerFragment.Customer> newList = new ArrayList<>(currentList);
-                newList.add(mapToUi(response.body()));
-                customers.setValue(newList);
+                loadCustomers();
                 callback.onSuccess();
             }
 
@@ -119,72 +108,72 @@ public class CustomerViewModel extends ViewModel {
     }
 
     private CustomerFragment.Customer mapToUi(CustomerApiModel item) {
+        // Ưu tiên lấy trường 'code' từ API (KH0000001) thay vì tự chế 'KH' + id
         String id = item.getCode();
+        
+        // Chỉ khi code bị null hoặc trống thì mới dùng fallback
         if (id == null || id.trim().isEmpty()) {
-            id = item.getId() != null ? "KH" + item.getId() : "KH---";
+            id = (item.getId() != null) ? "KH" + item.getId() : "KH---";
         }
 
         String name = item.getName() == null ? "" : item.getName();
         String phone = item.getPhone() == null ? "" : item.getPhone();
-        return new CustomerFragment.Customer(name, id, phone);
+        String email = item.getEmail() == null ? "" : item.getEmail();
+        String notes = item.getNotes() == null ? "" : item.getNotes();
+        
+        return new CustomerFragment.Customer(name, id, phone, email, notes);
     }
 
     private List<CustomerApiModel> parseCustomers(JsonElement jsonElement) {
         List<CustomerApiModel> list = new ArrayList<>();
-        JsonArray itemsArray = extractCustomerArray(jsonElement);
+        
+        if (jsonElement == null || jsonElement.isJsonNull()) return list;
 
-        if (itemsArray == null && jsonElement != null && jsonElement.isJsonObject()) {
-            // Fallback for APIs returning a single customer object.
-            CustomerApiModel single = safeParseCustomer(jsonElement);
-            if (single != null) {
-                list.add(single);
+        if (jsonElement.isJsonArray()) {
+            JsonArray array = jsonElement.getAsJsonArray();
+            for (JsonElement element : array) {
+                CustomerApiModel item = safeParseCustomer(element);
+                if (item != null) list.add(item);
             }
             return list;
         }
 
-        if (itemsArray == null) {
-            return list;
-        }
+        if (jsonElement.isJsonObject()) {
+            JsonObject obj = jsonElement.getAsJsonObject();
+            JsonArray itemsArray = null;
+            
+            String[] keys = {"results", "data", "customers", "items"};
+            for (String key : keys) {
+                if (obj.has(key) && obj.get(key).isJsonArray()) {
+                    itemsArray = obj.getAsJsonArray(key);
+                    break;
+                }
+            }
 
-        for (JsonElement element : itemsArray) {
-            CustomerApiModel parsed = safeParseCustomer(element);
-            if (parsed != null) {
-                list.add(parsed);
+            if (itemsArray != null) {
+                for (JsonElement element : itemsArray) {
+                    CustomerApiModel item = safeParseCustomer(element);
+                    if (item != null) list.add(item);
+                }
+            } else {
+                CustomerApiModel item = safeParseCustomer(jsonElement);
+                if (item != null && item.getId() != null) list.add(item);
             }
         }
+        
         return list;
     }
 
     private JsonArray extractCustomerArray(JsonElement root) {
-        if (root == null) {
-            return null;
-        }
-
-        if (root.isJsonArray()) {
-            return root.getAsJsonArray();
-        }
-
-        if (!root.isJsonObject()) {
-            return null;
-        }
+        if (root == null) return null;
+        if (root.isJsonArray()) return root.getAsJsonArray();
+        if (!root.isJsonObject()) return null;
 
         JsonObject object = root.getAsJsonObject();
         for (String key : Arrays.asList("results", "data", "customers", "items", "rows")) {
             JsonElement value = object.get(key);
-            if (value == null || value.isJsonNull()) {
-                continue;
-            }
-            if (value.isJsonArray()) {
-                return value.getAsJsonArray();
-            }
-            if (value.isJsonObject()) {
-                JsonArray nested = extractCustomerArray(value);
-                if (nested != null) {
-                    return nested;
-                }
-            }
+            if (value != null && value.isJsonArray()) return value.getAsJsonArray();
         }
-
         return null;
     }
 
@@ -192,33 +181,11 @@ public class CustomerViewModel extends ViewModel {
         try {
             return gson.fromJson(element, CustomerApiModel.class);
         } catch (Exception ignored) {
-            // Skip malformed item to keep list rendering robust.
             return null;
         }
     }
 
     private String buildHttpErrorMessage(String action, Response<?> response) {
-        String detail = "";
-        try {
-            if (response.errorBody() != null) {
-                detail = response.errorBody().string();
-            }
-        } catch (Exception ignored) {
-            detail = "";
-        }
-
-        String normalized = detail == null ? "" : detail.toLowerCase(Locale.US);
-        if (response.code() == 400 && normalized.contains("invalid http_host header")) {
-            return "HTTP 400: Django đang chặn host 10.0.2.2. Thêm 10.0.2.2 vào ALLOWED_HOSTS trong settings.py";
-        }
-
-        if (detail != null && !detail.trim().isEmpty()) {
-            String compact = detail.replaceAll("\\s+", " ").trim();
-            if (compact.length() > 160) {
-                compact = compact.substring(0, 160) + "...";
-            }
-            return "Không thể " + action + " (HTTP " + response.code() + "): " + compact;
-        }
         return "Không thể " + action + " (HTTP " + response.code() + ")";
     }
 }

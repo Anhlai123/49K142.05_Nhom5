@@ -34,7 +34,7 @@ public class CustomerDetailFragment extends Fragment {
             // Creating a dummy customer based on the hardcoded data in the layout
             // In a real app, this should be passed as an argument to this fragment
             CustomerFragment.Customer customer = new CustomerFragment.Customer("Nguyễn Văn A", "KH00001", "0901 234 567");
-            UpdateCustomerBottomSheet bottomSheet = new UpdateCustomerBottomSheet(customer);
+            UpdateCustomerBottomSheet bottomSheet = UpdateCustomerBottomSheet.newInstance(customer);
             bottomSheet.show(getParentFragmentManager(), bottomSheet.getTag());
         });
     }
