@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
@@ -50,6 +51,8 @@ public class CourtManagementFragment extends Fragment {
         setupRecyclerView();
 
         binding.fabAdd.setOnClickListener(v -> showAddCourtBottomSheet());
+
+        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
     }
 
     private void showAddCourtBottomSheet() {

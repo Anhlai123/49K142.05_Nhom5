@@ -60,7 +60,7 @@
         android:background="@drawable/bg_input_field"
         android:enabled="false"
         android:paddingHorizontal="16dp"
-        android:text="LOAISAN003"
+        android:hint="Tự động tạo mã từ hệ thống"
         android:textColor="#212121"
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/label_id" />

@@ -1,9 +1,12 @@
 package com.example.nhom5.courtype;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.nhom5.R;
 import com.example.nhom5.databinding.ItemCourtTypeBinding;
 import java.util.List;
 
@@ -35,6 +38,15 @@ public class CourtTypeAdapter extends RecyclerView.Adapter<CourtTypeAdapter.Cour
         holder.binding.tvTypeName.setText(courtType.getName());
         holder.binding.tvTypeId.setText(courtType.getId());
         holder.binding.tvStatus.setText(courtType.getStatus());
+
+        // Thay đổi màu sắc và background dựa trên trạng thái
+        if ("Ngừng hoạt động".equalsIgnoreCase(courtType.getStatus()) || "INACTIVE".equalsIgnoreCase(courtType.getStatus())) {
+            holder.binding.tvStatus.setTextColor(Color.RED);
+            holder.binding.tvStatus.setBackgroundResource(R.drawable.status_bg_inactive);
+        } else {
+            holder.binding.tvStatus.setTextColor(Color.parseColor("#00A63E"));
+            holder.binding.tvStatus.setBackgroundResource(R.drawable.status_bg_available);
+        }
 
         holder.binding.btnEdit.setOnClickListener(v -> listener.onEdit(courtType));
         holder.binding.btnDelete.setOnClickListener(v -> listener.onDelete(courtType));
