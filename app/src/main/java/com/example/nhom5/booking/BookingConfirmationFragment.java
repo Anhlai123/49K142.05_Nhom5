@@ -155,7 +155,7 @@ public class BookingConfirmationFragment extends Fragment {
         );
 
         ApiService apiService = ApiClient.getApiService();
-        apiService.createBooking(request).enqueue(new Callback<>() {
+        apiService.createBooking(request).enqueue(new Callback<BookingResponse>() {
             @Override
             public void onResponse(@NonNull Call<BookingResponse> call, @NonNull Response<BookingResponse> response) {
                 if (!isAdded() || getContext() == null) return;

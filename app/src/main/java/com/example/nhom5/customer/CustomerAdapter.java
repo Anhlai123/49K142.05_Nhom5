@@ -1,9 +1,12 @@
 package com.example.nhom5.customer;
 
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -47,9 +50,22 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
         });
 
         holder.binding.btnEditCustomer.setOnClickListener(v -> {
-            UpdateCustomerBottomSheet bottomSheet = new UpdateCustomerBottomSheet(customer);
-            bottomSheet.show(((AppCompatActivity) v.getContext()).getSupportFragmentManager(), bottomSheet.getTag());
+            FragmentManager fragmentManager = getFragmentManager(v.getContext());
+            if (fragmentManager != null) {
+                UpdateCustomerBottomSheet bottomSheet = UpdateCustomerBottomSheet.newInstance(customer);
+                bottomSheet.show(fragmentManager, bottomSheet.getTag());
+            }
         });
+    }
+
+    private FragmentManager getFragmentManager(Context context) {
+        while (context instanceof ContextWrapper) {
+            if (context instanceof AppCompatActivity) {
+                return ((AppCompatActivity) context).getSupportFragmentManager();
+            }
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return null;
     }
 
     @Override
