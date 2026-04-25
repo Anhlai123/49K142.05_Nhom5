@@ -5,13 +5,14 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="20dp">
 
+    <!-- Thanh kéo nhỏ -->
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="12dp"
         android:background="#E0E0E0" />
 
     <TextView
@@ -21,29 +22,19 @@
         android:gravity="center"
         android:text="Sân Cầu Lông 2"
         android:textColor="@color/black"
-        android:textSize="24sp"
+        android:textSize="18sp"
         android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="Vui lòng xác nhận đặt sân!"
-        android:textColor="@color/text_grey"
-        android:textSize="16sp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnConfirmBooking"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="16dp"
+        android:layout_height="54dp"
+        android:layout_marginTop="16dp"
         android:backgroundTint="@color/primary"
         android:text="XÁC NHẬN ĐẶT SÂN"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold"
-        app:cornerRadius="16dp" />
+        app:cornerRadius="12dp" />
 
 </LinearLayout>
