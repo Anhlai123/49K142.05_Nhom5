@@ -41,9 +41,10 @@ public class UpdateStatusBottomSheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.statusPending.setOnClickListener(v -> selectStatus("CHỜ XÁC NHẬN"));
-        binding.statusCompleted.setOnClickListener(v -> selectStatus("HOÀN TẤT"));
-        binding.statusCancelled.setOnClickListener(v -> selectStatus("ĐÃ HỦY"));
+        // Giá trị phải khớp với STATUS_CHOICES trong model QLDonDat backend
+        binding.statusPending.setOnClickListener(v -> selectStatus("Chờ xác nhận"));
+        binding.statusCompleted.setOnClickListener(v -> selectStatus("Hoàn thành"));
+        binding.statusCancelled.setOnClickListener(v -> selectStatus("Hủy"));
     }
 
     private void selectStatus(String status) {

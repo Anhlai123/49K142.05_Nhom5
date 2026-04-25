@@ -166,7 +166,14 @@ public class BookingConfirmationFragment extends Fragment {
                 if (response.isSuccessful()) {
                     Toast.makeText(requireContext(), getString(R.string.booking_success_message, name), Toast.LENGTH_SHORT).show();
                     if (getView() != null) {
-                        Navigation.findNavController(getView()).navigate(R.id.navigation_home);
+                        // Dùng popBackStack về navigation_schedule thay vì navigate() mới
+                        // để tránh tạo thêm instance và gây xung đột back stack với tab Quản lý đơn
+                        boolean popped = Navigation.findNavController(getView())
+                                .popBackStack(R.id.navigation_schedule, false);
+                        if (!popped) {
+                            // Fallback: nếu không có schedule trong stack, navigate bình thường
+                            Navigation.findNavController(getView()).navigate(R.id.navigation_schedule);
+                        }
                     }
                 } else {
                     Toast.makeText(requireContext(), "Đặt sân thất bại: " + response.code(), Toast.LENGTH_SHORT).show();

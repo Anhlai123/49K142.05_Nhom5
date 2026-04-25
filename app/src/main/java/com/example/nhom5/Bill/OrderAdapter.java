@@ -81,19 +81,29 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         private void applyStatusStyle(String status) {
             if (status == null) return;
-
+            android.content.Context ctx = binding.getRoot().getContext();
             String normalized = status.trim().toLowerCase();
-            if (normalized.contains("xác nhận")) {
+
+            if (normalized.equals("chờ xác nhận") || normalized.equals("cho xac nhan")) {
+                // Cam - Chờ xác nhận
                 binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
-                binding.tvStatus.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.white));
-            }
-            if (normalized.equals("đã xác nhận")) {
+                binding.tvStatus.setTextColor(android.graphics.Color.parseColor("#F97316"));
+            } else if (normalized.equals("đã xác nhận") || normalized.equals("da xac nhan")) {
+                // Xanh lá - Đã xác nhận
                 binding.tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
-                binding.tvStatus.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.primary));
-            }
-            if (normalized.contains("hoàn")) {
+                binding.tvStatus.setTextColor(android.graphics.Color.parseColor("#16A34A"));
+            } else if (normalized.contains("hoàn thành") || normalized.contains("hoan thanh")) {
+                // Xanh dương - Hoàn thành
                 binding.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
-                binding.tvStatus.setTextColor(ContextCompat.getColor(binding.getRoot().getContext(), R.color.white));
+                binding.tvStatus.setTextColor(android.graphics.Color.parseColor("#3B82F6"));
+            } else if (normalized.equals("hủy") || normalized.equals("huy") || normalized.contains("đã hủy")) {
+                // Đỏ - Hủy
+                binding.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
+                binding.tvStatus.setTextColor(android.graphics.Color.parseColor("#EF4444"));
+            } else {
+                // Mặc định - cam (Chờ xác nhận)
+                binding.tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
+                binding.tvStatus.setTextColor(android.graphics.Color.parseColor("#F97316"));
             }
         }
 

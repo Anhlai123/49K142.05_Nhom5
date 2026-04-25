@@ -47,7 +47,12 @@ public class SecondFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         adapter = new OrderAdapter(order -> {
-            OrderDetailsBottomSheet bottomSheet = new OrderDetailsBottomSheet(order.getMaDon());
+            // Dùng numeric ID (order.getId()) cho API call, maDon cho hiển thị
+            OrderDetailsBottomSheet bottomSheet = new OrderDetailsBottomSheet(
+                    String.valueOf(order.getId()),
+                    order.getMaDon()
+            );
+            bottomSheet.setOnOrderUpdatedListener(() -> loadOrders());
             bottomSheet.show(getParentFragmentManager(), "order_details");
         });
 
@@ -72,8 +77,6 @@ public class SecondFragment extends Fragment {
             applyFilters();
         });
 
-        binding.filterAll.setBackgroundResource(R.drawable.bg_pill_active);
-
         if (binding.getRoot().findViewById(R.id.etSearchOrder) != null) {
             android.widget.EditText etSearch = binding.getRoot().findViewById(R.id.etSearchOrder);
             etSearch.addTextChangedListener(new TextWatcher() {
@@ -86,6 +89,7 @@ public class SecondFragment extends Fragment {
         }
 
         loadOrders();
+        resetFilterStyles();
     }
 
     private void loadOrders() {
@@ -98,12 +102,19 @@ public class SecondFragment extends Fragment {
                     fullOrderList.clear();
                     fullOrderList.addAll(response.body());
                     applyFilters();
+                } else {
+                    // If API returns empty or error, clear list
+                    fullOrderList.clear();
+                    applyFilters();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<OrderModel>> call, @NonNull Throwable t) {
                 t.printStackTrace();
+                // On failure, clear list and show empty
+                fullOrderList.clear();
+                applyFilters();
             }
         });
     }
