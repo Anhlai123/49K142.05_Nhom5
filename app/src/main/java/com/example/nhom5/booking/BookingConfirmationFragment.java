@@ -26,7 +26,10 @@ import com.example.nhom5.models.BookingResponse;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -37,42 +40,61 @@ public class BookingConfirmationFragment extends Fragment {
 
     private EditText etName, etPhone;
     private Button btnConfirm;
+    private final int MOCK_PRICE_PER_HOUR = 180000;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_booking_confirmation, container, false);
 
-        // 3. Auto-Fill Logic: Retrieve arguments
-        String courtName = getArguments() != null ? getArguments().getString("courtName", "Sân Cầu Lông 2") : "Sân Cầu Lông 2";
-        String startTime = getArguments() != null ? getArguments().getString("startTime", "07:00") : "07:00";
-        String date = getArguments() != null ? getArguments().getString("date", "13/01/2026") : "13/01/2026";
-        int courtId = getArguments() != null ? getArguments().getInt("courtId", -1) : -1;
+        // Retrieve arguments
+        String courtName = "Sân Cầu Lông 2";
+        String date = "13/01/2026";
+        int courtId = -1;
+        ArrayList<String> selectedSlots = new ArrayList<>();
 
-        // pricePerHour in nav_graph is integer, but original code used double. Checking both.
-        double pricePerHour = 60000.0;
         if (getArguments() != null) {
-            Object price = getArguments().get("pricePerHour");
-            if (price instanceof Integer) {
-                pricePerHour = (Integer) price;
-            } else if (price instanceof Double) {
-                pricePerHour = (Double) price;
-            }
+            courtName = getArguments().getString("courtName", courtName);
+            date = getArguments().getString("date", date);
+            courtId = getArguments().getInt("courtId", -1);
+            selectedSlots = getArguments().getStringArrayList("selectedSlots");
         }
 
-        // Calculate End Time
-        int startHour = 7;
-        try {
-            startHour = Integer.parseInt(startTime.split(":")[0]);
-        } catch (Exception e) {
-            Log.w("BOOKING_CONFIRM", "Invalid start time, using default", e);
+        // Logic for multiple slots
+        int numSlots = (selectedSlots != null) ? selectedSlots.size() : 1;
+        double totalPrice = (double) numSlots * MOCK_PRICE_PER_HOUR;
+
+        // Formatting display string
+        String timeSummary = "Chưa chọn giờ";
+        String firstStartTime = "07:00";
+        String lastEndTime = "08:00";
+
+        if (selectedSlots != null && !selectedSlots.isEmpty()) {
+            List<String> timesOnly = new ArrayList<>();
+            for (String key : selectedSlots) {
+                String[] parts = key.split("\\|");
+                timesOnly.add(parts[1]);
+            }
+            Collections.sort(timesOnly);
+            
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < timesOnly.size(); i++) {
+                String start = timesOnly.get(i);
+                int hour = Integer.parseInt(start.split(":")[0]);
+                String end = String.format(Locale.getDefault(), "%02d:00", hour + 1);
+                sb.append(start).append("-").append(end);
+                if (i < timesOnly.size() - 1) sb.append(", ");
+            }
+            timeSummary = sb.toString();
+            firstStartTime = timesOnly.get(0);
+            
+            // Calculate last end time for API
+            int lastHour = Integer.parseInt(timesOnly.get(timesOnly.size()-1).split(":")[0]);
+            lastEndTime = String.format(Locale.getDefault(), "%02d:00", lastHour + 1);
         }
-        String endTime = String.format(Locale.getDefault(), "%02d:00", startHour + 1);
-        double totalHours = 1.0;
-        double totalPrice = totalHours * pricePerHour;
 
         DecimalFormat priceFormatter = new DecimalFormat("#,###");
-        String formattedPrice = priceFormatter.format(totalPrice) + " đ";
+        String formattedTotalPrice = priceFormatter.format(totalPrice) + " đ";
 
         // Bind views
         TextView tvCourtNameHeader = view.findViewById(R.id.tvCourtNameHeader);
@@ -85,146 +107,96 @@ public class BookingConfirmationFragment extends Fragment {
         etName = view.findViewById(R.id.etName);
         etPhone = view.findViewById(R.id.etPhone);
         btnConfirm = view.findViewById(R.id.btnConfirm);
-        Button btnCancel = view.findViewById(R.id.btnCancel);
-        ImageButton btnBack = view.findViewById(R.id.btnBack);
-
+        
         // Set data
         tvCourtNameHeader.setText(courtName);
-        tvPriceHeader.setText(getString(R.string.booking_price_per_hour, priceFormatter.format(pricePerHour)));
+        tvPriceHeader.setText(getString(R.string.booking_price_per_hour, priceFormatter.format(MOCK_PRICE_PER_HOUR)));
         tvDate.setText(getString(R.string.booking_date_label, date));
         tvCourtField.setText(courtName);
-        tvTimeField.setText(getString(R.string.booking_time_range, startTime, endTime));
-        tvHoursField.setText(String.format(Locale.getDefault(), "%dh00", (int) totalHours));
-        tvPriceField.setText(formattedPrice);
+        tvTimeField.setText(timeSummary); // Show ALL selected ranges
+        tvHoursField.setText(numSlots + " giờ");
+        tvPriceField.setText(formattedTotalPrice);
 
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        }
-        if (btnCancel != null) {
-            btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        }
+        final String finalStartTime = firstStartTime;
+        final String finalEndTime = lastEndTime;
+        final String finalDate = date;
+        final int finalCourtId = courtId;
 
-        btnConfirm.setOnClickListener(v -> submitBooking(courtId, date, startTime, endTime));
+        btnConfirm.setOnClickListener(v -> submitBooking(finalCourtId, finalDate, finalStartTime, finalEndTime));
 
-        TextWatcher textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateInput();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        };
-
-        etName.addTextChangedListener(textWatcher);
-        etPhone.addTextChangedListener(textWatcher);
+        // Navigation
+        ImageButton btnBack = view.findViewById(R.id.btnBack);
+        if (btnBack != null) btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        
+        Button btnCancel = view.findViewById(R.id.btnCancel);
+        if (btnCancel != null) btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
 
         validateInput();
+        etName.addTextChangedListener(new SimpleTextWatcher());
+        etPhone.addTextChangedListener(new SimpleTextWatcher());
 
         return view;
     }
 
     private void submitBooking(int courtId, String date, String startTime, String endTime) {
-        if (!isAdded() || getContext() == null) return;
+        if (!isAdded()) return;
 
         String name = etName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
-        if (name.isEmpty() || phone.isEmpty()) {
-            Toast.makeText(requireContext(), getString(R.string.booking_missing_contact), Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (courtId <= 0) {
-            Toast.makeText(requireContext(), getString(R.string.booking_missing_court), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        
         btnConfirm.setEnabled(false);
         btnConfirm.setText(R.string.booking_creating_button);
 
         BookingRequest request = new BookingRequest(
-                courtId,
-                name,
-                phone,
-                normalizeDateForRequest(date),
-                startTime,
-                endTime,
-                ""
+                courtId, name, phone, normalizeDateForRequest(date),
+                startTime, endTime, ""
         );
 
         ApiService apiService = ApiClient.getApiService();
         apiService.createBooking(request).enqueue(new Callback<BookingResponse>() {
             @Override
             public void onResponse(@NonNull Call<BookingResponse> call, @NonNull Response<BookingResponse> response) {
-                if (!isAdded() || getContext() == null) return;
-
+                if (!isAdded()) return;
                 btnConfirm.setEnabled(true);
                 btnConfirm.setText(R.string.booking_confirm_button);
 
                 if (response.isSuccessful()) {
-                    Toast.makeText(requireContext(), getString(R.string.booking_success_message, name), Toast.LENGTH_SHORT).show();
-                    if (getView() != null) {
-                        // Dùng popBackStack về navigation_schedule thay vì navigate() mới
-                        // để tránh tạo thêm instance và gây xung đột back stack với tab Quản lý đơn
-                        boolean popped = Navigation.findNavController(getView())
-                                .popBackStack(R.id.navigation_schedule, false);
-                        if (!popped) {
-                            // Fallback: nếu không có schedule trong stack, navigate bình thường
-                            Navigation.findNavController(getView()).navigate(R.id.navigation_schedule);
-                        }
-                    }
+                    Toast.makeText(requireContext(), "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack(R.id.navigation_schedule, false);
                 } else {
-                    Toast.makeText(requireContext(), "Đặt sân thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
-                    Log.e("BOOKING_API", "createBooking failed with code " + response.code());
+                    Toast.makeText(requireContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<BookingResponse> call, @NonNull Throwable t) {
-                if (!isAdded() || getContext() == null) return;
-
+                if (!isAdded()) return;
                 btnConfirm.setEnabled(true);
                 btnConfirm.setText(R.string.booking_confirm_button);
-                
-                String errorMsg = "Lỗi kết nối: ";
-                if (t.getMessage() != null) {
-                    errorMsg += t.getMessage();
-                } else {
-                    errorMsg += "Không thể kết nối đến server";
-                }
-                
-                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show();
-                Log.e("BOOKING_API", "createBooking error: " + errorMsg, t);
-                t.printStackTrace();
+                Toast.makeText(requireContext(), "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private String normalizeDateForRequest(String date) {
-        if (date == null) return "";
-        if (date.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            return date;
-        }
         try {
             SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            inputFormat.setLenient(false);
             Date parsedDate = inputFormat.parse(date);
-            if (parsedDate == null) return date;
-            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            return outputFormat.format(parsedDate);
-        } catch (Exception e) {
-            return date;
-        }
+            return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(parsedDate);
+        } catch (Exception e) { return date; }
     }
 
     private void validateInput() {
         String name = etName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         btnConfirm.setEnabled(!name.isEmpty() && !phone.isEmpty());
-        if (btnConfirm.isEnabled()) {
-            btnConfirm.setText(R.string.booking_confirm_button);
-        }
+    }
+
+    private class SimpleTextWatcher implements TextWatcher {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) { validateInput(); }
+        @Override
+        public void afterTextChanged(Editable s) {}
     }
 }
