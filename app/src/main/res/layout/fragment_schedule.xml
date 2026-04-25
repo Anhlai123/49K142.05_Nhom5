@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <!-- Header (Standardized to 80dp) -->
+    <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- 3. Filter & Selection Group -->
+            <!-- Filter & Selection Group -->
             <LinearLayout
                 android:id="@+id/filterSection"
                 android:layout_width="match_parent"
@@ -166,89 +166,12 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- BY SCHEDULE VIEW (Default) -->
+            <!-- BY SCHEDULE VIEW -->
             <LinearLayout
                 android:id="@+id/layoutBySchedule"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
-                <LinearLayout
-                    android:id="@+id/legendRow"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#FAFAFA"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingVertical="12dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <View
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:background="@drawable/bg_circle_green"
-                            android:backgroundTint="@color/booked_dot" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="ĐÃ ĐẶT"
-                            android:textColor="@color/text_grey"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="24dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <View
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:background="@drawable/bg_circle_green"
-                            android:backgroundTint="@color/maintenance_dot" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="BẢO TRÌ"
-                            android:textColor="@color/text_grey"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="24dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <View
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:background="@drawable/bg_grid_cell" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="TRỐNG"
-                            android:textColor="@color/text_grey"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </LinearLayout>
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"
@@ -261,7 +184,7 @@
                 </HorizontalScrollView>
             </LinearLayout>
 
-            <!-- BY COURT VIEW (Hidden by default) -->
+            <!-- BY COURT VIEW -->
             <LinearLayout
                 android:id="@+id/layoutByCourt"
                 android:layout_width="match_parent"
@@ -269,7 +192,6 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Court Selection Row -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -282,13 +204,6 @@
                         android:textColor="@color/dark_green_text"
                         android:textSize="16sp"
                         android:textStyle="bold" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:text="Xem bản đồ"
-                        android:textColor="@color/primary"
-                        android:textSize="14sp" />
                 </RelativeLayout>
 
                 <HorizontalScrollView
@@ -308,39 +223,13 @@
                     </LinearLayout>
                 </HorizontalScrollView>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:text="Khung giờ (6:00 - 23:00)"
-                    android:textColor="@color/dark_green_text"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
                 <android.widget.GridLayout
                     android:id="@+id/timeGrid"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
                     android:columnCount="3">
-                    <!-- Slots will be added dynamically -->
                 </android.widget.GridLayout>
-
-                <!-- Legend By Court -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingVertical="24dp">
-                    <View android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/bg_circle_green" android:backgroundTint="@color/text_grey" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Trống" android:textSize="12sp" android:textColor="@color/text_grey" />
-                    <View android:layout_width="8dp" android:layout_height="8dp" android:layout_marginStart="16dp" android:background="@drawable/bg_circle_green" android:backgroundTint="@color/selected_slot_text" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Đang chọn" android:textSize="12sp" android:textColor="@color/text_grey" />
-                    <View android:layout_width="8dp" android:layout_height="8dp" android:layout_marginStart="16dp" android:background="@drawable/bg_circle_green" android:backgroundTint="@color/status_busy_text" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Đã đặt" android:textSize="12sp" android:textColor="@color/text_grey" />
-                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>

@@ -1,12 +1,9 @@
 package com.example.nhom5.schedule;
 
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -18,25 +15,25 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.view.Window;
+import android.view.WindowManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Collections;
+import java.util.TreeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.api.ApiService;
-import com.example.nhom5.models.BookingRequest;
-import com.example.nhom5.models.BookingResponse;
 import com.example.nhom5.models.CourtData;
 import com.example.nhom5.models.CourtScheduleResponse;
 import com.example.nhom5.models.CourtTypeModel;
@@ -66,18 +63,19 @@ public class ScheduleFragment extends Fragment {
     
     private String selectedDateApi;
     private Calendar selectedCalendar;
-    private int selectedCourtId = 2; // Default to Sân 2 as in XML
+    private int selectedCourtId = 2; 
     private int currentCourtTypeId = 1; 
     private List<CourtTypeModel> courtTypeList = new ArrayList<>();
 
-    // State management for By Court view
     private enum SlotStatus { AVAILABLE, BOOKED, SELECTED, MAINTENANCE }
-    private Set<String> selectedSlots = new HashSet<>();
+    private Set<String> selectedSlotKeys = new HashSet<>(); // Format: "courtName|startTime"
+    private final int PRICE_PER_SLOT = 180000;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_schedule, container, false);
+        
         tableLayout = view.findViewById(R.id.tableLayout);
         tvScheduleTypeText = view.findViewById(R.id.tvScheduleTypeText);
         tvSelectedDate = view.findViewById(R.id.tvSelectedDate);
@@ -98,15 +96,17 @@ public class ScheduleFragment extends Fragment {
         court4 = view.findViewById(R.id.court4);
         setupCourtSelectionListeners();
 
-        // Initialize date to today
         selectedCalendar = Calendar.getInstance();
-        SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        
-        selectedDateApi = apiFormat.format(selectedCalendar.getTime());
-        tvSelectedDate.setText(displayFormat.format(selectedCalendar.getTime()));
+        updateDateDisplay();
 
         return view;
+    }
+
+    private void updateDateDisplay() {
+        SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        selectedDateApi = apiFormat.format(selectedCalendar.getTime());
+        tvSelectedDate.setText(displayFormat.format(selectedCalendar.getTime()));
     }
 
     @Override
@@ -122,7 +122,6 @@ public class ScheduleFragment extends Fragment {
             public void onResponse(Call<List<CourtTypeModel>> call, Response<List<CourtTypeModel>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     courtTypeList = response.body();
-                    // Optional: Update UI to show the name of the current type if list is loaded
                     for (CourtTypeModel type : courtTypeList) {
                         if (type.getId() == currentCourtTypeId) {
                             tvSelectedCourtType.setText(type.getName());
@@ -131,11 +130,8 @@ public class ScheduleFragment extends Fragment {
                     }
                 }
             }
-
             @Override
-            public void onFailure(Call<List<CourtTypeModel>> call, Throwable t) {
-                Log.e("API_ERROR", "Failed to load court types: " + t.getMessage());
-            }
+            public void onFailure(Call<List<CourtTypeModel>> call, Throwable t) {}
         });
     }
 
@@ -150,11 +146,9 @@ public class ScheduleFragment extends Fragment {
                     setupMockGrid();
                 }
             }
-
             @Override
             public void onFailure(Call<CourtScheduleResponse> call, Throwable t) {
                 if (!isAdded() || getContext() == null) return;
-                Log.e("API_ERROR", t.getMessage());
                 setupMockGrid();
             }
         });
@@ -164,239 +158,299 @@ public class ScheduleFragment extends Fragment {
         if (!isAdded() || getContext() == null) return;
         tableLayout.removeAllViews();
         
-        // 1. Header Row
-        TableRow headerRow = new TableRow(getContext());
-        
-        TextView thuHeader = createCell("THỨ", true, 80);
-        if (thuHeader != null) {
-            thuHeader.setBackgroundResource(R.drawable.bg_grid_cell);
-            thuHeader.setBackgroundTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.primary)));
-            thuHeader.setTextColor(Color.WHITE);
-            headerRow.addView(thuHeader);
-        }
+        String dayOfWeekLabel = "Thứ";
+        try {
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            java.util.Date date = fmt.parse(schedule.getDate());
+            dayOfWeekLabel = new SimpleDateFormat("EEEE", new Locale("vi", "VN")).format(date);
+        } catch (Exception e) { dayOfWeekLabel = "Ngày"; }
 
-        TextView sanHeader = createCell("SÂN", true, 80);
-        if (sanHeader != null) {
-            sanHeader.setBackgroundResource(R.drawable.bg_grid_cell);
-            sanHeader.setTextColor(ContextCompat.getColor(getContext(), R.color.dark_green_text));
-            headerRow.addView(sanHeader);
-        }
+        TableRow headerRow = new TableRow(getContext());
+        headerRow.addView(createStyledHeaderCell("THỨ", ContextCompat.getColor(getContext(), R.color.primary), Color.WHITE, 80));
+        headerRow.addView(createStyledHeaderCell("SÂN", Color.parseColor("#F1F8F6"), ContextCompat.getColor(getContext(), R.color.dark_green_text), 80));
         
         if (!schedule.getData().isEmpty()) {
             for (Slot slot : schedule.getData().get(0).getSlots()) {
-                TextView timeCell = createCell(slot.getStartTime().substring(0, 5), true, 60);
-                if (timeCell != null) {
-                    timeCell.setBackgroundResource(R.drawable.bg_grid_cell);
-                    timeCell.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#F1F8F6")));
-                    timeCell.setTextColor(ContextCompat.getColor(getContext(), R.color.dark_green_text));
-                    headerRow.addView(timeCell);
-                }
+                headerRow.addView(createStyledHeaderCell(slot.getStartTime().substring(0, 5), Color.parseColor("#F1F8F6"), ContextCompat.getColor(getContext(), R.color.dark_green_text), 60));
             }
         }
         tableLayout.addView(headerRow);
 
-        // 2. Data Rows
         List<CourtData> courts = schedule.getData();
-        int numCourts = courts.size();
-        for (int i = 0; i < numCourts; i++) {
+        for (int i = 0; i < courts.size(); i++) {
             CourtData court = courts.get(i);
             TableRow row = new TableRow(getContext());
             
-            // Date cell
-            TextView dayTv = createCell(i == numCourts / 2 ? "Thứ 2" : "", false, 80);
-            if (dayTv != null) {
-                if (i == 0) dayTv.setBackgroundResource(R.drawable.bg_day_top);
-                else if (i == numCourts - 1) dayTv.setBackgroundResource(R.drawable.bg_day_bottom);
-                else dayTv.setBackgroundResource(R.drawable.bg_day_middle);
-                row.addView(dayTv);
-            }
+            TextView dayTv = createCell(i == courts.size() / 2 ? dayOfWeekLabel : "", false, 80);
+            if (i == 0) dayTv.setBackgroundResource(R.drawable.bg_day_top);
+            else if (i == courts.size() - 1) dayTv.setBackgroundResource(R.drawable.bg_day_bottom);
+            else dayTv.setBackgroundResource(R.drawable.bg_day_middle);
+            row.addView(dayTv);
 
-            // Court name cell
             TextView courtTv = createCell(court.getCourtName(), false, 80);
-            if (courtTv != null) {
-                courtTv.setBackgroundResource(R.drawable.bg_grid_cell);
-                courtTv.setTextColor(ContextCompat.getColor(getContext(), R.color.text_grey));
-                row.addView(courtTv);
-            }
+            courtTv.setBackgroundResource(R.drawable.bg_grid_cell);
+            courtTv.setTextColor(ContextCompat.getColor(getContext(), R.color.text_grey));
+            row.addView(courtTv);
 
             List<Slot> slots = court.getSlots();
             for (int k = 0; k < slots.size(); k++) {
                 Slot slot = slots.get(k);
                 String status = slot.getStatus();
+                String slotKey = court.getCourtName() + "|" + slot.getStartTime();
                 
                 if ("booked".equalsIgnoreCase(status) || "maintenance".equalsIgnoreCase(status)) {
-                    // Start spanning
                     int span = 1;
                     int next = k + 1;
                     while (next < slots.size() && status.equalsIgnoreCase(slots.get(next).getStatus())) {
                         span++;
                         next++;
                     }
-                    
                     TextView spanCell = createCell(status.equalsIgnoreCase("booked") ? "Đã đặt" : "Bảo trì", false, 60 * span);
-                    if (spanCell != null) {
-                        TableRow.LayoutParams params = (TableRow.LayoutParams) spanCell.getLayoutParams();
-                        params.span = span;
-                        spanCell.setLayoutParams(params);
-                        
-                        if (status.equalsIgnoreCase("booked")) {
-                            spanCell.setBackgroundResource(R.drawable.bg_booked_status);
-                            spanCell.setTextColor(Color.parseColor("#FF5252"));
-                            spanCell.setOnClickListener(v -> showBookedBottomSheet());
-                        } else {
-                            spanCell.setBackgroundResource(R.drawable.bg_maintenance_status);
-                            spanCell.setTextColor(Color.parseColor("#9E9E9E"));
-                        }
-                        spanCell.setTypeface(null, Typeface.BOLD);
-                        row.addView(spanCell);
+                    TableRow.LayoutParams params = (TableRow.LayoutParams) spanCell.getLayoutParams();
+                    params.span = span;
+                    spanCell.setLayoutParams(params);
+                    if (status.equalsIgnoreCase("booked")) {
+                        spanCell.setBackgroundResource(R.drawable.bg_booked_status);
+                        spanCell.setTextColor(Color.parseColor("#FF5252"));
+                        spanCell.setOnClickListener(v -> showBookedBottomSheet());
+                    } else {
+                        spanCell.setBackgroundResource(R.drawable.bg_maintenance_status);
+                        spanCell.setTextColor(Color.parseColor("#9E9E9E"));
                     }
-                    
-                    k = next - 1; // Skip the spanned slots
+                    spanCell.setTypeface(null, Typeface.BOLD);
+                    row.addView(spanCell);
+                    k = next - 1;
                 } else {
-                    // Normal available slot
-                    View cell = new View(getContext());
+                    TextView cell = new TextView(getContext());
                     TableRow.LayoutParams params = new TableRow.LayoutParams(
                             (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics()),
                             (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
                     );
                     cell.setLayoutParams(params);
                     cell.setBackgroundResource(R.drawable.bg_grid_cell);
-                    cell.setOnClickListener(v -> showBookingConfirmation(court.getCourtName(), court.getCourtId(), schedule.getDate(), slot.getStartTime()));
+                    updateTableCellUI(cell, selectedSlotKeys.contains(slotKey));
+                    cell.setOnClickListener(v -> toggleSlotSelection(slotKey, cell));
                     row.addView(cell);
                 }
             }
             tableLayout.addView(row);
+        }
+    }
+
+    private void toggleSlotSelection(String slotKey, View cell) {
+        if (selectedSlotKeys.contains(slotKey)) {
+            selectedSlotKeys.remove(slotKey);
+            if (cell instanceof TextView) updateTableCellUI((TextView) cell, false);
+        } else {
+            selectedSlotKeys.add(slotKey);
+            if (cell instanceof TextView) updateTableCellUI((TextView) cell, true);
+        }
+
+        if (selectedSlotKeys.isEmpty()) {
+            if (currentDialog != null) currentDialog.dismiss();
+        } else {
+            showBookingConfirmation(); 
+        }
+    }
+
+    private void showBookingConfirmation() {
+        if (getContext() == null) return;
+        
+        if (currentDialog != null && currentDialog.isShowing()) {
+            updatePopupContent();
+            return;
+        }
+
+        currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
+        View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.layout_confirm_booking, null);
+        currentDialog.setContentView(bottomSheetView);
+        updatePopupContent();
+
+        bottomSheetView.findViewById(R.id.btnConfirmBooking).setOnClickListener(v -> navigateToBooking());
+
+        Window window = currentDialog.getWindow();
+        if (window != null) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        }
+        currentDialog.show();
+    }
+
+    private void updatePopupContent() {
+        if (currentDialog == null) return;
+        TextView tvTitle = currentDialog.findViewById(R.id.tvCourtTitle);
+        if (tvTitle != null) {
+            tvTitle.setText(getFormattedSelectionSummary());
+        }
+    }
+
+    private String getFormattedSelectionSummary() {
+        if (selectedSlotKeys.isEmpty()) return "";
+        
+        TreeMap<String, List<Integer>> groupedByCourt = new TreeMap<>();
+        for (String key : selectedSlotKeys) {
+            String[] parts = key.split("\\|");
+            String court = parts[0];
+            String[] timeParts = parts[1].split(":");
+            int minutes = Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1]);
+            
+            if (!groupedByCourt.containsKey(court)) groupedByCourt.put(court, new ArrayList<>());
+            groupedByCourt.get(court).add(minutes);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (String court : groupedByCourt.keySet()) {
+            List<Integer> times = groupedByCourt.get(court);
+            Collections.sort(times);
+            
+            sb.append(court).append(": ");
+            for (int i = 0; i < times.size(); i++) {
+                int start = times.get(i);
+                int end = start + 60; // Giả sử mỗi slot 1 tiếng
+                sb.append(String.format("%02d:%02d - %02d:%02d", start/60, start%60, end/60, end%60));
+                if (i < times.size() - 1) sb.append(", ");
+            }
+            if (groupedByCourt.size() > 1) sb.append(" | ");
+        }
+        return sb.toString();
+    }
+
+    private void navigateToBooking() {
+        if (currentDialog != null) currentDialog.dismiss();
+        if (isAdded() && !selectedSlotKeys.isEmpty()) {
+            ArrayList<String> slotList = new ArrayList<>(selectedSlotKeys);
+            String firstKey = slotList.get(0);
+            String[] parts = firstKey.split("\\|");
+            
+            Bundle args = new Bundle();
+            args.putInt("courtId", 1); // Mock ID
+            args.putString("courtName", parts[0]);
+            args.putString("date", tvSelectedDate.getText().toString());
+            args.putStringArrayList("selectedSlots", slotList); // Gửi toàn bộ danh sách
+            args.putInt("totalSlots", slotList.size());
+
+            NavHostFragment.findNavController(this).navigate(R.id.action_navigation_schedule_to_bookingConfirmationFragment, args);
+        }
+    }
+
+    private void updateTableCellUI(TextView cell, boolean isSelected) {
+        if (isSelected) {
+            cell.setBackgroundResource(R.drawable.bg_grid_cell);
+            cell.setBackgroundTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.selected_slot_bg)));
+        } else {
+            cell.setBackgroundResource(R.drawable.bg_grid_cell);
+            cell.setBackgroundTintList(null);
         }
     }
 
     private void setupMockGrid() {
         if (tableLayout == null || getContext() == null) return;
         tableLayout.removeAllViews();
-        String[] times = {
-                "THỨ", "SÂN", 
-                "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", 
-                "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-                "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
-                "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"
-        };
-        
-        TableRow headerRow = new TableRow(getContext());
-        for (int i = 0; i < times.length; i++) {
-            TextView tv = createCell(times[i], true, (i == 0 || i == 1) ? 80 : 60);
-            if (tv != null) {
-                if (i == 0) {
-                    tv.setBackgroundResource(R.drawable.bg_grid_cell);
-                    tv.setBackgroundTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.primary)));
-                    tv.setTextColor(Color.WHITE);
-                } else if (i == 1) {
-                    tv.setBackgroundResource(R.drawable.bg_grid_cell);
-                    tv.setTextColor(ContextCompat.getColor(getContext(), R.color.dark_green_text));
-                } else {
-                    tv.setBackgroundResource(R.drawable.bg_grid_cell);
-                    tv.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#F1F8F6")));
-                    tv.setTextColor(ContextCompat.getColor(getContext(), R.color.dark_green_text));
-                }
-                headerRow.addView(tv);
-            }
-        }
-        tableLayout.addView(headerRow);
-
-        String[] days = {"Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"};
-        for (String day : days) {
-            addDayScheduleMock(day, 4);
-        }
         setupTimeGrid();
     }
 
-    private void addDayScheduleMock(String day, int numCourts) {
+    private void setupTimeGrid() {
         if (!isAdded() || getContext() == null) return;
-        int numTimeSlots = 30;
-        for (int i = 0; i < numCourts; i++) {
-            TableRow row = new TableRow(getContext());
-            TextView dayTv = createCell(i == 1 ? day : "", false, 80);
-            if (dayTv != null) {
-                if (i == 0) dayTv.setBackgroundResource(R.drawable.bg_day_top);
-                else if (i == numCourts - 1) dayTv.setBackgroundResource(R.drawable.bg_day_bottom);
-                else dayTv.setBackgroundResource(R.drawable.bg_day_middle);
-                row.addView(dayTv);
-            }
-
-            TextView courtTv = createCell("Sân " + (i + 1), false, 80);
-            if (courtTv != null) {
-                courtTv.setBackgroundResource(R.drawable.bg_grid_cell);
-                courtTv.setTextColor(ContextCompat.getColor(getContext(), R.color.text_grey));
-                row.addView(courtTv);
-            }
-
-            for (int j = 0; j < numTimeSlots; j++) {
-                final int courtIndex = i;
-                final int timeIndex = j;
-                
-                // Randomly decide if this slot starts a booked or maintenance block
-                double rand = Math.random();
-                if ((rand < 0.1 || rand > 0.93) && j < numTimeSlots - 1) { // Don't start at the very last slot
-                    String status = rand < 0.1 ? "booked" : "maintenance";
-                    int span = (int) (Math.random() * 2) + 2; // span 2-3 cells
-                    if (j + span > numTimeSlots) span = numTimeSlots - j;
-                    if (span < 2) span = 2; // Force minimum 1 hour
-                    
-                    TextView spanCell = createCell(status.equalsIgnoreCase("booked") ? "Đã đặt" : "Bảo trì", false, 60 * span);
-                    if (spanCell != null) {
-                        TableRow.LayoutParams params = (TableRow.LayoutParams) spanCell.getLayoutParams();
-                        params.span = span;
-                        spanCell.setLayoutParams(params);
-                        
-                        if (status.equalsIgnoreCase("booked")) {
-                            spanCell.setBackgroundResource(R.drawable.bg_booked_status);
-                            spanCell.setTextColor(Color.parseColor("#FF5252"));
-                            spanCell.setOnClickListener(v -> showBookedBottomSheet());
-                        } else {
-                            spanCell.setBackgroundResource(R.drawable.bg_maintenance_status);
-                            spanCell.setTextColor(Color.parseColor("#9E9E9E"));
-                        }
-                        spanCell.setTypeface(null, Typeface.BOLD);
-                        row.addView(spanCell);
-                    }
-                    j += (span - 1);
-                } else {
-                    View cell = new View(getContext());
-                    TableRow.LayoutParams params = new TableRow.LayoutParams(
-                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, getResources().getDisplayMetrics()),
-                            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
-                    );
-                    cell.setLayoutParams(params);
-                    cell.setBackgroundResource(R.drawable.bg_grid_cell);
-                    cell.setOnClickListener(v -> showBookingConfirmation("Sân Cầu Lông " + (courtIndex + 1), courtIndex + 1, "13/01/2026", getTimeForSlot(timeIndex)));
-                    row.addView(cell);
-                }
-            }
-            tableLayout.addView(row);
+        timeGrid.removeAllViews();
+        String[] slots = {"06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"};
+        for (String slot : slots) {
+            TextView tv = new TextView(getContext());
+            tv.setText(slot);
+            tv.setGravity(Gravity.CENTER);
+            tv.setPadding(0, 32, 0, 32);
+            tv.setTextSize(14);
+            tv.setTypeface(null, Typeface.BOLD);
+            tv.setTag(slot);
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.setMargins(12, 12, 12, 12);
+            tv.setLayoutParams(params);
+            
+            String slotKey = "Sân " + selectedCourtId + "|" + slot;
+            SlotStatus status = getSlotStatusMock(slot);
+            if (selectedSlotKeys.contains(slotKey)) status = SlotStatus.SELECTED;
+            updateSlotUI(tv, status);
+            tv.setOnClickListener(v -> handleSlotClick(tv, slotKey));
+            timeGrid.addView(tv);
         }
     }
 
-    private void showDatePickerDialog() {
-        if (getContext() == null) return;
-        
-        int year = selectedCalendar.get(Calendar.YEAR);
-        int month = selectedCalendar.get(Calendar.MONTH);
-        int day = selectedCalendar.get(Calendar.DAY_OF_MONTH);
+    private SlotStatus getSlotStatusMock(String slot) {
+        if (slot.equals("15:00") || slot.equals("16:00")) return SlotStatus.BOOKED;
+        return SlotStatus.AVAILABLE;
+    }
 
+    private void handleSlotClick(TextView tv, String slotKey) {
+        SlotStatus currentStatus = getSlotStatusMock((String)tv.getTag());
+        if (currentStatus == SlotStatus.BOOKED) {
+            showBookedBottomSheet();
+            return;
+        }
+        toggleSlotSelection(slotKey, tv);
+    }
+
+    private void updateSlotUI(TextView tv, SlotStatus status) {
+        if (!isAdded()) return;
+        int bgColor, textColor;
+        switch (status) {
+            case BOOKED:
+                bgColor = ContextCompat.getColor(getContext(), R.color.booked_cell_bg);
+                textColor = Color.parseColor("#FF5252");
+                break;
+            case SELECTED:
+                bgColor = ContextCompat.getColor(getContext(), R.color.selected_slot_bg);
+                textColor = ContextCompat.getColor(getContext(), R.color.selected_slot_text);
+                break;
+            default:
+                bgColor = Color.WHITE;
+                textColor = Color.parseColor("#808080");
+                break;
+        }
+        applySlotStyles(tv, bgColor, textColor);
+    }
+
+    private void applySlotStyles(TextView tv, int bgColor, int textColor) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setCornerRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
+        drawable.setColor(bgColor);
+        drawable.setStroke((int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()), Color.parseColor("#F1F3F4"));
+        tv.setBackground(drawable);
+        tv.setTextColor(textColor);
+    }
+
+    private TextView createStyledHeaderCell(String text, int bgColor, int textColor, int widthDp) {
+        TextView tv = createCell(text, true, widthDp);
+        tv.setBackgroundResource(R.drawable.bg_grid_cell);
+        tv.setBackgroundTintList(android.content.res.ColorStateList.valueOf(bgColor));
+        tv.setTextColor(textColor);
+        return tv;
+    }
+
+    private TextView createCell(String text, boolean isHeader, int widthDp) {
+        TextView tv = new TextView(getContext());
+        tv.setText(text);
+        tv.setGravity(Gravity.CENTER);
+        TableRow.LayoutParams params = new TableRow.LayoutParams(
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, widthDp, getResources().getDisplayMetrics()),
+                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
+        );
+        tv.setLayoutParams(params);
+        tv.setTextSize(11);
+        if (isHeader) tv.setTypeface(null, Typeface.BOLD);
+        return tv;
+    }
+
+    private void showDatePickerDialog() {
         DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), R.style.DatePickerTheme, (view, selectedYear, selectedMonth, selectedDay) -> {
             selectedCalendar.set(selectedYear, selectedMonth, selectedDay);
-            
-            SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            
-            String displayStr = displayFormat.format(selectedCalendar.getTime());
-            selectedDateApi = apiFormat.format(selectedCalendar.getTime());
-            
-            tvSelectedDate.setText(displayStr);
-            
-            // Reload data
+            updateDateDisplay();
+            selectedSlotKeys.clear();
+            if (currentDialog != null) currentDialog.dismiss();
             loadCourtSchedule(selectedDateApi, currentCourtTypeId);
-            
-        }, year, month, day);
-        
+        }, selectedCalendar.get(Calendar.YEAR), selectedCalendar.get(Calendar.MONTH), selectedCalendar.get(Calendar.DAY_OF_MONTH));
         datePickerDialog.show();
     }
 
@@ -407,11 +461,9 @@ public class ScheduleFragment extends Fragment {
             else if (id == R.id.court2) selectedCourtId = 2;
             else if (id == R.id.court3) selectedCourtId = 3;
             else if (id == R.id.court4) selectedCourtId = 4;
-            
             updateCourtSelectionUI();
-            setupTimeGrid(); // Refresh grid for the selected court
+            setupTimeGrid();
         };
-
         court1.setOnClickListener(listener);
         court2.setOnClickListener(listener);
         court3.setOnClickListener(listener);
@@ -419,8 +471,6 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void updateCourtSelectionUI() {
-        if (!isAdded()) return;
-        
         TextView[] courts = {court1, court2, court3, court4};
         for (int i = 0; i < courts.length; i++) {
             if (i + 1 == selectedCourtId) {
@@ -434,26 +484,17 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void showCourtTypePopupMenu(View view) {
-        if (getContext() == null) return;
         PopupMenu popupMenu = new PopupMenu(getContext(), view);
-        
-        if (courtTypeList.isEmpty()) {
-            popupMenu.getMenu().add(0, 0, 0, "Đang tải...");
-            loadCourtTypes(); // Try to reload if empty
-        } else {
-            for (CourtTypeModel type : courtTypeList) {
-                popupMenu.getMenu().add(0, type.getId(), 0, type.getName());
-            }
+        if (courtTypeList.isEmpty()) popupMenu.getMenu().add(0, 0, 0, "Đang tải...");
+        else {
+            for (CourtTypeModel type : courtTypeList) popupMenu.getMenu().add(0, type.getId(), 0, type.getName());
         }
-        
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 0) return false;
-
-            String title = item.getTitle().toString();
-            tvSelectedCourtType.setText(title);
+            tvSelectedCourtType.setText(item.getTitle());
             currentCourtTypeId = item.getItemId();
-            
-            // Reload data for the selected court type
+            selectedSlotKeys.clear();
+            if (currentDialog != null) currentDialog.dismiss();
             loadCourtSchedule(selectedDateApi, currentCourtTypeId);
             return true;
         });
@@ -461,12 +502,10 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void showFilterPopupMenu(View view) {
-        if (getContext() == null) return;
         PopupMenu popupMenu = new PopupMenu(getContext(), view);
         popupMenu.getMenuInflater().inflate(R.menu.menu_schedule_filter, popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(item -> {
-            String title = item.getTitle().toString();
-            tvScheduleTypeText.setText(title);
+            tvScheduleTypeText.setText(item.getTitle());
             if (item.getItemId() == R.id.menu_by_court) {
                 layoutBySchedule.setVisibility(View.GONE);
                 layoutByCourt.setVisibility(View.VISIBLE);
@@ -479,64 +518,7 @@ public class ScheduleFragment extends Fragment {
         popupMenu.show();
     }
 
-    private void setupTimeGrid() {
-        if (!isAdded() || getContext() == null) return;
-        timeGrid.removeAllViews();
-        String[] slots = {"06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"};
-        
-        for (String slot : slots) {
-            TextView tv = new TextView(getContext());
-            tv.setText(slot);
-            tv.setGravity(Gravity.CENTER);
-            tv.setPadding(0, 32, 0, 32);
-            tv.setTextSize(14);
-            tv.setTypeface(null, Typeface.BOLD);
-            tv.setTag(slot);
-            
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = 0;
-            params.height = GridLayout.LayoutParams.WRAP_CONTENT;
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            params.setMargins(12, 12, 12, 12);
-            tv.setLayoutParams(params);
-            
-            updateSlotUI(tv, getSlotStatusMock(slot), false);
-            tv.setOnClickListener(v -> handleSlotClick(tv));
-            timeGrid.addView(tv);
-        }
-    }
-
-    private SlotStatus getSlotStatusMock(String slot) {
-        if (slot.equals("15:00") || slot.equals("16:00")) return SlotStatus.BOOKED;
-        return SlotStatus.AVAILABLE;
-    }
-
-    private void handleSlotClick(TextView tv) {
-        String slot = (String) tv.getTag();
-        SlotStatus currentStatus = getSlotStatusMock(slot);
-
-        if (currentStatus == SlotStatus.BOOKED) {
-            showBookedBottomSheet();
-            return;
-        }
-
-        if (currentStatus == SlotStatus.SELECTED) {
-            selectedSlots.remove(slot);
-            updateSlotUI(tv, SlotStatus.AVAILABLE, true);
-        } else {
-            selectedSlots.clear();
-            for (int i = 0; i < timeGrid.getChildCount(); i++) {
-                TextView child = (TextView) timeGrid.getChildAt(i);
-                updateSlotUI(child, getSlotStatusMock((String)child.getTag()), false);
-            }
-            selectedSlots.add(slot);
-            updateSlotUI(tv, SlotStatus.SELECTED, true);
-            showBookingConfirmation("Sân Cầu Lông 2", 2, "13/01/2026", slot);
-        }
-    }
-
     private void showBookedBottomSheet() {
-        if (getContext() == null) return;
         currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_booked_bottom_sheet, null);
         view.findViewById(R.id.btn_close_booked).setOnClickListener(v -> currentDialog.dismiss());
@@ -544,99 +526,10 @@ public class ScheduleFragment extends Fragment {
         currentDialog.show();
     }
 
-    private void updateSlotUI(TextView tv, SlotStatus status, boolean animate) {
-        if (!isAdded()) return;
-        int bgColor, textColor;
-        switch (status) {
-            case BOOKED:
-                bgColor = ContextCompat.getColor(getContext(), R.color.booked_cell_bg);
-                textColor = Color.parseColor("#FF5252"); // Red
-                break;
-            case SELECTED:
-                bgColor = ContextCompat.getColor(getContext(), R.color.selected_slot_bg);
-                textColor = ContextCompat.getColor(getContext(), R.color.selected_slot_text); // Yellow
-                break;
-            default:
-                bgColor = Color.WHITE;
-                textColor = Color.parseColor("#808080");
-                break;
-        }
-        applySlotStyles(tv, bgColor, textColor);
-    }
-
-    private void applySlotStyles(TextView tv, int bgColor, int textColor) {
-        if (!isAdded()) return;
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setShape(GradientDrawable.RECTANGLE);
-        drawable.setCornerRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
-        drawable.setColor(bgColor);
-        drawable.setStroke((int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()), Color.parseColor("#F1F3F4"));
-        tv.setBackground(drawable);
-        tv.setTextColor(textColor);
-    }
-
-    private void showBookingConfirmation(String court, int courtId, String day, String time) {
-        if (getContext() == null) return;
-        currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
-        View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.layout_confirm_booking, null);
-        
-        TextView tvTitle = bottomSheetView.findViewById(R.id.tvCourtTitle);
-        tvTitle.setText(court + " - " + day + " " + time);
-        
-        bottomSheetView.findViewById(R.id.btnConfirmBooking).setOnClickListener(v -> {
-            currentDialog.dismiss();
-            if (isAdded()) {
-                Bundle args = new Bundle();
-                args.putInt("courtId", courtId);
-                args.putString("courtName", court);
-                args.putString("date", day);
-                args.putString("startTime", time);
-                NavHostFragment.findNavController(this).navigate(R.id.action_navigation_schedule_to_bookingConfirmationFragment, args);
-            }
-        });
-
-        currentDialog.setContentView(bottomSheetView);
-        currentDialog.show();
-    }
-
-    private TextView createCell(String text, boolean isHeader, int widthDp) {
-        if (getContext() == null) return null;
-        TextView tv = new TextView(getContext());
-        tv.setText(text);
-        tv.setGravity(Gravity.CENTER);
-        TableRow.LayoutParams params = new TableRow.LayoutParams(
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, widthDp, getResources().getDisplayMetrics()),
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics())
-        );
-        tv.setLayoutParams(params);
-        tv.setTextSize(11);
-        if (isHeader) {
-            tv.setTypeface(null, Typeface.BOLD);
-        }
-        return tv;
-    }
-
-    private String getTimeForSlot(int j) {
-        String[] times = {
-                "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", 
-                "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-                "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
-                "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"
-        };
-        return times[j];
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (currentDialog != null && currentDialog.isShowing()) {
-            currentDialog.dismiss();
-        }
+        if (currentDialog != null && currentDialog.isShowing()) currentDialog.dismiss();
         currentDialog = null;
-        tableLayout = null;
-        tvScheduleTypeText = null;
-        layoutBySchedule = null;
-        layoutByCourt = null;
-        timeGrid = null;
     }
 }
