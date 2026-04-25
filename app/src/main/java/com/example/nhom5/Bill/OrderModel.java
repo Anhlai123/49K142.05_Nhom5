@@ -90,6 +90,10 @@ public class OrderModel {
         return trangThaiDon;
     }
 
+    public void setTrangThaiDon(String trangThaiDon) {
+        this.trangThaiDon = trangThaiDon;
+    }
+
     public String getThanhToan() {
         return thanhToan;
     }

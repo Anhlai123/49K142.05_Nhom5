@@ -46,7 +46,8 @@ public class MainActivity extends AppCompatActivity {
 
             int id = destination.getId();
             if (id == R.id.loginFragment || id == R.id.customerDetailFragment || id == R.id.addCustomerFragment 
-                || id == R.id.addPriceFragment || id == R.id.updatePriceFragment) {
+                || id == R.id.addPriceFragment || id == R.id.updatePriceFragment
+                || id == R.id.bookingConfirmationFragment) {
                 binding.bottomNavigation.setVisibility(View.GONE);
             } else {
                 binding.bottomNavigation.setVisibility(View.VISIBLE);

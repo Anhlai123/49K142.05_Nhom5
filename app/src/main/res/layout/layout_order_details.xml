@@ -5,18 +5,21 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
-    android:paddingBottom="24dp">
+    android:paddingBottom="32dp">
 
     <!-- Header -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:paddingHorizontal="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="12dp">
 
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:text="Chi tiết đơn đặt: DDS002"
             android:textColor="#1A202C"
             android:textSize="18sp"
@@ -24,21 +27,26 @@
 
         <ImageView
             android:id="@+id/btn_close_header"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/bg_status_pending"
+            android:padding="4dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            app:tint="#1A202C" />
+            app:tint="#718096" />
     </RelativeLayout>
 
     <!-- Status Banner -->
     <LinearLayout
+        android:id="@+id/layout_status_banner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:background="#FFF5F0"
+        android:background="@drawable/bg_banner_pending"
         android:gravity="center_vertical"
-        android:padding="12dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="14dp">
 
         <TextView
             android:layout_width="0dp"
@@ -52,12 +60,11 @@
             android:id="@+id/tv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_status_confirmed"
-            android:backgroundTint="@color/white"
-            android:paddingHorizontal="12dp"
+            android:background="@drawable/bg_status_pending"
+            android:paddingHorizontal="14dp"
             android:paddingVertical="6dp"
             android:text="CHỜ XÁC NHẬN"
-            android:textColor="#F59E0B"
+            android:textColor="#F97316"
             android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -80,17 +87,16 @@
                 android:layout_marginTop="20dp"
                 android:text="Thông tin khách hàng"
                 android:textColor="#1A202C"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/bg_order_card"
-                android:elevation="0dp"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -107,11 +113,13 @@
                         android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_customer_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Chị Lan"
                         android:textColor="#1A202C"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <View
@@ -135,6 +143,7 @@
                         android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_phone_number"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0987 654 321"
@@ -151,33 +160,38 @@
                 android:layout_marginTop="20dp"
                 android:text="Thông tin đặt sân"
                 android:textColor="#1A202C"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/bg_order_card"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
+                <!-- Giờ bắt đầu -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Giờ bắt đầu"
-                        android:textColor="#A0AEC0" />
+                        android:textColor="#A0AEC0"
+                        android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_start_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="19:00"
                         android:textColor="#1A202C"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -187,22 +201,27 @@
                     android:layout_marginVertical="10dp"
                     android:background="#E2E8F0" />
 
+                <!-- Giờ kết thúc -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Giờ kết thúc"
-                        android:textColor="#A0AEC0" />
+                        android:textColor="#A0AEC0"
+                        android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_end_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="20:30"
                         android:textColor="#1A202C"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -212,22 +231,28 @@
                     android:layout_marginVertical="10dp"
                     android:background="#E2E8F0" />
 
+                <!-- Loại sân -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Loại sân"
-                        android:textColor="#A0AEC0" />
+                        android:textColor="#A0AEC0"
+                        android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_court_type"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Sân Pickleball"
-                        android:textColor="#1A202C" />
+                        android:textColor="#1A202C"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <View
@@ -236,22 +261,27 @@
                     android:layout_marginVertical="10dp"
                     android:background="#E2E8F0" />
 
+                <!-- Sân áp dụng -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Sân áp dụng"
-                        android:textColor="#A0AEC0" />
+                        android:textColor="#A0AEC0"
+                        android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_court_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Sân PK01"
                         android:textColor="#1A202C"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -261,22 +291,27 @@
                     android:layout_marginVertical="10dp"
                     android:background="#E2E8F0" />
 
+                <!-- Ngày đặt -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Ngày đặt"
-                        android:textColor="#A0AEC0" />
+                        android:textColor="#A0AEC0"
+                        android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_date"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="25/02/2026"
                         android:textColor="#1A202C"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -286,22 +321,27 @@
                     android:layout_marginVertical="10dp"
                     android:background="#E2E8F0" />
 
+                <!-- Thanh toán -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Thanh toán"
-                        android:textColor="#A0AEC0" />
+                        android:textColor="#A0AEC0"
+                        android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_payment"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Đã thanh toán"
-                        android:textColor="#00A63E"
+                        android:textColor="#16A34A"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
@@ -313,21 +353,21 @@
                 android:layout_marginTop="20dp"
                 android:text="Ghi chú"
                 android:textColor="#1A202C"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/bg_order_card"
-                android:padding="12dp">
+                android:padding="14dp">
 
                 <TextView
+                    android:id="@+id/tv_notes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-light"
-                    android:fontStyle="italic"
                     android:text="Khách cần thuê thêm 2 vợt và mua 3 chai nước suối."
                     android:textColor="#718096"
                     android:textSize="14sp" />
@@ -337,7 +377,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="16dp"
                 android:background="@drawable/bg_payment_summary"
                 android:gravity="center_vertical"
                 android:padding="16dp">
@@ -348,13 +388,14 @@
                     android:layout_weight="1"
                     android:text="Tổng thanh toán"
                     android:textColor="#1A202C"
-                    android:textSize="14sp" />
+                    android:textSize="15sp" />
 
                 <TextView
+                    android:id="@+id/tv_total_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="180,000đ"
-                    android:textColor="#00A63E"
+                    android:textColor="#16A34A"
                     android:textSize="20sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -366,6 +407,7 @@
                 android:layout_marginTop="24dp"
                 android:orientation="vertical">
 
+                <!-- Nút Xác nhận đơn (chỉ hiện khi Chờ xác nhận) -->
                 <TextView
                     android:id="@+id/btn_confirm"
                     android:layout_width="match_parent"
@@ -377,6 +419,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
+                <!-- Nút Cập nhật trạng thái -->
                 <TextView
                     android:id="@+id/btn_update_status"
                     android:layout_width="match_parent"
@@ -385,10 +428,11 @@
                     android:background="@drawable/bg_button_outline_green"
                     android:gravity="center"
                     android:text="Cập nhật trạng thái"
-                    android:textColor="#00A63E"
+                    android:textColor="#16A34A"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
+                <!-- Nút Xóa đơn -->
                 <LinearLayout
                     android:id="@+id/btn_delete"
                     android:layout_width="match_parent"
@@ -402,18 +446,21 @@
                         android:layout_width="18dp"
                         android:layout_height="18dp"
                         android:src="@android:drawable/ic_menu_delete"
-                        app:tint="#F56565" />
+                        app:tint="#EF4444" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="Xóa đơn"
-                        android:textColor="#F56565"
+                        android:textColor="#EF4444"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
+
+
+                <!-- Nút Đóng -->
                 <TextView
                     android:id="@+id/btn_close_bottom"
                     android:layout_width="match_parent"

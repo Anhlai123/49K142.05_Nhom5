@@ -98,6 +98,15 @@ public interface ApiService {
     @GET("api/QL_DonDat/")
     Call<List<OrderModel>> getOrderList();
 
+    @GET("api/QL_DonDat/{id}/")
+    Call<OrderModel> getOrderDetail(@Path("id") String id);
+
+    @PATCH("api/QL_DonDat/{id}/")
+    Call<OrderModel> updateOrderStatus(@Path("id") String id, @Body OrderModel order);
+
+    @DELETE("api/QL_DonDat/{id}/")
+    Call<Void> deleteOrder(@Path("id") String id);
+
     // Price Table APIs
     @GET("api/price-tables/")
     Call<List<PriceTableModel>> getPriceTables();
