@@ -29,37 +29,11 @@ public class MoreFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        displayUserInfo();
+        // Giữ nguyên tiêu đề tĩnh: "Tính năng khác" và "Hệ thống đặt sân thể thao"
+        // Không gọi displayUserInfo() để tránh ghi đè nội dung header
+
         setupMenuVisibility();
         setupActions();
-    }
-
-    private void displayUserInfo() {
-        if (getContext() == null) return;
-        SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        String fullName = pref.getString("fullName", "");
-        String role = pref.getString("role", "customer");
-        String username = pref.getString("username", "");
-
-        boolean isAdmin = "admin".equalsIgnoreCase(username) || "admin".equalsIgnoreCase(role);
-
-        if (binding.tvUserName != null) {
-            if (isAdmin) {
-                binding.tvUserName.setText("QUẢN TRỊ VIÊN");
-            } else {
-                binding.tvUserName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
-            }
-        }
-
-        if (binding.tvUserRole != null) {
-            if (isAdmin) {
-                binding.tvUserRole.setText("Hệ thống quản trị");
-            } else {
-                String roleDisplay = "Khách hàng";
-                if ("staff".equalsIgnoreCase(role)) roleDisplay = "Nhân viên";
-                binding.tvUserRole.setText(roleDisplay);
-            }
-        }
     }
 
     private void setupMenuVisibility() {
@@ -75,17 +49,9 @@ public class MoreFragment extends Fragment {
                          || "1".equals(role.trim());
 
         if (isManager) {
-            // Khi là Admin/Manager, ẩn phần "Tài khoản" và hiện phần "Quản lý"
-            binding.tvLabelAccount.setVisibility(View.GONE);
-            binding.cardAccount.setVisibility(View.GONE);
-
             binding.tvLabelManage.setVisibility(View.VISIBLE);
             binding.cardAdminActions.setVisibility(View.VISIBLE);
         } else {
-            // Khi là Khách hàng, hiện phần "Tài khoản" và ẩn phần "Quản lý"
-            binding.tvLabelAccount.setVisibility(View.VISIBLE);
-            binding.cardAccount.setVisibility(View.VISIBLE);
-
             binding.tvLabelManage.setVisibility(View.GONE);
             binding.cardAdminActions.setVisibility(View.GONE);
         }
@@ -122,7 +88,6 @@ public class MoreFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        displayUserInfo();
         setupMenuVisibility();
     }
 

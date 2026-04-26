@@ -71,7 +71,8 @@ public class AddCustomerFragment extends Fragment {
                         if (!isAdded()) {
                             return;
                         }
-                        SuccessDialogFragment dialog = SuccessDialogFragment.newInstance("Lưu thông tin khách hàng thành công", () -> {
+                        // Khôi phục popup thông báo thành công
+                        SuccessDialogFragment dialog = SuccessDialogFragment.newInstance("Lưu thông tin thành công", () -> {
                             Navigation.findNavController(view).navigateUp();
                         });
                         dialog.show(getParentFragmentManager(), "success_dialog");
