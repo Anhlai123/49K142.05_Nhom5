@@ -117,6 +117,9 @@ public interface ApiService {
     @GET("api/price-tables/")
     Call<List<PriceTableModel>> getPriceTables();
 
+    @GET("api/price-tables/{id}/")
+    Call<PriceTableModel> getPriceTableDetail(@Path("id") int id);
+
     @POST("api/price-tables/")
     Call<PriceTableModel> createPriceTable(@Body PriceTableModel priceTable);
 
