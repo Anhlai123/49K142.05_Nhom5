@@ -35,7 +35,7 @@
             android:layout_marginTop="20dp"
             android:background="@drawable/bg_input_field"
             android:hint="Tên đăng nhập"
-            android:inputType="text"
+            android:inputType="textNoSuggestions"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
 
@@ -47,7 +47,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
             android:hint="Họ và tên"
-            android:inputType="textPersonName"
+            android:inputType="textPersonName|textNoSuggestions"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
 
@@ -59,7 +59,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
             android:hint="Email"
-            android:inputType="textEmailAddress"
+            android:inputType="textEmailAddress|textNoSuggestions"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
 
@@ -83,7 +83,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
             android:hint="Địa chỉ"
-            android:inputType="textPostalAddress"
+            android:inputType="textPostalAddress|textNoSuggestions"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
 
@@ -95,7 +95,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input_field"
             android:hint="Mật khẩu"
-            android:inputType="textPassword"
+            android:inputType="textPassword|textNoSuggestions"
             android:minHeight="52dp"
             android:paddingHorizontal="14dp" />
 

@@ -52,6 +52,11 @@ public class LoginFragment extends Fragment {
             startActivity(intent);
         });
 
+        // Thiết lập sự kiện click cho Quên mật khẩu
+        binding.tvForgotPassword.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_loginFragment_to_forgotPasswordFragment);
+        });
+
         binding.btnLogin.setOnClickListener(v -> {
             String input = binding.etUsername.getText().toString().trim();
             String password = binding.etPassword.getText().toString().trim();

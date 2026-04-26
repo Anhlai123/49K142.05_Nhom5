@@ -11,14 +11,17 @@ import com.example.nhom5.auth.model.LoginResponse;
 import com.example.nhom5.auth.model.RegisterRequest;
 import com.example.nhom5.auth.model.RegisterResponse;
 import com.example.nhom5.auth.model.UserDto;
+import com.example.nhom5.auth.model.ForgotPasswordRequest;
 import com.example.nhom5.court.Court;
 import com.example.nhom5.models.PriceTableCourtModel;
 import com.example.nhom5.models.PriceTableModel;
 import com.example.nhom5.models.PriceTableTimeSlotModel;
 import com.google.gson.JsonElement;
 import java.util.List;
+import java.util.Map;
 import com.example.nhom5.Bill.OrderModel;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -42,6 +45,9 @@ public interface ApiService {
 
     @PATCH("api/profile/")
     Call<UserDto> updateProfile(@Body UserDto user);
+
+    @POST("api/reset-password/")
+    Call<ResponseBody> resetPassword(@Body Map<String, String> data);
 
     // Lấy danh sách loại sân
     @GET("api/court-types/")
