@@ -37,18 +37,28 @@ public class MoreFragment extends Fragment {
     private void displayUserInfo() {
         if (getContext() == null) return;
         SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        String fullName = pref.getString("fullName", "Người dùng");
+        String fullName = pref.getString("fullName", "");
         String role = pref.getString("role", "customer");
         String username = pref.getString("username", "");
 
-        if (binding.tvUserName != null) binding.tvUserName.setText(fullName);
+        boolean isAdmin = "admin".equalsIgnoreCase(username) || "admin".equalsIgnoreCase(role);
+
+        if (binding.tvUserName != null) {
+            if (isAdmin) {
+                binding.tvUserName.setText("QUẢN TRỊ VIÊN");
+            } else {
+                binding.tvUserName.setText(fullName.isEmpty() ? "Người dùng" : fullName);
+            }
+        }
+
         if (binding.tvUserRole != null) {
-            String roleDisplay = "Khách hàng";
-            // Ưu tiên username admin
-            if ("admin".equalsIgnoreCase(username) || "admin".equalsIgnoreCase(role)) roleDisplay = "Quản trị viên";
-            else if ("staff".equalsIgnoreCase(role)) roleDisplay = "Nhân viên";
-            
-            binding.tvUserRole.setText(roleDisplay);
+            if (isAdmin) {
+                binding.tvUserRole.setText("Hệ thống quản trị");
+            } else {
+                String roleDisplay = "Khách hàng";
+                if ("staff".equalsIgnoreCase(role)) roleDisplay = "Nhân viên";
+                binding.tvUserRole.setText(roleDisplay);
+            }
         }
     }
 
@@ -65,13 +75,19 @@ public class MoreFragment extends Fragment {
                          || "1".equals(role.trim());
 
         if (isManager) {
-            binding.btnManageCourts.setVisibility(View.VISIBLE);
-            binding.btnManageCourtTypes.setVisibility(View.VISIBLE);
-            binding.btnManagePrices.setVisibility(View.VISIBLE);
+            // Khi là Admin/Manager, ẩn phần "Tài khoản" và hiện phần "Quản lý"
+            binding.tvLabelAccount.setVisibility(View.GONE);
+            binding.cardAccount.setVisibility(View.GONE);
+
+            binding.tvLabelManage.setVisibility(View.VISIBLE);
+            binding.cardAdminActions.setVisibility(View.VISIBLE);
         } else {
-            binding.btnManageCourts.setVisibility(View.GONE);
-            binding.btnManageCourtTypes.setVisibility(View.GONE);
-            binding.btnManagePrices.setVisibility(View.GONE);
+            // Khi là Khách hàng, hiện phần "Tài khoản" và ẩn phần "Quản lý"
+            binding.tvLabelAccount.setVisibility(View.VISIBLE);
+            binding.cardAccount.setVisibility(View.VISIBLE);
+
+            binding.tvLabelManage.setVisibility(View.GONE);
+            binding.cardAdminActions.setVisibility(View.GONE);
         }
     }
 
