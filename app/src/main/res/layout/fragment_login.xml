@@ -109,7 +109,7 @@
                     android:layout_marginStart="12dp"
                     android:background="@null"
                     android:hint="Nhập tên đăng nhập"
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -164,7 +164,7 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:hint="Nhập mật khẩu"
-                    android:inputType="textPassword"
+                    android:inputType="textPassword|textNoSuggestions"
                     android:textSize="14sp" />
 
                 <ImageView
