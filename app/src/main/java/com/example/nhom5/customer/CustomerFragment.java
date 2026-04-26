@@ -19,7 +19,6 @@ import com.example.nhom5.R;
 import com.example.nhom5.databinding.FragmentCustomersBinding;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CustomerFragment extends Fragment {
 
@@ -63,8 +62,6 @@ public class CustomerFragment extends Fragment {
         binding.btnAddCustomer.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_navigation_customers_to_addCustomerFragment);
         });
-
-        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
     }
 
     private void setupSearch() {

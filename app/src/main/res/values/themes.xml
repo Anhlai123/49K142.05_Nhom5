@@ -4,9 +4,23 @@
         <!-- Customize your light theme here. -->
         <item name="colorPrimary">@color/primary</item>
         <item name="android:windowBackground">@color/background</item>
+
+        <!-- Use standard dialog theme attributes -->
+        <item name="android:timePickerDialogTheme">@style/CustomTimePickerTheme</item>
+        <item name="android:datePickerDialogTheme">@style/DatePickerTheme</item>
     </style>
 
     <style name="Theme.Nhom5" parent="Base.Theme.Nhom5" />
+
+    <!-- Safe TimePicker Theme using standard Android attributes -->
+    <style name="CustomTimePickerTheme" parent="Theme.Material3.Light.Dialog">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorAccent">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <!-- For Material3 components, this often controls selection highlights -->
+        <item name="colorContainer">@color/primary</item>
+    </style>
 
     <style name="BottomNavTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">12sp</item>

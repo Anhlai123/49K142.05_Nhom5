@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,8 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
+import com.example.nhom5.booking.SuccessDialogFragment;
 import com.example.nhom5.databinding.BottomSheetAddCourtBinding;
-import com.example.nhom5.databinding.BottomSheetConfirmDeleteCourtBinding;
 import com.example.nhom5.databinding.BottomSheetFilterCourtBinding;
 import com.example.nhom5.databinding.BottomSheetSelectCourtTypeBinding;
 import com.example.nhom5.databinding.BottomSheetUpdateCourtBinding;
@@ -286,35 +285,32 @@ public class CourtManagementFragment extends Fragment {
         bottomSheetDialog.show();
     }
 
-    private void showDeleteConfirmBottomSheet(Court court) {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetConfirmDeleteCourtBinding sheetBinding = BottomSheetConfirmDeleteCourtBinding.inflate(getLayoutInflater());
-        bottomSheetDialog.setContentView(sheetBinding.getRoot());
+    private void showDeleteConfirmDialog(Court court) {
+        ConfirmDeleteDialogFragment dialog = ConfirmDeleteDialogFragment.newInstance(
+                "Bạn có chắc chắn muốn xóa sân " + court.getName() + "?",
+                () -> {
+                    ApiClient.getApiService().deleteCourt(court.getId()).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
+                                        "Xóa sân thành công",
+                                        () -> loadCourtsFromServer()
+                                );
+                                successDialog.show(getParentFragmentManager(), "success_dialog");
+                            } else {
+                                Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
 
-        sheetBinding.tvMessage.setText("Bạn có chắc chắn muốn xóa sân " + court.getName() + "?");
-
-        sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
-        sheetBinding.btnConfirm.setOnClickListener(v -> {
-            ApiClient.getApiService().deleteCourt(court.getId()).enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(getContext(), "Xóa sân thành công!", Toast.LENGTH_SHORT).show();
-                        loadCourtsFromServer();
-                        bottomSheetDialog.dismiss();
-                    } else {
-                        Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
-                    }
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                            Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
-
-                @Override
-                public void onFailure(Call<Void> call, Throwable t) {
-                    Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
-
-        bottomSheetDialog.show();
+        );
+        dialog.show(getParentFragmentManager(), "confirm_delete_dialog");
     }
 
     private void updateStatusUI(BottomSheetUpdateCourtBinding sheetBinding, String status) {
@@ -344,7 +340,7 @@ public class CourtManagementFragment extends Fragment {
             @Override
             public void onEdit(Court court) { showUpdateCourtBottomSheet(court); }
             @Override
-            public void onDelete(Court court) { showDeleteConfirmBottomSheet(court); }
+            public void onDelete(Court court) { showDeleteConfirmDialog(court); }
         });
         binding.rvCourts.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvCourts.setAdapter(adapter);
