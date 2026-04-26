@@ -222,7 +222,8 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
             public void onResponse(@NonNull Call<OrderModel> call, @NonNull Response<OrderModel> response) {
                 if (!isAdded()) return;
                 if (response.isSuccessful()) {
-                    updateStatusUI(newStatus);
+                    // Reload toàn bộ chi tiết để hiển thị đúng thanh_toan từ server
+                    loadOrderDetails();
                     if (listener != null) listener.onOrderUpdated();
                 } else {
                     // Nếu thất bại vẫn cập nhật UI tạm thời
