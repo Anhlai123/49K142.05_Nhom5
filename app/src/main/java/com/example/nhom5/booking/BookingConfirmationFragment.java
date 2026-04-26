@@ -42,6 +42,8 @@ public class BookingConfirmationFragment extends Fragment {
     private Button btnConfirm;
     private int mCourtId = -1;
     private String mDate = "";
+    private String mStartTime = "";
+    private String mEndTime = "";
     private double mTotalPrice = 0;
     private ArrayList<String> mSelectedSlotsRaw = new ArrayList<>();
 
@@ -50,12 +52,15 @@ public class BookingConfirmationFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_booking_confirmation, container, false);
 
-        String courtName = "Sân Cầu Lông";
+        // 1. Nhận dữ liệu
+        String courtName = "Sân Đang Tải...";
+        String courtTypeName = "Loại sân";
         if (getArguments() != null) {
             mCourtId = getArguments().getInt("courtId", -1);
-            courtName = getArguments().getString("courtName", "Sân Cầu Lông");
+            courtName = getArguments().getString("courtName", "Sân");
             mDate = getArguments().getString("date", "");
             mSelectedSlotsRaw = getArguments().getStringArrayList("selectedSlots");
+            courtTypeName = getArguments().getString("courtTypeName", "Loại sân");
         }
 
         String timeDisplay = "Chưa chọn giờ";
@@ -64,49 +69,38 @@ public class BookingConfirmationFragment extends Fragment {
         if (mSelectedSlotsRaw != null && !mSelectedSlotsRaw.isEmpty()) {
             mTotalPrice = 0;
             List<Integer> startMinutes = new ArrayList<>();
-            
             for (String slot : mSelectedSlotsRaw) {
-                String[] parts = slot.split("\\|"); // id|name|time|price
+                String[] parts = slot.split("\\|"); 
                 if (parts.length >= 4) {
-                    String startTimeRaw = parts[2];
-                    String startTimeClean = startTimeRaw.length() > 5 ? startTimeRaw.substring(0, 5) : startTimeRaw;
-                    
-                    String[] timeParts = startTimeClean.split(":");
-                    int mins = Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1]);
-                    startMinutes.add(mins);
-                    
+                    String startTimeClean = parts[2].length() > 5 ? parts[2].substring(0, 5) : parts[2];
+                    String[] t = startTimeClean.split(":");
+                    startMinutes.add(Integer.parseInt(t[0]) * 60 + Integer.parseInt(t[1]));
                     try {
                         double price = Double.parseDouble(parts[3]);
                         mTotalPrice += price;
                         if (firstSlotPrice == 0) firstSlotPrice = price;
-                    } catch (Exception e) { 
-                        mTotalPrice += 180000; 
-                        if (firstSlotPrice == 0) firstSlotPrice = 180000;
-                    }
+                    } catch (Exception e) { mTotalPrice += 180000; }
                 }
             }
             Collections.sort(startMinutes);
-
-            // Tạo chuỗi hiển thị từng khoảng giờ rời rạc
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < startMinutes.size(); i++) {
                 int start = startMinutes.get(i);
-                int end = start + 60; // Giả định mỗi slot 1 tiếng
-                sb.append(String.format(Locale.getDefault(), "%02d:%02d-%02d:%02d", start/60, start%60, end/60, end%60));
+                sb.append(String.format(Locale.getDefault(), "%02d:%02d-%02d:%02d", start/60, start%60, (start+60)/60, (start+60)%60));
                 if (i < startMinutes.size() - 1) sb.append(", ");
             }
             timeDisplay = sb.toString();
+            mStartTime = String.format(Locale.getDefault(), "%02d:%02d", startMinutes.get(0)/60, startMinutes.get(0)%60);
+            int lastMins = startMinutes.get(startMinutes.size()-1) + 60;
+            mEndTime = String.format(Locale.getDefault(), "%02d:%02d", lastMins/60, lastMins%60);
         }
 
+        // 2. Hiển thị dữ liệu
         DecimalFormat df = new DecimalFormat("#,###");
-        
-        // Cập nhật giao diện với GIÁ THẬT từ API
         ((TextView) view.findViewById(R.id.tvCourtNameHeader)).setText(courtName);
-        // Hiển thị đơn giá của sân ở Header (lấy từ slot đầu tiên)
-        ((TextView) view.findViewById(R.id.tvPriceHeader)).setText(getString(R.string.booking_price_per_hour, df.format(firstSlotPrice)));
-        
-        ((TextView) view.findViewById(R.id.tvDate)).setText("Ngày: " + mDate);
-        ((TextView) view.findViewById(R.id.tvCourtField)).setText(courtName);
+        ((TextView) view.findViewById(R.id.tvPriceHeader)).setText(df.format(firstSlotPrice) + "đ/h");
+        ((TextView) view.findViewById(R.id.tvCourtType)).setText(courtTypeName);
+        ((TextView) view.findViewById(R.id.tvDate)).setText("Ngày đặt: " + mDate);
         ((TextView) view.findViewById(R.id.tvTimeField)).setText(timeDisplay);
         ((TextView) view.findViewById(R.id.tvHoursField)).setText((mSelectedSlotsRaw != null ? mSelectedSlotsRaw.size() : 0) + " giờ");
         ((TextView) view.findViewById(R.id.tvPriceField)).setText(df.format(mTotalPrice) + " đ");
@@ -129,7 +123,9 @@ public class BookingConfirmationFragment extends Fragment {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validate();
+                String name = etName.getText().toString().trim();
+                String phone = etPhone.getText().toString().trim();
+                btnConfirm.setEnabled(!name.isEmpty() && !phone.isEmpty());
             }
             @Override
             public void afterTextChanged(Editable s) {}
@@ -138,46 +134,21 @@ public class BookingConfirmationFragment extends Fragment {
         etPhone.addTextChangedListener(tw);
     }
 
-    private void validate() {
-        String name = etName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        btnConfirm.setEnabled(!name.isEmpty() && !phone.isEmpty());
-    }
-
     private void submitBooking() {
-        if (mCourtId <= 0 || mSelectedSlotsRaw == null || mSelectedSlotsRaw.isEmpty()) {
-            Toast.makeText(getContext(), "Dữ liệu không hợp lệ!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         btnConfirm.setEnabled(false);
         btnConfirm.setText("ĐANG XỬ LÝ...");
-
         List<BookingRequest.TimeSlot> apiSlots = new ArrayList<>();
         for (String slotRaw : mSelectedSlotsRaw) {
             String[] parts = slotRaw.split("\\|");
             if (parts.length >= 3) {
-                String startTimeRaw = parts[2];
-                String startTime = startTimeRaw.length() > 5 ? startTimeRaw.substring(0, 5) : startTimeRaw;
-                
-                String[] t = startTime.split(":");
-                int startMins = Integer.parseInt(t[0]) * 60 + Integer.parseInt(t[1]);
-                int endMins = startMins + 60;
-                
-                String endTime = String.format(Locale.getDefault(), "%02d:%02d", endMins / 60, endMins % 60);
-                apiSlots.add(new BookingRequest.TimeSlot(startTime, endTime));
+                String start = parts[2].length() > 5 ? parts[2].substring(0, 5) : parts[2];
+                String[] t = start.split(":");
+                int endMins = Integer.parseInt(t[0]) * 60 + Integer.parseInt(t[1]) + 60;
+                String end = String.format(Locale.getDefault(), "%02d:%02d", endMins/60, endMins%60);
+                apiSlots.add(new BookingRequest.TimeSlot(start, end));
             }
         }
-
-        BookingRequest request = new BookingRequest(
-                mCourtId,
-                etName.getText().toString().trim(),
-                etPhone.getText().toString().trim(),
-                normalizeDate(mDate),
-                "", // notes
-                apiSlots
-        );
-
+        BookingRequest request = new BookingRequest(mCourtId, etName.getText().toString().trim(), etPhone.getText().toString().trim(), normalizeDate(mDate), "", apiSlots);
         ApiClient.getApiService().createBooking(request).enqueue(new Callback<BookingResponse>() {
             @Override
             public void onResponse(@NonNull Call<BookingResponse> call, @NonNull Response<BookingResponse> response) {
@@ -185,23 +156,14 @@ public class BookingConfirmationFragment extends Fragment {
                     Toast.makeText(getContext(), "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack(R.id.navigation_schedule, false);
                 } else {
-                    String errorMsg = "Lỗi server: " + response.code();
-                    try {
-                        if (response.errorBody() != null) {
-                            errorMsg = response.errorBody().string();
-                        }
-                    } catch (Exception e) { e.printStackTrace(); }
-                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Lỗi server: " + response.code(), Toast.LENGTH_SHORT).show();
                     btnConfirm.setEnabled(true);
-                    btnConfirm.setText("XÁC NHẬN ĐẶT SÂN");
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<BookingResponse> call, @NonNull Throwable t) {
                 Toast.makeText(getContext(), "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
                 btnConfirm.setEnabled(true);
-                btnConfirm.setText("XÁC NHẬN ĐẶT SÂN");
             }
         });
     }
