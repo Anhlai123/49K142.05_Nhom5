@@ -1,25 +1,36 @@
 package com.example.nhom5.models;
 
+import java.util.List;
+
 public class BookingRequest {
     private int court_id;
     private String customer_name;
     private String phone;
     private String date;
-    private String start_time;
-    private String end_time;
     private String notes;
+    private List<TimeSlot> slots;
 
     public BookingRequest(int court_id, String customer_name, String phone,
-                         String date, String start_time, String end_time, String notes) {
+                         String date, String notes, List<TimeSlot> slots) {
         this.court_id = court_id;
         this.customer_name = customer_name;
         this.phone = phone;
         this.date = date;
-        this.start_time = start_time;
-        this.end_time = end_time;
         this.notes = notes;
+        this.slots = slots;
     }
 
+    public static class TimeSlot {
+        private String start_time;
+        private String end_time;
+
+        public TimeSlot(String start_time, String end_time) {
+            this.start_time = start_time;
+            this.end_time = end_time;
+        }
+    }
+
+    // Getters and setters
     public int getCourt_id() { return court_id; }
     public void setCourt_id(int court_id) { this.court_id = court_id; }
 
@@ -32,12 +43,9 @@ public class BookingRequest {
     public String getDate() { return date; }
     public void setDate(String date) { this.date = date; }
 
-    public String getStart_time() { return start_time; }
-    public void setStart_time(String start_time) { this.start_time = start_time; }
-
-    public String getEnd_time() { return end_time; }
-    public void setEnd_time(String end_time) { this.end_time = end_time; }
-
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public List<TimeSlot> getSlots() { return slots; }
+    public void setSlots(List<TimeSlot> slots) { this.slots = slots; }
 }
