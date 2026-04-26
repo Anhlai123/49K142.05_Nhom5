@@ -18,8 +18,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
+import com.example.nhom5.booking.SuccessDialogFragment;
+import com.example.nhom5.court.ConfirmDeleteDialogFragment;
 import com.example.nhom5.databinding.BottomSheetAddCourtTypeBinding;
-import com.example.nhom5.databinding.BottomSheetConfirmDeleteCourtTypeBinding;
 import com.example.nhom5.databinding.BottomSheetUpdateCourtTypeBinding;
 import com.example.nhom5.databinding.FragmentCourtTypeManagementBinding;
 import com.example.nhom5.models.CourtTypeModel;
@@ -96,7 +97,7 @@ public class CourtTypeManagementFragment extends Fragment {
 
             @Override
             public void onDelete(CourtType courtType) {
-                showDeleteConfirmBottomSheet(courtType);
+                showDeleteConfirmDialog(courtType);
             }
         });
         binding.rvCourtTypes.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -160,9 +161,12 @@ public class CourtTypeManagementFragment extends Fragment {
                 @Override
                 public void onResponse(Call<CourtTypeModel> call, Response<CourtTypeModel> response) {
                     if (response.isSuccessful()) {
-                        Toast.makeText(getContext(), "Thêm loại sân thành công!", Toast.LENGTH_SHORT).show();
-                        loadCourtTypesFromServer();
                         bottomSheetDialog.dismiss();
+                        SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
+                                "Tạo loại sân thành công",
+                                () -> loadCourtTypesFromServer()
+                        );
+                        successDialog.show(getParentFragmentManager(), "success_dialog");
                     }
                 }
 
@@ -215,9 +219,12 @@ public class CourtTypeManagementFragment extends Fragment {
                     @Override
                     public void onResponse(Call<CourtTypeModel> call, Response<CourtTypeModel> response) {
                         if (response.isSuccessful()) {
-                            Toast.makeText(getContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                            loadCourtTypesFromServer();
                             bottomSheetDialog.dismiss();
+                            SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
+                                    "Cập nhật loại sân thành công",
+                                    () -> loadCourtTypesFromServer()
+                            );
+                            successDialog.show(getParentFragmentManager(), "success_dialog");
                         }
                     }
 
@@ -234,41 +241,39 @@ public class CourtTypeManagementFragment extends Fragment {
         bottomSheetDialog.show();
     }
 
-    private void showDeleteConfirmBottomSheet(CourtType courtType) {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetConfirmDeleteCourtTypeBinding sheetBinding = BottomSheetConfirmDeleteCourtTypeBinding.inflate(getLayoutInflater());
-        bottomSheetDialog.setContentView(sheetBinding.getRoot());
+    private void showDeleteConfirmDialog(CourtType courtType) {
+        ConfirmDeleteDialogFragment dialog = ConfirmDeleteDialogFragment.newInstance(
+                "Xác nhận xóa loại sân",
+                "Bạn có chắc chắn muốn xóa loại sân " + courtType.getName() + "?",
+                "Xác nhận xóa",
+                () -> {
+                    try {
+                        int id = Integer.parseInt(courtType.getId().replaceAll("[^0-9]", ""));
+                        ApiClient.getApiService().deleteCourtType(id).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                if (response.isSuccessful()) {
+                                    SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
+                                            "Xóa loại sân thành công",
+                                            () -> loadCourtTypesFromServer()
+                                    );
+                                    successDialog.show(getParentFragmentManager(), "success_dialog");
+                                } else if (response.code() == 500) {
+                                    Toast.makeText(getContext(), "Không thể xóa: Loại sân này đang có dữ liệu liên quan. Hãy xóa chúng trước!", Toast.LENGTH_LONG).show();
+                                }
+                            }
 
-        sheetBinding.tvMessage.setText("Bạn có chắc chắn muốn xóa loại sân này?");
-
-        sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
-        sheetBinding.btnConfirm.setOnClickListener(v -> {
-            try {
-                int id = Integer.parseInt(courtType.getId().replaceAll("[^0-9]", ""));
-                ApiClient.getApiService().deleteCourtType(id).enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            Toast.makeText(getContext(), "Xóa thành công!", Toast.LENGTH_SHORT).show();
-                            loadCourtTypesFromServer();
-                            bottomSheetDialog.dismiss();
-                        } else if (response.code() == 500) {
-                            Toast.makeText(getContext(), "Không thể xóa: Loại sân này đang có dữ liệu liên quan. Hãy xóa chúng trước!", Toast.LENGTH_LONG).show();
-                            bottomSheetDialog.dismiss();
-                        }
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Lỗi ID không hợp lệ", Toast.LENGTH_SHORT).show();
                     }
-
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } catch (Exception e) {
-                Toast.makeText(getContext(), "Lỗi ID không hợp lệ", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        bottomSheetDialog.show();
+                }
+        );
+        dialog.show(getParentFragmentManager(), "confirm_delete_court_type_dialog");
     }
 
     private void updateStatusUI(BottomSheetUpdateCourtTypeBinding sheetBinding, String status) {

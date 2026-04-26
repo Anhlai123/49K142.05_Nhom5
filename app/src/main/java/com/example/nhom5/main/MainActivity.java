@@ -1,13 +1,16 @@
 package com.example.nhom5.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -28,6 +31,46 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setupNavigation();
+        setupDrawer();
+    }
+
+    private void setupDrawer() {
+        SharedPreferences pref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String username = pref.getString("username", "N/A");
+        String phone = pref.getString("phone", "");
+        String role = pref.getString("role", "customer");
+
+        binding.navViewRight.getHeaderView(0); // If using header
+        
+        // Populate Drawer Info
+        binding.drawerProfileLayout.tvDrawerUsername.setText(username);
+        
+        // Show phone only for customers or if phone exists
+        if (!phone.isEmpty()) {
+            binding.drawerProfileLayout.layoutPhone.setVisibility(View.VISIBLE);
+            binding.drawerProfileLayout.tvDrawerPhone.setText(phone);
+        } else {
+            binding.drawerProfileLayout.layoutPhone.setVisibility(View.GONE);
+        }
+
+        binding.drawerProfileLayout.btnLogout.setOnClickListener(v -> {
+            SharedPreferences.Editor editor = pref.edit();
+            editor.clear();
+            editor.apply();
+            
+            binding.drawerLayout.closeDrawer(GravityCompat.END);
+            
+            // Navigate to login
+            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+            navController.navigate(R.id.loginFragment);
+        });
+    }
+
+    public void openProfileDrawer() {
+        if (binding.drawerLayout != null) {
+            setupDrawer(); // Refresh data
+            binding.drawerLayout.openDrawer(GravityCompat.END);
+        }
     }
 
     private void setupNavigation() {

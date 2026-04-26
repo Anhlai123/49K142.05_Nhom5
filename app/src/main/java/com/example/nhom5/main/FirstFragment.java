@@ -51,6 +51,13 @@ public class FirstFragment extends Fragment {
         updateDate();
         loadCourtsData();
 
+        // Xử lý sự kiện icon account (iv_profile)
+        binding.ivProfile.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).openProfileDrawer();
+            }
+        });
+
         // Xử lý sự kiện nút "Thêm khách"
         binding.btnAddCustomer.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.addCustomerFragment);
