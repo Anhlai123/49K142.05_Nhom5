@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,13 +30,10 @@ import com.example.nhom5.models.PriceTableTimeSlotModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
-import org.json.JSONObject;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +52,7 @@ public class AddPriceFragment extends Fragment {
     private final Set<String> selectedDays = new LinkedHashSet<>();
     private final Set<Integer> selectedCourtIds = new LinkedHashSet<>();
     private final List<String> selectedCourtNamesDisplay = new ArrayList<>();
+    private final List<View> timeSlotViews = new ArrayList<>();
 
     private List<CourtTypeModel> courtTypeList = new ArrayList<>();
     private CourtTypeModel selectedCourtType = null;
@@ -76,8 +75,10 @@ public class AddPriceFragment extends Fragment {
         setupCourtTypePicker();
         setupDaySelection();
         setupDatePickers();
-        setupTimePickers();
         updateScopeUi(true);
+
+        binding.btnAddFrame.setOnClickListener(v -> addTimeSlotView());
+        addTimeSlotView(); // Thêm một khung giờ mặc định
 
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
@@ -247,18 +248,48 @@ public class AddPriceFragment extends Fragment {
         binding.etEndDate.setOnClickListener(v -> showDatePicker(binding.etEndDate));
     }
 
-    private void showDatePicker(android.widget.EditText target) {
+    private void showDatePicker(EditText target) {
         MaterialDatePicker<Long> picker = MaterialDatePicker.Builder.datePicker().build();
         picker.addOnPositiveButtonClickListener(selection -> target.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(selection)));
         picker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
-    private void setupTimePickers() {
-        binding.etStartTime.setOnClickListener(v -> showTimePicker(binding.etStartTime));
-        binding.etEndTime.setOnClickListener(v -> showTimePicker(binding.etEndTime));
+    private void addTimeSlotView() {
+        View view = getLayoutInflater().inflate(R.layout.item_add_price_time_slot, binding.layoutTimeSlotsContainer, false);
+        
+        TextView tvTitle = view.findViewById(R.id.tv_frame_title);
+        tvTitle.setText("Khung giờ " + (timeSlotViews.size() + 1));
+        
+        EditText etStart = view.findViewById(R.id.et_start_time);
+        EditText etEnd = view.findViewById(R.id.et_end_time);
+        EditText etPrice = view.findViewById(R.id.et_price);
+        View btnRemove = view.findViewById(R.id.btn_remove_frame);
+        
+        etStart.setOnClickListener(v -> showTimePicker(etStart));
+        etEnd.setOnClickListener(v -> showTimePicker(etEnd));
+        
+        btnRemove.setOnClickListener(v -> {
+            if (timeSlotViews.size() > 1) {
+                binding.layoutTimeSlotsContainer.removeView(view);
+                timeSlotViews.remove(view);
+                updateTimeSlotTitles();
+            } else {
+                Toast.makeText(getContext(), "Phải có ít nhất một khung giờ", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        binding.layoutTimeSlotsContainer.addView(view);
+        timeSlotViews.add(view);
     }
 
-    private void showTimePicker(android.widget.EditText target) {
+    private void updateTimeSlotTitles() {
+        for (int i = 0; i < timeSlotViews.size(); i++) {
+            TextView tvTitle = timeSlotViews.get(i).findViewById(R.id.tv_frame_title);
+            tvTitle.setText("Khung giờ " + (i + 1));
+        }
+    }
+
+    private void showTimePicker(EditText target) {
         new TimePickerDialog(requireContext(), (view, hour, min) -> target.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, min)), 7, 0, true).show();
     }
 
@@ -266,13 +297,32 @@ public class AddPriceFragment extends Fragment {
         String name = binding.etPriceName.getText().toString().trim();
         String startDateStr = binding.etStartDate.getText().toString().trim();
         String endDateStr = binding.etEndDate.getText().toString().trim();
-        String startTime = binding.etStartTime.getText().toString().trim();
-        String endTime = binding.etEndTime.getText().toString().trim();
-        String priceStr = binding.etPrice.getText().toString().trim();
 
-        if (name.isEmpty() || selectedCourtType == null || priceStr.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
+        if (name.isEmpty() || selectedCourtType == null) {
             Toast.makeText(getContext(), "Vui lòng nhập đầy đủ thông tin bắt buộc", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        List<PriceTableTimeSlotModel> slots = new ArrayList<>();
+        for (View slotView : timeSlotViews) {
+            EditText etStart = slotView.findViewById(R.id.et_start_time);
+            EditText etEnd = slotView.findViewById(R.id.et_end_time);
+            EditText etPrice = slotView.findViewById(R.id.et_price);
+            
+            String startTime = etStart.getText().toString().trim();
+            String endTime = etEnd.getText().toString().trim();
+            String priceStr = etPrice.getText().toString().trim();
+            
+            if (startTime.isEmpty() || endTime.isEmpty() || priceStr.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng nhập đầy đủ thông tin cho các khung giờ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
+            slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
+            slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
+            slot.setUnitPrice(priceStr);
+            slots.add(slot);
         }
 
         PriceTableModel model = new PriceTableModel();
@@ -287,14 +337,6 @@ public class AddPriceFragment extends Fragment {
         }
 
         model.setAppliedDays(new ArrayList<>(selectedDays));
-
-        PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
-        slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
-        slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
-        slot.setUnitPrice(priceStr);
-        
-        List<PriceTableTimeSlotModel> slots = new ArrayList<>();
-        slots.add(slot);
         model.setTimeSlots(slots);
         
         savePriceTable(model);
