@@ -12,26 +12,27 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
 import com.example.nhom5.databinding.FragmentFirstBinding;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding binding;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         checkRoleAndSetupUI();
-
         
         // Cập nhật ngày tháng hiện tại
         updateDate();
@@ -43,8 +44,17 @@ public class FirstFragment extends Fragment {
 
         // Xử lý sự kiện nút "Đặt lịch mới"
         binding.btnNewBooking.setOnClickListener(v -> {
-            // Điều hướng tới màn hình Lịch sân (ScheduleFragment)
-            Navigation.findNavController(v).navigate(R.id.navigation_schedule);
+            // Thay vì dùng navigate trực tiếp, chúng ta thay đổi Item được chọn trên BottomNav
+            // Điều này giúp Navigation Component quản lý BackStack chuẩn hơn (Tab-switching)
+            if (getActivity() != null) {
+                BottomNavigationView navView = getActivity().findViewById(R.id.bottom_navigation);
+                if (navView != null) {
+                    navView.setSelectedItemId(R.id.navigation_schedule);
+                } else {
+                    // Fallback nếu không tìm thấy BottomNav
+                    Navigation.findNavController(v).navigate(R.id.navigation_schedule);
+                }
+            }
         });
     }
 
@@ -70,7 +80,6 @@ public class FirstFragment extends Fragment {
         String role = pref.getString("role", "customer");
         String username = pref.getString("username", "");
 
-        // Logic đồng bộ: admin hoặc staff hoặc username là admin
         boolean isManager = "admin".equalsIgnoreCase(username.trim()) 
                          || "admin".equalsIgnoreCase(role.trim()) 
                          || "staff".equalsIgnoreCase(role.trim())

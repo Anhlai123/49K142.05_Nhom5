@@ -126,6 +126,14 @@ public class ScheduleFragment extends Fragment {
         loadCourtTypes();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (currentCourtTypeId != -1) {
+            loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+        }
+    }
+
     private void loadCourtTypes() {
         apiService.getCourtTypes().enqueue(new Callback<List<CourtTypeModel>>() {
             @Override
@@ -222,7 +230,6 @@ public class ScheduleFragment extends Fragment {
         
         if (!currentCourtsData.isEmpty()) {
             for (Slot slot : currentCourtsData.get(0).getSlots()) {
-                // Header các khung giờ là màu xám nhạt
                 headerRow.addView(createStyledHeaderCell(slot.getStartTime().substring(0, 5), Color.parseColor("#F8F9FA"), Color.parseColor("#5BA260"), 80));
             }
         }
@@ -251,7 +258,7 @@ public class ScheduleFragment extends Fragment {
                         span++;
                         next++;
                     }
-                    TextView spanCell = createCell(typeIsBooked ? "Đã đặt" : "Bảo trì", false, 80 * span);
+                    TextView spanCell = createCell(typeIsBooked ? "Đã đặt" : "BẢO TRÌ", false, 80 * span);
                     TableRow.LayoutParams params = (TableRow.LayoutParams) spanCell.getLayoutParams();
                     params.span = span;
                     spanCell.setLayoutParams(params);
@@ -262,7 +269,8 @@ public class ScheduleFragment extends Fragment {
                         spanCell.setOnClickListener(v -> showBookedBottomSheet());
                     } else {
                         spanCell.setBackgroundResource(R.drawable.bg_maintenance_status);
-                        spanCell.setTextColor(Color.parseColor("#9E9E9E"));
+                        spanCell.setTextColor(Color.parseColor("#757575"));
+                        spanCell.setOnClickListener(v -> showMaintenanceBottomSheet());
                     }
                     spanCell.setTypeface(null, Typeface.BOLD);
                     row.addView(spanCell);
@@ -275,7 +283,7 @@ public class ScheduleFragment extends Fragment {
                             (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CELL_HEIGHT_DP, getResources().getDisplayMetrics())
                     );
                     cell.setLayoutParams(params);
-                    cell.setBackgroundResource(R.drawable.bg_slot_available); // Ô khung giờ màu trắng
+                    cell.setBackgroundResource(R.drawable.bg_slot_available); 
                     cell.setGravity(Gravity.CENTER);
                     updateTableCellUI(cell, selectedSlotKeys.contains(slotKey));
                     cell.setOnClickListener(v -> toggleSlotSelection(slotKey, cell));
@@ -407,7 +415,7 @@ public class ScheduleFragment extends Fragment {
             cell.setBackgroundResource(R.drawable.bg_grid_cell);
             cell.setBackgroundTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.selected_slot_bg)));
         } else {
-            cell.setBackgroundResource(R.drawable.bg_slot_available); // Trả về màu trắng khi bỏ chọn
+            cell.setBackgroundResource(R.drawable.bg_slot_available); 
             cell.setBackgroundTintList(null);
         }
     }
@@ -439,10 +447,12 @@ public class ScheduleFragment extends Fragment {
             tv.setLayoutParams(params);
             String slotKey = court.getCourtId() + "|" + court.getCourtName() + "|" + slot.getStartTime() + "|" + slot.getPrice();
             if (isBooked(slot.getStatus())) updateSlotUI(tv, SlotStatus.BOOKED);
+            else if ("maintenance".equalsIgnoreCase(slot.getStatus())) updateSlotUI(tv, SlotStatus.MAINTENANCE);
             else if (selectedSlotKeys.contains(slotKey)) updateSlotUI(tv, SlotStatus.SELECTED);
             else updateSlotUI(tv, SlotStatus.AVAILABLE);
             tv.setOnClickListener(v -> {
                 if (isBooked(slot.getStatus())) showBookedBottomSheet();
+                else if ("maintenance".equalsIgnoreCase(slot.getStatus())) showMaintenanceBottomSheet();
                 else toggleSlotSelection(slotKey, tv);
             });
             timeGrid.addView(tv);
@@ -452,6 +462,7 @@ public class ScheduleFragment extends Fragment {
     private void updateSlotUI(TextView tv, SlotStatus status) {
         int bgColor = Color.WHITE, textColor = Color.parseColor("#808080");
         if (status == SlotStatus.BOOKED) { bgColor = ContextCompat.getColor(getContext(), R.color.booked_cell_bg); textColor = Color.RED; }
+        else if (status == SlotStatus.MAINTENANCE) { bgColor = Color.parseColor("#F5F5F5"); textColor = Color.parseColor("#757575"); }
         else if (status == SlotStatus.SELECTED) { bgColor = ContextCompat.getColor(getContext(), R.color.selected_slot_bg); textColor = ContextCompat.getColor(getContext(), R.color.selected_slot_text); }
         GradientDrawable drawable = new GradientDrawable();
         drawable.setCornerRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
@@ -540,6 +551,14 @@ public class ScheduleFragment extends Fragment {
         currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_booked_bottom_sheet, null);
         view.findViewById(R.id.btn_close_booked).setOnClickListener(v -> currentDialog.dismiss());
+        currentDialog.setContentView(view);
+        currentDialog.show();
+    }
+
+    private void showMaintenanceBottomSheet() {
+        currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_maintenance_bottom_sheet, null);
+        view.findViewById(R.id.btn_close_maintenance).setOnClickListener(v -> currentDialog.dismiss());
         currentDialog.setContentView(view);
         currentDialog.show();
     }
