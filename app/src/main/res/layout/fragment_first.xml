@@ -96,10 +96,11 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tv_busy_courts_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="12 Sân"
+                        android:text="0 Sân"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -139,7 +140,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="2.450k"
+                        android:text="0k"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -217,97 +218,17 @@
             app:layout_constraintTop_toTopOf="@id/tv_schedule_title"
             app:tint="@color/text_grey" />
 
-        <!-- Mock List of Schedule Items -->
-        <LinearLayout
+        <!-- Actual List of Schedule Items using RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_today_schedule"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="24dp"
-            android:orientation="vertical"
+            android:nestedScrollingEnabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_schedule_title">
-
-            <!-- Item 1: Sân Cầu Lông 1 - BẬN -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginVertical="8dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
-                    <View android:id="@+id/icon_bg_1" android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_icon_badminton" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                    <TextView android:id="@+id/tv_name_1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Sân Cầu Lông 1" android:textColor="@color/black" android:textSize="16sp" android:textStyle="bold" app:layout_constraintStart_toEndOf="@id/icon_bg_1" app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_1"/>
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="4dp" android:text="Khách: Nguyễn Văn A • Đến 18:30" android:textColor="@color/text_grey" android:textSize="14sp" app:layout_constraintStart_toEndOf="@id/icon_bg_1" app:layout_constraintTop_toBottomOf="@id/tv_name_1" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_1"/>
-                    <TextView android:id="@+id/tv_status_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/status_bg_busy" android:paddingHorizontal="12dp" android:paddingVertical="4dp" android:text="BẬN" android:textColor="@color/status_busy_text" android:textSize="12sp" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Item 2: Sân Cầu Lông 2 - TRỐNG -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginVertical="8dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
-                    <View android:id="@+id/icon_bg_2" android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_icon_badminton" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                    <TextView android:id="@+id/tv_name_2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Sân Cầu Lông 2" android:textColor="@color/black" android:textSize="16sp" android:textStyle="bold" app:layout_constraintStart_toEndOf="@id/icon_bg_2" app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_2"/>
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="4dp" android:text="Trống • Sẵn sàng nhận khách" android:textColor="@color/text_grey" android:textSize="14sp" app:layout_constraintStart_toEndOf="@id/icon_bg_2" app:layout_constraintTop_toBottomOf="@id/tv_name_2" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_2"/>
-                    <TextView android:id="@+id/tv_status_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/status_bg_available" android:paddingHorizontal="12dp" android:paddingVertical="4dp" android:text="TRỐNG" android:textColor="@color/status_available_text" android:textSize="12sp" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Item 3: Sân Bóng Đá Mini A - BẬN -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginVertical="8dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
-                    <View android:id="@+id/icon_bg_3" android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_icon_football" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                    <TextView android:id="@+id/tv_name_3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Sân Bóng Đá Mini A" android:textColor="@color/black" android:textSize="16sp" android:textStyle="bold" app:layout_constraintStart_toEndOf="@id/icon_bg_3" app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_3"/>
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="4dp" android:text="Khách: Team Star • Đến 20:00" android:textColor="@color/text_grey" android:textSize="14sp" app:layout_constraintStart_toEndOf="@id/icon_bg_3" app:layout_constraintTop_toBottomOf="@id/tv_name_3" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_3"/>
-                    <TextView android:id="@+id/tv_status_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/status_bg_busy" android:paddingHorizontal="12dp" android:paddingVertical="4dp" android:text="BẬN" android:textColor="@color/status_busy_text" android:textSize="12sp" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Item 4: Sân Bóng Đá Mini B - ĐANG DỌN -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginVertical="8dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
-                    <View android:id="@+id/icon_bg_4" android:layout_width="48dp" android:layout_height="48dp" android:background="@drawable/bg_icon_football" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                    <TextView android:id="@+id/tv_name_4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Sân Bóng Đá Mini B" android:textColor="@color/black" android:textSize="16sp" android:textStyle="bold" app:layout_constraintStart_toEndOf="@id/icon_bg_4" app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_4" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginTop="4dp" android:text="Đang dọn vệ sinh sân" android:textColor="@color/text_grey" android:textSize="14sp" app:layout_constraintStart_toEndOf="@id/icon_bg_4" app:layout_constraintTop_toBottomOf="@id/tv_name_4" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toStartOf="@id/tv_status_4"/>
-                    <TextView android:id="@+id/tv_status_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/status_bg_cleaning" android:paddingHorizontal="12dp" android:paddingVertical="4dp" android:text="ĐANG DỌN" android:textColor="@color/status_cleaning_text" android:textSize="12sp" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
+            app:layout_constraintTop_toBottomOf="@id/tv_schedule_title"
+            tools:listitem="@layout/item_court" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

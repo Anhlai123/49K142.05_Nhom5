@@ -29,27 +29,11 @@ public class MoreFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        displayUserInfo();
+        // Giữ nguyên tiêu đề tĩnh: "Tính năng khác" và "Hệ thống đặt sân thể thao"
+        // Không gọi displayUserInfo() để tránh ghi đè nội dung header
+
         setupMenuVisibility();
         setupActions();
-    }
-
-    private void displayUserInfo() {
-        if (getContext() == null) return;
-        SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        String fullName = pref.getString("fullName", "Người dùng");
-        String role = pref.getString("role", "customer");
-        String username = pref.getString("username", "");
-
-        if (binding.tvUserName != null) binding.tvUserName.setText(fullName);
-        if (binding.tvUserRole != null) {
-            String roleDisplay = "Khách hàng";
-            // Ưu tiên username admin
-            if ("admin".equalsIgnoreCase(username) || "admin".equalsIgnoreCase(role)) roleDisplay = "Quản trị viên";
-            else if ("staff".equalsIgnoreCase(role)) roleDisplay = "Nhân viên";
-            
-            binding.tvUserRole.setText(roleDisplay);
-        }
     }
 
     private void setupMenuVisibility() {
@@ -65,13 +49,11 @@ public class MoreFragment extends Fragment {
                          || "1".equals(role.trim());
 
         if (isManager) {
-            binding.btnManageCourts.setVisibility(View.VISIBLE);
-            binding.btnManageCourtTypes.setVisibility(View.VISIBLE);
-            binding.btnManagePrices.setVisibility(View.VISIBLE);
+            binding.tvLabelManage.setVisibility(View.VISIBLE);
+            binding.cardAdminActions.setVisibility(View.VISIBLE);
         } else {
-            binding.btnManageCourts.setVisibility(View.GONE);
-            binding.btnManageCourtTypes.setVisibility(View.GONE);
-            binding.btnManagePrices.setVisibility(View.GONE);
+            binding.tvLabelManage.setVisibility(View.GONE);
+            binding.cardAdminActions.setVisibility(View.GONE);
         }
     }
 
@@ -106,7 +88,6 @@ public class MoreFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        displayUserInfo();
         setupMenuVisibility();
     }
 
