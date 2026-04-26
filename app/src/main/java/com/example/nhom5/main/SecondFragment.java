@@ -194,6 +194,9 @@ public class SecondFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Reset bộ lọc về "Tất cả" mỗi khi quay lại màn hình này
+        currentFilter = "all";
+        updateFilterUI(R.id.filterAll);
         loadOrders();
     }
 
