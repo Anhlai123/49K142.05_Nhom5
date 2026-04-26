@@ -104,7 +104,9 @@ public class PriceManagementFragment extends Fragment {
 
             @Override
             public void onEdit(PriceRecord price) {
-                Navigation.findNavController(binding.getRoot()).navigate(R.id.action_priceManagementFragment_to_updatePriceFragment);
+                Bundle args = new Bundle();
+                args.putInt("priceId", price.getInternalId());
+                Navigation.findNavController(binding.getRoot()).navigate(R.id.action_priceManagementFragment_to_updatePriceFragment, args);
             }
 
             @Override
@@ -203,7 +205,15 @@ public class PriceManagementFragment extends Fragment {
                 String priceStr = (min == max) ? currencyFormatter.format(min) + "đ" 
                                               : currencyFormatter.format(min) + "đ - " + currencyFormatter.format(max) + "đ";
                 record.setPriceRange(priceStr);
-                record.setTimeFrameCount(mySlots.size() + " khung giờ");
+                
+                // Hiển thị danh sách khung giờ thay vì số lượng
+                List<String> timeStrings = new ArrayList<>();
+                for (PriceTableTimeSlotModel slot : mySlots) {
+                    String start = slot.getStartTime().substring(0, 5);
+                    String end = slot.getEndTime().substring(0, 5);
+                    timeStrings.add(start + "-" + end);
+                }
+                record.setTimeFrameCount(TextUtils.join(", ", timeStrings));
             } else {
                 record.setPriceRange("Chưa có giá");
                 record.setTimeFrameCount("0 khung giờ");

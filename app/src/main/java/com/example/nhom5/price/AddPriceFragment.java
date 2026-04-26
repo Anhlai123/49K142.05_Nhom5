@@ -21,7 +21,6 @@ import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
-import com.example.nhom5.booking.SuccessDialogFragment;
 import com.example.nhom5.court.Court;
 import com.example.nhom5.databinding.FragmentAddPriceBinding;
 import com.example.nhom5.models.CourtTypeModel;
@@ -80,16 +79,9 @@ public class AddPriceFragment extends Fragment {
         setupTimePickers();
         updateScopeUi(true);
 
-        binding.btnBack.setOnClickListener(v -> showExitConfirmDialog());
-        binding.btnCancel.setOnClickListener(v -> showExitConfirmDialog());
+        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnSave.setOnClickListener(v -> validateAndSave());
-    }
-
-    private void showExitConfirmDialog() {
-        ConfirmExitDialogFragment dialog = ConfirmExitDialogFragment.newInstance(() -> {
-            Navigation.findNavController(requireView()).navigateUp();
-        });
-        dialog.show(getParentFragmentManager(), "confirm_exit_dialog");
     }
 
     private void loadCourtTypes() {
@@ -322,11 +314,8 @@ public class AddPriceFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<PriceTableModel> call, @NonNull Response<PriceTableModel> response) {
                 if (response.isSuccessful()) {
-                    SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
-                            "Cập nhật giá thành công",
-                            () -> Navigation.findNavController(binding.getRoot()).navigateUp()
-                    );
-                    successDialog.show(getParentFragmentManager(), "success_dialog");
+                    Toast.makeText(getContext(), "Lưu thành công!", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(binding.getRoot()).navigateUp();
                 } else {
                     binding.btnSave.setEnabled(true);
                     Toast.makeText(getContext(), "Lỗi khi lưu bảng giá", Toast.LENGTH_SHORT).show();
