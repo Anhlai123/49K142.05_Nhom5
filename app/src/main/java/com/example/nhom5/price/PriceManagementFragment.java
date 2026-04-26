@@ -18,7 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
-import com.example.nhom5.databinding.BottomSheetConfirmDeletePriceBinding;
+import com.example.nhom5.booking.SuccessDialogFragment;
+import com.example.nhom5.court.ConfirmDeleteDialogFragment;
 import com.example.nhom5.databinding.BottomSheetPriceDetailsBinding;
 import com.example.nhom5.databinding.FragmentPriceManagementBinding;
 import com.example.nhom5.models.PriceTableModel;
@@ -108,7 +109,7 @@ public class PriceManagementFragment extends Fragment {
 
             @Override
             public void onDelete(PriceRecord price) {
-                showDeleteConfirmBottomSheet(price);
+                showDeleteConfirmDialog(price);
             }
         });
         binding.rvPrices.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -290,30 +291,34 @@ public class PriceManagementFragment extends Fragment {
         view.setTextColor(requireContext().getColor(active ? R.color.white : R.color.inactive));
     }
 
-    private void showDeleteConfirmBottomSheet(PriceRecord price) {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetConfirmDeletePriceBinding sheetBinding = BottomSheetConfirmDeletePriceBinding.inflate(getLayoutInflater());
-        bottomSheetDialog.setContentView(sheetBinding.getRoot());
+    private void showDeleteConfirmDialog(PriceRecord price) {
+        ConfirmDeleteDialogFragment dialog = ConfirmDeleteDialogFragment.newInstance(
+                "Xác nhận xóa bảng giá",
+                "Bạn có chắc chắn muốn xóa bảng giá này?",
+                "Xác nhận xóa",
+                () -> {
+                    ApiClient.getApiService().deletePriceTable(price.getInternalId()).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
+                                        "Xóa thành công",
+                                        () -> loadPriceData()
+                                );
+                                successDialog.show(getParentFragmentManager(), "success_dialog");
+                            } else {
+                                Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
 
-        sheetBinding.btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
-        sheetBinding.btnConfirm.setOnClickListener(v -> {
-            ApiClient.getApiService().deletePriceTable(price.getInternalId()).enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(getContext(), "Xóa thành công", Toast.LENGTH_SHORT).show();
-                        loadPriceData();
-                    }
-                    bottomSheetDialog.dismiss();
+                        @Override
+                        public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                            Toast.makeText(getContext(), "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
-
-                @Override
-                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                    bottomSheetDialog.dismiss();
-                }
-            });
-        });
-        bottomSheetDialog.show();
+        );
+        dialog.show(getParentFragmentManager(), "confirm_delete_price_dialog");
     }
 
     @Override

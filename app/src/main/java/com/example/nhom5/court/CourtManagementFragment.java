@@ -163,9 +163,12 @@ public class CourtManagementFragment extends Fragment {
                 @Override
                 public void onResponse(Call<Court> call, Response<Court> response) {
                     if (response.isSuccessful()) {
-                        Toast.makeText(getContext(), "Thêm sân thành công!", Toast.LENGTH_SHORT).show();
-                        loadCourtsFromServer();
                         bottomSheetDialog.dismiss();
+                        SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
+                                "Tạo sân thành công",
+                                () -> loadCourtsFromServer()
+                        );
+                        successDialog.show(getParentFragmentManager(), "success_dialog");
                     } else {
                         Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -267,9 +270,12 @@ public class CourtManagementFragment extends Fragment {
                 @Override
                 public void onResponse(Call<Court> call, Response<Court> response) {
                     if (response.isSuccessful()) {
-                        Toast.makeText(getContext(), "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                        loadCourtsFromServer();
                         bottomSheetDialog.dismiss();
+                        SuccessDialogFragment successDialog = SuccessDialogFragment.newInstance(
+                                "Cập nhật sân thành công",
+                                () -> loadCourtsFromServer()
+                        );
+                        successDialog.show(getParentFragmentManager(), "success_dialog");
                     } else {
                         Toast.makeText(getContext(), "Lỗi cập nhật: " + response.code(), Toast.LENGTH_SHORT).show();
                     }

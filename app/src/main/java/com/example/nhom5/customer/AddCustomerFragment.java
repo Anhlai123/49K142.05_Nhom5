@@ -14,6 +14,7 @@ import androidx.navigation.Navigation;
 
 import com.example.nhom5.booking.SuccessDialogFragment;
 import com.example.nhom5.databinding.FragmentAddCustomerBinding;
+import com.example.nhom5.price.ConfirmExitDialogFragment;
 
 public class AddCustomerFragment extends Fragment {
 
@@ -35,8 +36,8 @@ public class AddCustomerFragment extends Fragment {
 
         binding.tvId.setText("Tự động tạo từ hệ thống");
 
-        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
-        binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
+        binding.btnBack.setOnClickListener(v -> showExitConfirmDialog());
+        binding.btnCancel.setOnClickListener(v -> showExitConfirmDialog());
 
         viewModel.getLoading().observe(getViewLifecycleOwner(), isLoading ->
                 binding.btnSave.setEnabled(isLoading == null || !isLoading)
@@ -88,6 +89,13 @@ public class AddCustomerFragment extends Fragment {
                 });
             }
         });
+    }
+
+    private void showExitConfirmDialog() {
+        ConfirmExitDialogFragment dialog = ConfirmExitDialogFragment.newInstance(() -> {
+            Navigation.findNavController(requireView()).navigateUp();
+        });
+        dialog.show(getParentFragmentManager(), "confirm_exit_dialog");
     }
 
     @Override
