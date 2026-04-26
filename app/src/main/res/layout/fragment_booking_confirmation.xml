@@ -37,17 +37,6 @@
                     android:textColor="@android:color/white"
                     android:textSize="20sp"
                     android:textStyle="bold" />
-
-                <ImageButton
-                    android:id="@+id/btnEdit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="16.dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_edit"
-                    app:tint="@android:color/white" />
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -61,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16.dp">
+            android:padding="16dp">
 
             <!-- Court Info Card -->
             <com.google.android.material.card.MaterialCardView
@@ -85,7 +74,7 @@
                             android:id="@+id/tvCourtNameHeader"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Sân Cầu Lông 2"
+                            android:text="Sân Đang Tải..."
                             android:textSize="24sp"
                             android:textStyle="bold" />
 
@@ -94,64 +83,19 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
-                            android:text="60.000/h"
+                            android:text="0đ/h"
                             android:textColor="#00A63E"
-                            android:textSize="22sp"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
                     </RelativeLayout>
 
                     <TextView
+                        android:id="@+id/tvCourtType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Loại: Cầu lông"
+                        android:text="Loại sân"
                         android:textColor="#888888"
                         android:textSize="14sp" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="16.dp"
-                        android:background="#EEEEEE" />
-
-                    <GridLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:columnCount="2">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_columnWeight="1"
-                            android:drawablePadding="8.dp"
-                            android:text="📐 13.4m x 6.1m"
-                            android:textColor="#666666" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_columnWeight="1"
-                            android:drawablePadding="8.dp"
-                            android:text="🌲 Sân gỗ chuẩn"
-                            android:textColor="#666666" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_columnWeight="1"
-                            android:layout_marginTop="8.dp"
-                            android:drawablePadding="8.dp"
-                            android:text="❄️ Có điều hòa"
-                            android:textColor="#666666" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_columnWeight="1"
-                            android:layout_marginTop="8.dp"
-                            android:drawablePadding="8.dp"
-                            android:text="💡 Đèn LED"
-                            android:textColor="#666666" />
-                    </GridLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -159,7 +103,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8.dp"
+                android:layout_marginTop="8dp"
                 app:cardCornerRadius="24.dp"
                 app:cardElevation="2.dp"
                 app:cardUseCompatPadding="true">
@@ -188,47 +132,26 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20.dp"
+                        android:layout_marginTop="20dp"
                         android:text="Sân &amp; Thời gian"
                         android:textColor="#888888"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvTimeField"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8.dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/tvCourtField"
-                            android:layout_width="0dp"
-                            android:layout_height="56.dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_input_field"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="16.dp"
-                            android:text="Sân Cầu Lông 2" />
-
-                        <View
-                            android:layout_width="12.dp"
-                            android:layout_height="0dp" />
-
-                        <TextView
-                            android:id="@+id/tvTimeField"
-                            android:layout_width="0dp"
-                            android:layout_height="56.dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_input_field"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="16.dp"
-                            android:text="07:00 - 08:00" />
-                    </LinearLayout>
+                        android:background="@drawable/bg_input_field"
+                        android:padding="16dp"
+                        android:text="07:00 - 08:00"
+                        android:textColor="@color/black" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20.dp"
+                        android:layout_marginTop="20dp"
                         android:text="Tổng giờ &amp; Tổng tiền"
                         android:textColor="#888888"
                         android:textSize="14sp"
@@ -248,7 +171,7 @@
                             android:background="@drawable/bg_input_field"
                             android:gravity="center_vertical"
                             android:paddingHorizontal="16.dp"
-                            android:text="1h00" />
+                            android:text="1 giờ" />
 
                         <View
                             android:layout_width="12.dp"
@@ -262,14 +185,15 @@
                             android:background="@drawable/bg_input_field"
                             android:gravity="center_vertical"
                             android:paddingHorizontal="16.dp"
-                            android:text="60.000 đ"
-                            android:textColor="@android:color/holo_red_dark" />
+                            android:text="0 đ"
+                            android:textColor="@android:color/holo_red_dark"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20.dp"
+                        android:layout_marginTop="20dp"
                         android:text="Thông tin khách hàng"
                         android:textColor="#888888"
                         android:textSize="14sp"
@@ -324,7 +248,7 @@
                             android:layout_height="56.dp"
                             android:layout_weight="1.5"
                             android:backgroundTint="#00A63E"
-                            android:text="ĐẶT NGAY"
+                            android:text="XÁC NHẬN"
                             android:textColor="@android:color/white"
                             android:textSize="16sp"
                             android:textStyle="bold"

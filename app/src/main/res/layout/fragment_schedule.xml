@@ -28,7 +28,7 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Filter & Selection Group -->
+            <!-- Filter Section -->
             <LinearLayout
                 android:id="@+id/filterSection"
                 android:layout_width="match_parent"
@@ -56,7 +56,6 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:paddingHorizontal="20dp">
-
                     <TextView
                         android:id="@+id/tvScheduleTypeText"
                         android:layout_width="0dp"
@@ -64,9 +63,8 @@
                         android:layout_weight="1"
                         android:text="Theo lịch sân"
                         android:textColor="@color/dark_green_text"
-                        android:textSize="17sp"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
-
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
@@ -79,86 +77,84 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:orientation="horizontal">
-
                     <LinearLayout
                         android:id="@+id/boxCourtType"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="80dp"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
                         android:background="@drawable/bg_filter_box"
                         android:orientation="vertical"
                         android:clickable="true"
                         android:focusable="true"
-                        android:padding="16dp">
-
+                        android:padding="12dp">
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Loại sân"
                             android:textColor="#99B8AD"
-                            android:textSize="12sp" />
-
+                            android:textSize="11sp" />
                         <RelativeLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp">
-
+                            android:layout_height="match_parent">
                             <TextView
                                 android:id="@+id/tvSelectedCourtType"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_toStartOf="@id/iv_arrow_down"
+                                android:layout_centerVertical="true"
                                 android:text="Sân Cầu Lông"
                                 android:textColor="@color/dark_green_text"
                                 android:textSize="15sp"
-                                android:textStyle="bold" />
-
+                                android:textStyle="bold"
+                                android:maxLines="2"
+                                android:ellipsize="end" />
                             <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
+                                android:id="@+id/iv_arrow_down"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
                                 android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
                                 android:src="@android:drawable/arrow_down_float"
                                 app:tint="@color/dark_green_text" />
                         </RelativeLayout>
                     </LinearLayout>
-
                     <LinearLayout
                         android:id="@+id/boxDatePicker"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="80dp"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
                         android:background="@drawable/bg_filter_box"
                         android:orientation="vertical"
                         android:clickable="true"
                         android:focusable="true"
-                        android:padding="16dp">
-
+                        android:padding="12dp">
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Ngày chọn"
                             android:textColor="#99B8AD"
-                            android:textSize="12sp" />
-
+                            android:textSize="11sp" />
                         <RelativeLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp">
-
+                            android:layout_height="match_parent">
                             <TextView
                                 android:id="@+id/tvSelectedDate"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_toStartOf="@id/ic_calendar_icon"
+                                android:layout_centerVertical="true"
                                 android:text="13/01/2026"
                                 android:textColor="@color/dark_green_text"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
-
                             <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
+                                android:id="@+id/ic_calendar_icon"
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
                                 android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
                                 android:src="@drawable/ic_clock_green"
                                 app:tint="@color/dark_green_text" />
                         </RelativeLayout>
@@ -166,25 +162,49 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- BY SCHEDULE VIEW -->
+            <!-- Status Legend -->
             <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FAFAFA"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingVertical="12dp">
+                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_circle_green" android:backgroundTint="@color/booked_dot" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="ĐÃ ĐẶT" android:textColor="@color/text_grey" android:textSize="10sp" android:textStyle="bold" />
+                <View android:layout_width="10dp" android:layout_height="10dp" android:layout_marginStart="20dp" android:background="@drawable/bg_circle_green" android:backgroundTint="@color/maintenance_dot" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="BẢO TRÌ" android:textColor="@color/text_grey" android:textSize="10sp" android:textStyle="bold" />
+                <View android:layout_width="10dp" android:layout_height="10dp" android:layout_marginStart="20dp" android:background="@drawable/bg_grid_cell" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="TRỐNG" android:textColor="@color/text_grey" android:textSize="10sp" android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Bảng lịch sân cuộn ngang -->
+            <HorizontalScrollView
                 android:id="@+id/layoutBySchedule"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:scrollbars="none">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    <!-- Cột THỨ sẽ cuộn cùng bảng nhưng gộp dòng (như ảnh mẫu) -->
+                    <LinearLayout
+                        android:id="@+id/layoutDayColumnScrollable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
                     <TableLayout
                         android:id="@+id/tableLayout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@color/white" />
-                </HorizontalScrollView>
-            </LinearLayout>
+                </LinearLayout>
+            </HorizontalScrollView>
 
-            <!-- BY COURT VIEW -->
+            <!-- Grid Layout -->
             <LinearLayout
                 android:id="@+id/layoutByCourt"
                 android:layout_width="match_parent"
@@ -192,34 +212,19 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="16dp"
-                    android:paddingTop="16dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Chọn vị trí sân"
-                        android:textColor="@color/dark_green_text"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </RelativeLayout>
-
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fillViewport="true"
                     android:paddingVertical="12dp"
                     android:scrollbars="none">
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:id="@+id/layoutCourtSelector"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:orientation="horizontal"
                         android:paddingHorizontal="12dp">
-                        <TextView android:id="@+id/court1" android:layout_width="80dp" android:layout_height="80dp" android:layout_margin="4dp" android:background="@drawable/bg_court_card" android:gravity="center" android:text="Sân 1" android:textColor="@color/dark_green_text" android:textStyle="bold" />
-                        <TextView android:id="@+id/court2" android:layout_width="80dp" android:layout_height="80dp" android:layout_margin="4dp" android:background="@drawable/bg_court_card_selected" android:gravity="center" android:text="Sân 2" android:textColor="@color/primary" android:textStyle="bold" />
-                        <TextView android:id="@+id/court3" android:layout_width="80dp" android:layout_height="80dp" android:layout_margin="4dp" android:background="@drawable/bg_court_card" android:gravity="center" android:text="Sân 3" android:textColor="@color/dark_green_text" android:textStyle="bold" />
-                        <TextView android:id="@+id/court4" android:layout_width="80dp" android:layout_height="80dp" android:layout_margin="4dp" android:background="@drawable/bg_court_card" android:gravity="center" android:text="Sân 4" android:textColor="@color/dark_green_text" android:textStyle="bold" />
                     </LinearLayout>
                 </HorizontalScrollView>
 
@@ -231,8 +236,6 @@
                     android:columnCount="3">
                 </android.widget.GridLayout>
             </LinearLayout>
-
         </LinearLayout>
-    </ScrollView>
-
+    </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
