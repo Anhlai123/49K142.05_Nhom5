@@ -179,7 +179,7 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_pill_active"
                         android:gravity="center"
-                        android:text="✓ Tất cả sân"
+                        android:text="Tất cả sân"
                         android:textColor="@color/white"
                         android:textStyle="bold" />
 
@@ -326,102 +326,11 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
+                android:id="@+id/layout_time_slots_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/card_background"
-                android:padding="16dp">
-
-                <TextView
-                    android:id="@+id/tv_frame_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Khung giờ 1"
-                    android:textColor="#212121"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_close"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="#FFCDD2" />
-
-                <LinearLayout
-                    android:id="@+id/layout_times"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal"
-                    app:layout_constraintTop_toBottomOf="@id/tv_frame_title">
-
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giờ bắt đầu" android:textSize="11sp" android:textColor="#757575"/>
-                        <EditText
-                            android:id="@+id/et_start_time"
-                            android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/bg_input_field"
-                            android:clickable="true"
-                            android:drawableEnd="@drawable/ic_clock_green"
-                            android:focusable="false"
-                            android:hint="00:00"
-                            android:paddingHorizontal="12dp"
-                            android:textSize="13sp"
-                            android:inputType="none"/>
-                    </LinearLayout>
-
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giờ kết thúc" android:textSize="11sp" android:textColor="#757575"/>
-                        <EditText
-                            android:id="@+id/et_end_time"
-                            android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/bg_input_field"
-                            android:clickable="true"
-                            android:drawableEnd="@drawable/ic_clock_green"
-                            android:focusable="false"
-                            android:hint="00:00"
-                            android:paddingHorizontal="12dp"
-                            android:textSize="13sp"
-                            android:inputType="none"/>
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal"
-                    app:layout_constraintTop_toBottomOf="@id/layout_times">
-
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đơn giá (đ/giờ)" android:textSize="11sp" android:textColor="#757575"/>
-                        <EditText
-                            android:id="@+id/et_price"
-                            android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/bg_input_field"
-                            android:hint="150000"
-                            android:paddingHorizontal="12dp"
-                            android:textSize="13sp"
-                            android:inputType="number" />
-                    </LinearLayout>
-
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ghi chú" android:textSize="11sp" android:textColor="#757575"/>
-                        <EditText android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="4dp" android:background="@drawable/bg_input_field" android:hint="VD: Giờ vàng" android:paddingHorizontal="12dp" android:textSize="13sp"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                android:orientation="vertical" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_frame"
