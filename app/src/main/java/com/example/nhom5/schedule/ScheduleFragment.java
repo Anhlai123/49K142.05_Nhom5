@@ -181,7 +181,6 @@ public class ScheduleFragment extends Fragment {
         layoutDayColumnScrollable.removeAllViews();
         
         String dayName = new SimpleDateFormat("EEEE", new Locale("vi", "VN")).format(selectedCalendar.getTime());
-        // Format day name: "Thứ Hai" -> "Thứ 2"
         if (dayName.equalsIgnoreCase("Thứ Hai")) dayName = "Thứ 2";
         else if (dayName.equalsIgnoreCase("Thứ Ba")) dayName = "Thứ 3";
         else if (dayName.equalsIgnoreCase("Thứ Tư")) dayName = "Thứ 4";
@@ -193,8 +192,7 @@ public class ScheduleFragment extends Fragment {
         int widthPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, getResources().getDisplayMetrics());
         int heightPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CELL_HEIGHT_DP, getResources().getDisplayMetrics());
 
-        // 1. Cột THỨ (Gồm Header và Nội dung gộp dòng)
-        // Header THỨ
+        // 1. Cột THỨ
         TextView headerThu = new TextView(getContext());
         headerThu.setText("THỨ");
         headerThu.setGravity(Gravity.CENTER);
@@ -205,7 +203,6 @@ public class ScheduleFragment extends Fragment {
         headerThu.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#5BA260")));
         layoutDayColumnScrollable.addView(headerThu);
 
-        // Nội dung THỨ
         if (!currentCourtsData.isEmpty()) {
             TextView dayContent = new TextView(getContext());
             dayContent.setText(dayName);
@@ -215,18 +212,18 @@ public class ScheduleFragment extends Fragment {
             dayContent.setTextSize(16);
             int totalHeightPx = currentCourtsData.size() * heightPx;
             dayContent.setLayoutParams(new LinearLayout.LayoutParams(widthPx, totalHeightPx));
-            dayContent.setBackgroundResource(R.drawable.bg_grid_cell);
-            dayContent.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#F1F8F6")));
+            dayContent.setBackgroundResource(R.drawable.bg_day_content);
             layoutDayColumnScrollable.addView(dayContent);
         }
 
-        // 2. TableLayout (Cột SÂN và CÁC KHUNG GIỜ)
+        // 2. TableLayout
         TableRow headerRow = new TableRow(getContext());
         headerRow.addView(createStyledHeaderCell("SÂN", Color.WHITE, Color.parseColor("#1A202C"), 80));
         
         if (!currentCourtsData.isEmpty()) {
             for (Slot slot : currentCourtsData.get(0).getSlots()) {
-                headerRow.addView(createStyledHeaderCell(slot.getStartTime().substring(0, 5), Color.WHITE, Color.parseColor("#5BA260"), 80));
+                // Header các khung giờ là màu xám nhạt
+                headerRow.addView(createStyledHeaderCell(slot.getStartTime().substring(0, 5), Color.parseColor("#F8F9FA"), Color.parseColor("#5BA260"), 80));
             }
         }
         tableLayout.addView(headerRow);
@@ -234,7 +231,6 @@ public class ScheduleFragment extends Fragment {
         for (CourtData court : currentCourtsData) {
             TableRow row = new TableRow(getContext());
             
-            // Cột Sân
             TextView courtTv = createCell(court.getCourtName(), false, 80);
             courtTv.setBackgroundResource(R.drawable.bg_grid_cell);
             courtTv.setTypeface(null, Typeface.BOLD);
@@ -279,7 +275,7 @@ public class ScheduleFragment extends Fragment {
                             (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CELL_HEIGHT_DP, getResources().getDisplayMetrics())
                     );
                     cell.setLayoutParams(params);
-                    cell.setBackgroundResource(R.drawable.bg_grid_cell);
+                    cell.setBackgroundResource(R.drawable.bg_slot_available); // Ô khung giờ màu trắng
                     cell.setGravity(Gravity.CENTER);
                     updateTableCellUI(cell, selectedSlotKeys.contains(slotKey));
                     cell.setOnClickListener(v -> toggleSlotSelection(slotKey, cell));
@@ -411,7 +407,7 @@ public class ScheduleFragment extends Fragment {
             cell.setBackgroundResource(R.drawable.bg_grid_cell);
             cell.setBackgroundTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(getContext(), R.color.selected_slot_bg)));
         } else {
-            cell.setBackgroundResource(R.drawable.bg_grid_cell);
+            cell.setBackgroundResource(R.drawable.bg_slot_available); // Trả về màu trắng khi bỏ chọn
             cell.setBackgroundTintList(null);
         }
     }
