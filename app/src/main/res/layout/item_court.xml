@@ -82,12 +82,14 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Nút Sửa & Xóa -->
+        <!-- Layout nút Sửa & Xóa (Sẽ bị ẩn trong CourtStatusAdapter) -->
         <LinearLayout
+            android:id="@+id/layout_actions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:orientation="horizontal"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/tv_court_type">
 
             <com.google.android.material.button.MaterialButton
