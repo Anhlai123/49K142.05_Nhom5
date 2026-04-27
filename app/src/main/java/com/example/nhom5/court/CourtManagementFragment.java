@@ -170,7 +170,14 @@ public class CourtManagementFragment extends Fragment {
                         );
                         successDialog.show(getParentFragmentManager(), "success_dialog");
                     } else {
-                        Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                        try {
+                            String errorBody = response.errorBody().string();
+                            org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                            String errorMsg = jsonObject.optString("error", "Lỗi: " + response.code());
+                            Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
@@ -277,7 +284,14 @@ public class CourtManagementFragment extends Fragment {
                         );
                         successDialog.show(getParentFragmentManager(), "success_dialog");
                     } else {
-                        Toast.makeText(getContext(), "Lỗi cập nhật: " + response.code(), Toast.LENGTH_SHORT).show();
+                        try {
+                            String errorBody = response.errorBody().string();
+                            org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                            String errorMsg = jsonObject.optString("error", "Lỗi cập nhật: " + response.code());
+                            Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            Toast.makeText(getContext(), "Lỗi cập nhật: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
@@ -305,7 +319,14 @@ public class CourtManagementFragment extends Fragment {
                                 );
                                 successDialog.show(getParentFragmentManager(), "success_dialog");
                             } else {
-                                Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                                try {
+                                    String errorBody = response.errorBody().string();
+                                    org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                                    String errorMsg = jsonObject.optString("error", "Không thể xóa sân");
+                                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                                } catch (Exception e) {
+                                    Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }
 

@@ -246,16 +246,25 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
                         dialog.show(getParentFragmentManager(), "success_dialog");
                     }
                 } else {
-                    // Nếu thất bại vẫn cập nhật UI tạm thời
-                    updateStatusUI(newStatus);
+                    // Xử lý khi Server trả về lỗi (Ví dụ lỗi 400: Không cho phép chuyển trạng thái)
+                    try {
+                        String errorBody = response.errorBody().string();
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                        String errorMsg = jsonObject.optString("error", "Không thể cập nhật trạng thái");
+                        android.widget.Toast.makeText(getContext(), errorMsg, android.widget.Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        android.widget.Toast.makeText(getContext(), "Lỗi: " + response.code(), android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                    // Tải lại dữ liệu gốc để giao diện quay về đúng trạng thái thực tế trên server
+                    loadOrderDetails();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<OrderModel> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
-                t.printStackTrace();
-                updateStatusUI(newStatus);
+                android.widget.Toast.makeText(getContext(), "Lỗi kết nối Server", android.widget.Toast.LENGTH_SHORT).show();
+                loadOrderDetails();
             }
         });
     }
