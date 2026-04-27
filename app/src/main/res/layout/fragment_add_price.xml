@@ -326,6 +326,89 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
+            <!-- Single slot input as requested by Java code if it doesn't want multiple slots initially -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/card_background"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:id="@+id/layout_times"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giờ bắt đầu" android:textSize="12sp" android:textStyle="bold"/>
+                        <EditText
+                            android:id="@+id/et_start_time"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/bg_input_field"
+                            android:clickable="true"
+                            android:focusable="false"
+                            android:hint="07:00"
+                            android:paddingHorizontal="12dp"
+                            android:textSize="13sp"
+                            android:inputType="none"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giờ kết thúc" android:textSize="12sp" android:textStyle="bold"/>
+                        <EditText
+                            android:id="@+id/et_end_time"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/bg_input_field"
+                            android:clickable="true"
+                            android:focusable="false"
+                            android:hint="08:00"
+                            android:paddingHorizontal="12dp"
+                            android:textSize="13sp"
+                            android:inputType="none"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/label_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Đơn giá (VNĐ/giờ) *"
+                    android:textColor="#212121"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/layout_times" />
+
+                <EditText
+                    android:id="@+id/et_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="Nhập đơn giá"
+                    android:paddingHorizontal="12dp"
+                    android:textSize="14sp"
+                    android:inputType="number"
+                    app:layout_constraintTop_toBottomOf="@id/label_price" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <LinearLayout
                 android:id="@+id/layout_time_slots_container"
                 android:layout_width="match_parent"
@@ -341,6 +424,7 @@
                 android:text="Thêm khung giờ"
                 android:textAllCaps="false"
                 android:textColor="@color/primary"
+                android:visibility="gone"
                 app:cornerRadius="12dp"
                 app:icon="@android:drawable/ic_input_add"
                 app:iconGravity="textStart"

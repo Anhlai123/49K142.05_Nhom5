@@ -1,11 +1,9 @@
 package com.example.nhom5.main;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,45 +28,61 @@ public class MainActivity extends AppCompatActivity {
         ApiClient.init(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        
         setupNavigation();
-        setupDrawer();
+        // Nạp dữ liệu lần đầu ngay khi app khởi động (nếu đã login)
+        updateDrawerUI();
     }
 
-    private void setupDrawer() {
+    private void updateDrawerUI() {
         SharedPreferences pref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String username = pref.getString("username", "N/A");
-        String phone = pref.getString("phone", "");
+        String fullName = pref.getString("fullName", username);
+        String phone = pref.getString("phone", "Chưa cập nhật SĐT");
+        String email = pref.getString("email", "admin@system.com");
+        String address = pref.getString("address", "Chưa cập nhật địa chỉ");
         String role = pref.getString("role", "customer");
 
-        binding.navViewRight.getHeaderView(0); // If using header
-        
-        // Populate Drawer Info
-        binding.drawerProfileLayout.tvDrawerUsername.setText(username);
-        
-        // Show phone only for customers or if phone exists
-        if (!phone.isEmpty()) {
-            binding.drawerProfileLayout.layoutPhone.setVisibility(View.VISIBLE);
-            binding.drawerProfileLayout.tvDrawerPhone.setText(phone);
+        boolean isManager = "admin".equalsIgnoreCase(username.trim()) 
+                         || "admin".equalsIgnoreCase(role.trim()) 
+                         || "staff".equalsIgnoreCase(role.trim());
+
+        // Cập nhật thông tin cơ bản
+        binding.drawerProfileLayout.tvDrawerUsername.setText(fullName);
+        binding.drawerProfileLayout.tvDrawerEmail.setText(email);
+
+        if (isManager) {
+            // Chế độ Admin: Căn giữa, hiện Badge, ẩn chi tiết
+            binding.drawerProfileLayout.tvRoleBadge.setVisibility(View.VISIBLE);
+            binding.drawerProfileLayout.tvRoleBadge.setText(role.toUpperCase());
+            binding.drawerProfileLayout.layoutEmailInfo.setVisibility(View.VISIBLE);
+            
+            binding.drawerProfileLayout.layoutDetailsContainer.setVisibility(View.GONE);
         } else {
-            binding.drawerProfileLayout.layoutPhone.setVisibility(View.GONE);
+            // Chế độ Khách hàng: Hiện chi tiết, ẩn Badge
+            binding.drawerProfileLayout.tvRoleBadge.setVisibility(View.GONE);
+            binding.drawerProfileLayout.layoutDetailsContainer.setVisibility(View.VISIBLE);
+            
+            binding.drawerProfileLayout.tvDrawerPhone.setText(phone);
+            binding.drawerProfileLayout.tvDrawerAddress.setText(address);
         }
 
-        binding.drawerProfileLayout.btnLogout.setOnClickListener(v -> {
-            SharedPreferences.Editor editor = pref.edit();
-            editor.clear();
-            editor.apply();
-            
+        // Cài đặt Listeners (chỉ cần cài 1 lần hoặc cập nhật lại)
+        binding.drawerProfileLayout.btnEditProfile.setOnClickListener(v -> {
             binding.drawerLayout.closeDrawer(GravityCompat.END);
-            
-            // Navigate to login
-            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-            navController.navigate(R.id.loginFragment);
+            Navigation.findNavController(this, R.id.nav_host_fragment_content_main).navigate(R.id.profileFragment);
+        });
+
+        binding.drawerProfileLayout.btnLogout.setOnClickListener(v -> {
+            pref.edit().clear().apply();
+            binding.drawerLayout.closeDrawer(GravityCompat.END);
+            Navigation.findNavController(this, R.id.nav_host_fragment_content_main).navigate(R.id.loginFragment);
         });
     }
 
     public void openProfileDrawer() {
         if (binding.drawerLayout != null) {
-            setupDrawer(); // Refresh data
+            updateDrawerUI(); // Cập nhật dữ liệu ngay trước khi mở
             binding.drawerLayout.openDrawer(GravityCompat.END);
         }
     }
@@ -77,14 +91,12 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
-        // Reset tab backstack when re-clicking the current tab
         binding.bottomNavigation.setOnItemReselectedListener(item -> {
             navController.popBackStack(item.getItemId(), false);
         });
 
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             if (isFinishing()) return;
-            
             applyRolePermissions();
 
             int id = destination.getId();
@@ -93,14 +105,10 @@ public class MainActivity extends AppCompatActivity {
                 || id == R.id.addPriceFragment || id == R.id.updatePriceFragment
                 || id == R.id.bookingConfirmationFragment) {
                 binding.bottomNavigation.setVisibility(View.GONE);
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().hide();
-                }
+                if (getSupportActionBar() != null) getSupportActionBar().hide();
             } else {
                 binding.bottomNavigation.setVisibility(View.VISIBLE);
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().show();
-                }
+                if (getSupportActionBar() != null) getSupportActionBar().show();
             }
         });
     }
@@ -109,36 +117,23 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences pref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String role = pref.getString("role", "customer"); 
         String username = pref.getString("username", "");
-        
-        Log.d(TAG, "Checking Permissions - User: [" + username + "] Role: [" + role + "]");
-
         Menu menu = binding.bottomNavigation.getMenu();
         
-        // CƠ CHẾ QUYẾT ĐỊNH: Nếu username là admin thì MẶC ĐỊNH là Admin
         boolean isManager = "admin".equalsIgnoreCase(username.trim()) 
                          || "admin".equalsIgnoreCase(role.trim()) 
                          || "staff".equalsIgnoreCase(role.trim());
 
-        if (isManager) {
-            // Hiển thị các mục quản lý
-            MenuItem customerItem = menu.findItem(R.id.navigation_customers);
-            if (customerItem != null) customerItem.setVisible(true);
-            
-            MenuItem orderItem = menu.findItem(R.id.navigation_orders);
-            if (orderItem != null) orderItem.setTitle("Quản lý đơn");
-        } else {
-            // Ẩn các mục quản lý đối với khách hàng
-            MenuItem customerItem = menu.findItem(R.id.navigation_customers);
-            if (customerItem != null) customerItem.setVisible(false);
-            
-            MenuItem orderItem = menu.findItem(R.id.navigation_orders);
-            if (orderItem != null) orderItem.setTitle("Lịch sử đặt");
-        }
+        MenuItem customerItem = menu.findItem(R.id.navigation_customers);
+        if (customerItem != null) customerItem.setVisible(isManager);
+        
+        MenuItem orderItem = menu.findItem(R.id.navigation_orders);
+        if (orderItem != null) orderItem.setTitle(isManager ? "Quản lý đơn" : "Lịch sử đặt");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        updateDrawerUI(); // Cập nhật lại mỗi khi quay lại màn hình chính
         applyRolePermissions();
     }
 }
