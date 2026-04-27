@@ -12,16 +12,16 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
-import com.example.nhom5.databinding.FragmentMoreBinding;
+import com.example.nhom5.databinding.AppMoreMainBinding;
 
 public class MoreFragment extends Fragment {
 
-    private FragmentMoreBinding binding;
+    private AppMoreMainBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentMoreBinding.inflate(inflater, container, false);
+        binding = AppMoreMainBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

@@ -8,12 +8,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.nhom5.booking.SuccessDialogFragment;
-import com.example.nhom5.databinding.LayoutUpdateCustomerBinding;
+import com.example.nhom5.databinding.CustomerMgmtUpdateLayoutBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class UpdateCustomerBottomSheet extends BottomSheetDialogFragment {
 
-    private LayoutUpdateCustomerBinding binding;
+    private CustomerMgmtUpdateLayoutBinding binding;
     private String customerId, customerName, customerPhone, customerEmail, customerNotes;
 
     public UpdateCustomerBottomSheet() {
@@ -47,7 +47,7 @@ public class UpdateCustomerBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = LayoutUpdateCustomerBinding.inflate(inflater, container, false);
+        binding = CustomerMgmtUpdateLayoutBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

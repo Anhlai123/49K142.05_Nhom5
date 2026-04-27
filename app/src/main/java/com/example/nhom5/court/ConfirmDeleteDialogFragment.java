@@ -13,11 +13,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.nhom5.databinding.BottomSheetConfirmDeleteCourtBinding;
+import com.example.nhom5.databinding.CourtMgmtDeleteConfirmBinding;
 
 public class ConfirmDeleteDialogFragment extends DialogFragment {
 
-    private BottomSheetConfirmDeleteCourtBinding binding;
+    private CourtMgmtDeleteConfirmBinding binding;
     private String title;
     private String message;
     private String confirmButtonText;
@@ -42,7 +42,7 @@ public class ConfirmDeleteDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = BottomSheetConfirmDeleteCourtBinding.inflate(inflater, container, false);
+        binding = CourtMgmtDeleteConfirmBinding.inflate(inflater, container, false);
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);

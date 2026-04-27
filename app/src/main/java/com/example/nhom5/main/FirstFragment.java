@@ -24,7 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.court.Court;
-import com.example.nhom5.databinding.FragmentFirstBinding;
+import com.example.nhom5.databinding.AppHomeMainBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import retrofit2.Call;
@@ -33,13 +33,13 @@ import retrofit2.Response;
 
 public class FirstFragment extends Fragment {
 
-    private FragmentFirstBinding binding;
+    private AppHomeMainBinding binding;
     private CourtStatusAdapter adapter;
     private List<Court> courtList = new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentFirstBinding.inflate(inflater, container, false);
+        binding = AppHomeMainBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

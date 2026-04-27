@@ -16,7 +16,7 @@ import androidx.navigation.Navigation;
 
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.auth.model.UserDto;
-import com.example.nhom5.databinding.FragmentProfileBinding;
+import com.example.nhom5.databinding.ProfileMainBinding;
 import com.example.nhom5.models.CreateCustomerRequest;
 import com.example.nhom5.models.CustomerApiModel;
 import com.google.gson.Gson;
@@ -33,7 +33,7 @@ import retrofit2.Response;
 
 public class ProfileFragment extends Fragment {
 
-    private FragmentProfileBinding binding;
+    private ProfileMainBinding binding;
     private static final String TAG = "ProfileFragment";
     private int customerId = -1;
     private String userEmail = "";
@@ -41,7 +41,7 @@ public class ProfileFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentProfileBinding.inflate(inflater, container, false);
+        binding = ProfileMainBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

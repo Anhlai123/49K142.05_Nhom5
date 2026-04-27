@@ -10,8 +10,8 @@ import androidx.annotation.Nullable;
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.Bill.OrderModel;
-import com.example.nhom5.databinding.BottomSheetConfirmDeleteCourtBinding;
-import com.example.nhom5.databinding.LayoutOrderDetailsBinding;
+import com.example.nhom5.databinding.CourtMgmtDeleteConfirmBinding;
+import com.example.nhom5.databinding.OrderDetailsLayoutBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -21,7 +21,7 @@ import retrofit2.Response;
 
 public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
 
-    private LayoutOrderDetailsBinding binding;
+    private OrderDetailsLayoutBinding binding;
 
     // orderId: numeric database ID (dùng cho API calls, VD: "5")
     private final String orderId;
@@ -57,7 +57,7 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = LayoutOrderDetailsBinding.inflate(inflater, container, false);
+        binding = OrderDetailsLayoutBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -140,7 +140,7 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
 
     private void showDeleteConfirmBottomSheet() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetConfirmDeleteCourtBinding sheetBinding = BottomSheetConfirmDeleteCourtBinding.inflate(getLayoutInflater());
+        CourtMgmtDeleteConfirmBinding sheetBinding = CourtMgmtDeleteConfirmBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
         sheetBinding.tvTitle.setText("Xác nhận xóa đơn");

@@ -20,8 +20,8 @@ import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.booking.SuccessDialogFragment;
 import com.example.nhom5.court.ConfirmDeleteDialogFragment;
-import com.example.nhom5.databinding.BottomSheetPriceDetailsBinding;
-import com.example.nhom5.databinding.FragmentPriceManagementBinding;
+import com.example.nhom5.databinding.PriceMgmtDetailsSheetBinding;
+import com.example.nhom5.databinding.PriceMgmtMainBinding;
 import com.example.nhom5.models.PriceTableModel;
 import com.example.nhom5.models.PriceTableTimeSlotModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -36,7 +36,7 @@ import retrofit2.Response;
 
 public class PriceManagementFragment extends Fragment {
 
-    private FragmentPriceManagementBinding binding;
+    private PriceMgmtMainBinding binding;
     private PriceAdapter adapter;
     private List<PriceRecord> allPriceRecords = new ArrayList<>();
     private final DecimalFormat currencyFormatter = new DecimalFormat("#,###");
@@ -44,7 +44,7 @@ public class PriceManagementFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentPriceManagementBinding.inflate(inflater, container, false);
+        binding = PriceMgmtMainBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -224,7 +224,7 @@ public class PriceManagementFragment extends Fragment {
 
     private void showPriceDetailsBottomSheet(PriceRecord price) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetPriceDetailsBinding sheetBinding = BottomSheetPriceDetailsBinding.inflate(getLayoutInflater());
+        PriceMgmtDetailsSheetBinding sheetBinding = PriceMgmtDetailsSheetBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
         sheetBinding.tvPriceId.setText(price.getId());
@@ -262,11 +262,11 @@ public class PriceManagementFragment extends Fragment {
         sheetBinding.layoutTimeFrames.removeAllViews();
         List<PriceTableTimeSlotModel> slots = price.getDetailedTimeSlots();
         if (slots == null || slots.isEmpty()) {
-            View emptyView = getLayoutInflater().inflate(R.layout.item_no_data, sheetBinding.layoutTimeFrames, false);
+            View emptyView = getLayoutInflater().inflate(R.layout.common_item_no_data, sheetBinding.layoutTimeFrames, false);
             sheetBinding.layoutTimeFrames.addView(emptyView);
         } else {
             for (PriceTableTimeSlotModel slot : slots) {
-                View slotView = getLayoutInflater().inflate(R.layout.item_price_detail_slot, sheetBinding.layoutTimeFrames, false);
+                View slotView = getLayoutInflater().inflate(R.layout.price_mgmt_detail_slot_item, sheetBinding.layoutTimeFrames, false);
                 renderSlotView(slotView, slot);
                 sheetBinding.layoutTimeFrames.addView(slotView);
             }

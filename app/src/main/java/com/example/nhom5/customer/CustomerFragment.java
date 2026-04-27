@@ -16,13 +16,13 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.nhom5.R;
-import com.example.nhom5.databinding.FragmentCustomersBinding;
+import com.example.nhom5.databinding.CustomerMgmtMainBinding;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerFragment extends Fragment {
 
-    private FragmentCustomersBinding binding;
+    private CustomerMgmtMainBinding binding;
     private CustomerViewModel viewModel;
     private CustomerAdapter adapter;
     private List<Customer> allCustomers = new ArrayList<>();
@@ -30,7 +30,7 @@ public class CustomerFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentCustomersBinding.inflate(inflater, container, false);
+        binding = CustomerMgmtMainBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

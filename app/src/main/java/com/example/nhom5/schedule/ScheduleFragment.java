@@ -83,7 +83,7 @@ public class ScheduleFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_schedule, container, false);
+        View view = inflater.inflate(R.layout.booking_schedule_main, container, false);
         
         tableLayout = view.findViewById(R.id.tableLayout);
         tvScheduleTypeText = view.findViewById(R.id.tvScheduleTypeText);
@@ -107,6 +107,10 @@ public class ScheduleFragment extends Fragment {
         }
 
         selectedCalendar = Calendar.getInstance();
+        long savedTime = prefs.getLong("last_selected_date", -1);
+        if (savedTime != -1) {
+            selectedCalendar.setTimeInMillis(savedTime);
+        }
         updateDateDisplay();
 
         view.findViewById(R.id.boxScheduleType).setOnClickListener(this::showFilterPopupMenu);
@@ -122,6 +126,7 @@ public class ScheduleFragment extends Fragment {
         prefs.edit()
              .putInt("last_type_id", currentCourtTypeId)
              .putString("last_type_name", currentCourtTypeName)
+             .putLong("last_selected_date", selectedCalendar.getTimeInMillis())
              .apply();
     }
 
@@ -354,10 +359,16 @@ public class ScheduleFragment extends Fragment {
     private void toggleSlotSelection(String slotKey, View cell) {
         if (selectedSlotKeys.contains(slotKey)) {
             selectedSlotKeys.remove(slotKey);
-            if (cell instanceof TextView) updateTableCellUI((TextView) cell, false);
+            if (cell instanceof TextView) {
+                if (layoutByCourt.getVisibility() == View.VISIBLE) updateSlotUI((TextView) cell, SlotStatus.AVAILABLE);
+                else updateTableCellUI((TextView) cell, false);
+            }
         } else {
             selectedSlotKeys.add(slotKey);
-            if (cell instanceof TextView) updateTableCellUI((TextView) cell, true);
+            if (cell instanceof TextView) {
+                if (layoutByCourt.getVisibility() == View.VISIBLE) updateSlotUI((TextView) cell, SlotStatus.SELECTED);
+                else updateTableCellUI((TextView) cell, true);
+            }
         }
         if (selectedSlotKeys.isEmpty()) {
             if (currentDialog != null) currentDialog.dismiss();
@@ -373,7 +384,7 @@ public class ScheduleFragment extends Fragment {
             return;
         }
         currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
-        View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.layout_confirm_booking, null);
+        View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.booking_confirm_layout, null);
         currentDialog.setContentView(bottomSheetView);
         updatePopupContent();
         bottomSheetView.findViewById(R.id.btnConfirmBooking).setOnClickListener(v -> navigateToBooking());
@@ -459,26 +470,28 @@ public class ScheduleFragment extends Fragment {
 
         for (Slot slot : court.getSlots()) {
             TextView tv = new TextView(getContext());
-            tv.setText(slot.getStartTime().substring(0, 5));
+            String timeText = slot.getStartTime().substring(0, 5);
+            tv.setText(timeText);
             tv.setGravity(Gravity.CENTER);
-            tv.setPadding(0, 24, 0, 24); 
-            tv.setTextSize(14);
+            tv.setPadding(0, 32, 0, 32); 
+            tv.setTextSize(15);
             tv.setTypeface(null, Typeface.BOLD);
+            
+            // Đổ bóng nhẹ cho TextView
+            tv.setElevation(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, getResources().getDisplayMetrics()));
+            
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
             params.height = GridLayout.LayoutParams.WRAP_CONTENT;
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f); 
-            params.setMargins(8, 8, 8, 8);
+            params.setMargins(10, 10, 10, 10);
             tv.setLayoutParams(params);
             
             String status = slot.getStatus();
             String slotKey = court.getCourtId() + "|" + court.getCourtName() + "|" + slot.getStartTime() + "|" + slot.getPrice();
             
             if (isBooked(status)) {
-                tv.setText("Đã đặt");
-                tv.setTextSize(12);
-                tv.setBackgroundResource(R.drawable.bg_booked_status_dashed);
-                tv.setTextColor(Color.parseColor("#E53935"));
+                updateSlotUI(tv, SlotStatus.BOOKED);
             }
             else if ("maintenance".equalsIgnoreCase(status)) {
                 tv.setText("BẢO TRÌ");
@@ -501,19 +514,34 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void updateSlotUI(TextView tv, SlotStatus status) {
-        int bgColor = Color.WHITE, textColor = Color.parseColor("#808080");
+        int bgColor = Color.WHITE, textColor = Color.parseColor("#5F6368");
+        int strokeColor = Color.parseColor("#F1F3F4");
+        float strokeWidthDp = 1f;
+        
         if (status == SlotStatus.BOOKED) { 
-            tv.setBackgroundResource(R.drawable.bg_booked_status_dashed);
-            tv.setTextColor(Color.parseColor("#E53935"));
-            return;
+            bgColor = Color.parseColor("#FFF0F0"); // Hồng nhạt
+            textColor = Color.parseColor("#E53935"); // Chữ đỏ
+            strokeColor = Color.parseColor("#E53935"); // Viền đỏ
+            strokeWidthDp = 2f;
         }
-        else if (status == SlotStatus.MAINTENANCE) { bgColor = Color.parseColor("#F5F5F5"); textColor = Color.parseColor("#757575"); }
-        else if (status == SlotStatus.SELECTED) { bgColor = ContextCompat.getColor(getContext(), R.color.selected_slot_bg); textColor = ContextCompat.getColor(getContext(), R.color.selected_slot_text); }
+        else if (status == SlotStatus.MAINTENANCE) { 
+            bgColor = Color.parseColor("#F5F5F5"); 
+            textColor = Color.parseColor("#757575"); 
+        }
+        else if (status == SlotStatus.SELECTED) { 
+            bgColor = ContextCompat.getColor(getContext(), R.color.selected_slot_bg); 
+            textColor = ContextCompat.getColor(getContext(), R.color.selected_slot_text);
+            strokeColor = ContextCompat.getColor(getContext(), R.color.primary);
+            strokeWidthDp = 2f;
+        }
         
         GradientDrawable drawable = new GradientDrawable();
-        drawable.setCornerRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
+        // Bo góc lớn để tạo hình viên thuốc (Pill shape)
+        drawable.setCornerRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics()));
         drawable.setColor(bgColor);
-        drawable.setStroke(1, Color.parseColor("#F1F3F4"));
+        int strokeWidthPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, strokeWidthDp, getResources().getDisplayMetrics());
+        drawable.setStroke(strokeWidthPx, strokeColor);
+
         tv.setBackground(drawable);
         tv.setTextColor(textColor);
     }
@@ -548,6 +576,7 @@ public class ScheduleFragment extends Fragment {
         int day = selectedCalendar.get(Calendar.DAY_OF_MONTH);
         DatePickerDialog dialog = new DatePickerDialog(getContext(), (view, yearSelected, monthOfYear, dayOfMonth) -> {
             selectedCalendar.set(yearSelected, monthOfYear, dayOfMonth);
+            saveFilters(); // Lưu lại ngày vừa chọn
             updateDateDisplay();
             selectedSlotKeys.clear();
             if (currentDialog != null) currentDialog.dismiss();
@@ -597,7 +626,7 @@ public class ScheduleFragment extends Fragment {
 
     private void showBookedBottomSheet() {
         currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_booked_bottom_sheet, null);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.booking_status_booked_sheet, null);
         view.findViewById(R.id.btn_close_booked).setOnClickListener(v -> currentDialog.dismiss());
         currentDialog.setContentView(view);
         currentDialog.show();
@@ -605,7 +634,7 @@ public class ScheduleFragment extends Fragment {
 
     private void showMaintenanceBottomSheet() {
         currentDialog = new BottomSheetDialog(getContext(), R.style.CustomBottomSheetDialogTheme);
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_maintenance_bottom_sheet, null);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.booking_status_maintenance_sheet, null);
         view.findViewById(R.id.btn_close_maintenance).setOnClickListener(v -> currentDialog.dismiss());
         currentDialog.setContentView(view);
         currentDialog.show();

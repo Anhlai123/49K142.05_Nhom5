@@ -162,20 +162,42 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Status Legend -->
+            <!-- Status Legend (Back to top of tables) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#FAFAFA"
                 android:gravity="center"
                 android:orientation="horizontal"
-                android:paddingVertical="12dp">
-                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_circle_green" android:backgroundTint="@color/booked_dot" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="ĐÃ ĐẶT" android:textColor="@color/text_grey" android:textSize="10sp" android:textStyle="bold" />
-                <View android:layout_width="10dp" android:layout_height="10dp" android:layout_marginStart="20dp" android:background="@drawable/bg_circle_green" android:backgroundTint="@color/maintenance_dot" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="BẢO TRÌ" android:textColor="@color/text_grey" android:textSize="10sp" android:textStyle="bold" />
-                <View android:layout_width="10dp" android:layout_height="10dp" android:layout_marginStart="20dp" android:background="@drawable/bg_grid_cell" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="TRỐNG" android:textColor="@color/text_grey" android:textSize="10sp" android:textStyle="bold" />
+                android:paddingVertical="8dp">
+                
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_circle_green" android:backgroundTint="#FF6B6B" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Đã đặt" android:textColor="#666666" android:textSize="11sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="16dp"
+                    android:gravity="center_vertical">
+                    <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_circle_green" android:backgroundTint="#94A3B8" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Bảo trì" android:textColor="#666666" android:textSize="11sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="16dp"
+                    android:gravity="center_vertical">
+                    <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_circle_green" android:backgroundTint="#FFFFFF" android:elevation="1dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="Trống" android:textColor="#666666" android:textSize="11sp" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Bảng lịch sân cuộn ngang -->
@@ -183,13 +205,14 @@
                 android:id="@+id/layoutBySchedule"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none">
+                android:scrollbars="none"
+                android:visibility="visible">
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- Cột THỨ sẽ cuộn cùng bảng nhưng gộp dòng (như ảnh mẫu) -->
+                    <!-- Cột THỨ -->
                     <LinearLayout
                         android:id="@+id/layoutDayColumnScrollable"
                         android:layout_width="wrap_content"
@@ -204,13 +227,23 @@
                 </LinearLayout>
             </HorizontalScrollView>
 
-            <!-- Grid Layout -->
+            <!-- Grid Layout (Theo sân) -->
             <LinearLayout
                 android:id="@+id/layoutByCourt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Chọn vị trí sân"
+                    android:textColor="@color/dark_green_text"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="8dp"/>
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"
@@ -220,13 +253,24 @@
                     android:scrollbars="none">
                     <LinearLayout
                         android:id="@+id/layoutCourtSelector"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
+                        android:layout_gravity="center"
                         android:orientation="horizontal"
                         android:paddingHorizontal="12dp">
                     </LinearLayout>
                 </HorizontalScrollView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Khung giờ"
+                    android:textColor="@color/dark_green_text"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="8dp"/>
 
                 <android.widget.GridLayout
                     android:id="@+id/timeGrid"

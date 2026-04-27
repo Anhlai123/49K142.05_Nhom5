@@ -31,7 +31,7 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
     @NonNull
     @Override
     public CourtViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_court, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.court_mgmt_item, parent, false);
         return new CourtViewHolder(view);
     }
 

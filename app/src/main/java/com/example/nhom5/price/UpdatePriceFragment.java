@@ -23,7 +23,7 @@ import androidx.navigation.Navigation;
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.court.Court;
-import com.example.nhom5.databinding.FragmentUpdatePriceBinding;
+import com.example.nhom5.databinding.PriceMgmtUpdateBinding;
 import com.example.nhom5.models.CourtTypeModel;
 import com.example.nhom5.models.PriceTableModel;
 import com.example.nhom5.models.PriceTableTimeSlotModel;
@@ -48,7 +48,7 @@ public class UpdatePriceFragment extends Fragment {
     private static final String TAG = "UpdatePriceFragment";
     private static final String[] DAY_KEYS = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
 
-    private FragmentUpdatePriceBinding binding;
+    private PriceMgmtUpdateBinding binding;
     private final Set<String> selectedDays = new LinkedHashSet<>();
     private final Set<Integer> selectedCourtIds = new LinkedHashSet<>();
     private final List<String> selectedCourtNamesDisplay = new ArrayList<>();
@@ -63,7 +63,7 @@ public class UpdatePriceFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentUpdatePriceBinding.inflate(inflater, container, false);
+        binding = PriceMgmtUpdateBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -286,7 +286,7 @@ public class UpdatePriceFragment extends Fragment {
     }
 
     private void addTimeSlotView(PriceTableTimeSlotModel data) {
-        View view = getLayoutInflater().inflate(R.layout.item_add_price_time_slot, binding.layoutTimeSlotsContainer, false);
+        View view = getLayoutInflater().inflate(R.layout.price_mgmt_timeslot_item, binding.layoutTimeSlotsContainer, false);
         
         TextView tvTitle = view.findViewById(R.id.tv_frame_title);
         tvTitle.setText("Khung giờ " + (timeSlotViews.size() + 1));

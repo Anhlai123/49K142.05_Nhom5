@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
+import com.example.nhom5.databinding.BookingConfirmMainBinding;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.models.BookingRequest;
 import com.example.nhom5.models.BookingResponse;
@@ -54,7 +55,8 @@ public class BookingConfirmationFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_booking_confirmation, container, false);
+        BookingConfirmMainBinding binding = BookingConfirmMainBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
 
         // 1. Nhận dữ liệu
         String courtTypeName = "Sân Cầu lông";
@@ -136,19 +138,19 @@ public class BookingConfirmationFragment extends Fragment {
         }
 
         // Hiển thị các thông tin khác
-        ((TextView) view.findViewById(R.id.tvCourtType)).setText("Loại sân: " + courtTypeName);
-        ((TextView) view.findViewById(R.id.tvDate)).setText("Ngày đặt: " + mDate);
-        ((TextView) view.findViewById(R.id.tvHoursField)).setText((mSelectedSlotsRaw != null ? mSelectedSlotsRaw.size() : 0) + " giờ");
-        ((TextView) view.findViewById(R.id.tvPriceField)).setText(df.format(mTotalPrice) + " đ");
+        binding.tvCourtType.setText("Loại sân: " + courtTypeName);
+        binding.tvDate.setText("Ngày đặt: " + mDate);
+        binding.tvHoursField.setText((mSelectedSlotsRaw != null ? mSelectedSlotsRaw.size() : 0) + " giờ");
+        binding.tvPriceField.setText(df.format(mTotalPrice) + " đ");
 
-        etName = view.findViewById(R.id.etName);
-        etPhone = view.findViewById(R.id.etPhone);
-        tvErrorName = view.findViewById(R.id.tvErrorName);
-        tvErrorPhone = view.findViewById(R.id.tvErrorPhone);
-        btnConfirm = view.findViewById(R.id.btnConfirm);
+        etName = binding.etName;
+        etPhone = binding.etPhone;
+        tvErrorName = binding.tvErrorName;
+        tvErrorPhone = binding.tvErrorPhone;
+        btnConfirm = binding.btnConfirm;
 
-        view.findViewById(R.id.btnBack).setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        view.findViewById(R.id.btnCancel).setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         btnConfirm.setOnClickListener(v -> submitBooking());
 
         setupInputValidation();

@@ -8,7 +8,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom5.R;
-import com.example.nhom5.databinding.ItemOrderBinding;
+import com.example.nhom5.databinding.OrderHistoryItemBinding;
 import com.example.nhom5.Bill.OrderModel;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     @NonNull
     @Override
     public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemOrderBinding binding = ItemOrderBinding.inflate(
+        OrderHistoryItemBinding binding = OrderHistoryItemBinding.inflate(
                 LayoutInflater.from(parent.getContext()), parent, false
         );
         return new OrderViewHolder(binding);
@@ -57,9 +57,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
-        private final ItemOrderBinding binding;
-
-        public OrderViewHolder(ItemOrderBinding binding) {
+        private final OrderHistoryItemBinding binding;
+        public OrderViewHolder(OrderHistoryItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

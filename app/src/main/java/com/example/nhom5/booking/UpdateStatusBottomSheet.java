@@ -8,12 +8,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.nhom5.R;
-import com.example.nhom5.databinding.LayoutUpdateStatusBinding;
+import com.example.nhom5.databinding.OrderStatusUpdateLayoutBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class UpdateStatusBottomSheet extends BottomSheetDialogFragment {
 
-    private LayoutUpdateStatusBinding binding;
+    private OrderStatusUpdateLayoutBinding binding;
     private OnStatusSelectedListener listener;
 
     public interface OnStatusSelectedListener {
@@ -33,7 +33,7 @@ public class UpdateStatusBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = LayoutUpdateStatusBinding.inflate(inflater, container, false);
+        binding = OrderStatusUpdateLayoutBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

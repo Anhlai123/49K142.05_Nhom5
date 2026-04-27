@@ -15,7 +15,7 @@ import androidx.navigation.Navigation;
 
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
-import com.example.nhom5.databinding.FragmentForgotPasswordBinding;
+import com.example.nhom5.databinding.AuthForgotPasswordBinding;
 
 import org.json.JSONObject;
 
@@ -29,12 +29,12 @@ import retrofit2.Response;
 
 public class ForgotPasswordFragment extends Fragment {
 
-    private FragmentForgotPasswordBinding binding;
+    private AuthForgotPasswordBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentForgotPasswordBinding.inflate(inflater, container, false);
+        binding = AuthForgotPasswordBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

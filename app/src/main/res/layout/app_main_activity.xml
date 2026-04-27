@@ -13,7 +13,7 @@
 
         <include
             android:id="@+id/content_main"
-            layout="@layout/content_main"
+            layout="@layout/app_main_content"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
@@ -52,7 +52,7 @@
 
         <include
             android:id="@+id/drawer_profile_layout"
-            layout="@layout/layout_drawer_profile" />
+            layout="@layout/profile_drawer" />
 
     </com.google.android.material.navigation.NavigationView>
 

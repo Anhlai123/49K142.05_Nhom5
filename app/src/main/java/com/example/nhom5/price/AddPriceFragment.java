@@ -23,8 +23,8 @@ import androidx.navigation.Navigation;
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.court.Court;
-import com.example.nhom5.databinding.FragmentAddPriceBinding;
-import com.example.nhom5.databinding.ItemAddPriceTimeSlotBinding;
+import com.example.nhom5.databinding.PriceMgmtAddBinding;
+import com.example.nhom5.databinding.PriceMgmtTimeslotItemBinding;
 import com.example.nhom5.models.CourtTypeModel;
 import com.example.nhom5.models.PriceTableModel;
 import com.example.nhom5.models.PriceTableTimeSlotModel;
@@ -49,11 +49,11 @@ public class AddPriceFragment extends Fragment {
     private static final String TAG = "AddPriceFragment";
     private static final String[] DAY_KEYS = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
 
-    private FragmentAddPriceBinding binding;
+    private PriceMgmtAddBinding binding;
     private final Set<String> selectedDays = new LinkedHashSet<>();
     private final Set<Integer> selectedCourtIds = new LinkedHashSet<>();
     private final List<String> selectedCourtNamesDisplay = new ArrayList<>();
-    private final List<ItemAddPriceTimeSlotBinding> timeSlotBindings = new ArrayList<>();
+    private final List<PriceMgmtTimeslotItemBinding> timeSlotBindings = new ArrayList<>();
 
     private List<CourtTypeModel> courtTypeList = new ArrayList<>();
     private CourtTypeModel selectedCourtType = null;
@@ -63,7 +63,7 @@ public class AddPriceFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentAddPriceBinding.inflate(inflater, container, false);
+        binding = PriceMgmtAddBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -268,7 +268,7 @@ public class AddPriceFragment extends Fragment {
     }
 
     private void addNewTimeSlot() {
-        ItemAddPriceTimeSlotBinding slotBinding = ItemAddPriceTimeSlotBinding.inflate(getLayoutInflater(), binding.layoutTimeSlotsContainer, false);
+        PriceMgmtTimeslotItemBinding slotBinding = PriceMgmtTimeslotItemBinding.inflate(getLayoutInflater(), binding.layoutTimeSlotsContainer, false);
         
         slotBinding.etStartTime.setOnClickListener(v -> showTimePicker(slotBinding.etStartTime));
         slotBinding.etEndTime.setOnClickListener(v -> showTimePicker(slotBinding.etEndTime));
@@ -310,7 +310,7 @@ public class AddPriceFragment extends Fragment {
 
         List<PriceTableTimeSlotModel> slots = new ArrayList<>();
         int index = 1;
-        for (ItemAddPriceTimeSlotBinding slotBinding : timeSlotBindings) {
+        for (PriceMgmtTimeslotItemBinding slotBinding : timeSlotBindings) {
             String startTime = slotBinding.etStartTime.getText().toString().trim();
             String endTime = slotBinding.etEndTime.getText().toString().trim();
             String priceStr = slotBinding.etPrice.getText().toString().trim();
@@ -334,6 +334,7 @@ public class AddPriceFragment extends Fragment {
             PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
             slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
             slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
+            slot.setUnitPrice(priceStr);
             try {
                 slot.setPrice(Double.parseDouble(priceStr));
             } catch (Exception e) {

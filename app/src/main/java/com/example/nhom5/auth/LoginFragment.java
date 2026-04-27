@@ -21,7 +21,7 @@ import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.auth.model.LoginRequest;
 import com.example.nhom5.auth.model.LoginResponse;
 import com.example.nhom5.auth.model.UserDto;
-import com.example.nhom5.databinding.FragmentLoginBinding;
+import com.example.nhom5.databinding.AuthLoginBinding;
 
 import org.json.JSONObject;
 
@@ -31,13 +31,13 @@ import retrofit2.Response;
 
 public class LoginFragment extends Fragment {
 
-    private FragmentLoginBinding binding;
+    private AuthLoginBinding binding;
     private boolean isPasswordVisible = false;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentLoginBinding.inflate(inflater, container, false);
+        binding = AuthLoginBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

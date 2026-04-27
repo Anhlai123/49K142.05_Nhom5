@@ -4,7 +4,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.nhom5.databinding.ItemSelectCourtTypeBinding;
+import com.example.nhom5.databinding.CourttypeSelectItemBinding;
 import com.example.nhom5.models.CourtTypeModel;
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class CourtTypeSelectionAdapter extends RecyclerView.Adapter<CourtTypeSel
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemSelectCourtTypeBinding binding = ItemSelectCourtTypeBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        CourttypeSelectItemBinding binding = CourttypeSelectItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(binding);
     }
 
@@ -42,8 +42,9 @@ public class CourtTypeSelectionAdapter extends RecyclerView.Adapter<CourtTypeSel
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        final ItemSelectCourtTypeBinding binding;
-        ViewHolder(ItemSelectCourtTypeBinding binding) {
+        private final CourttypeSelectItemBinding binding;
+
+        public ViewHolder(CourttypeSelectItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

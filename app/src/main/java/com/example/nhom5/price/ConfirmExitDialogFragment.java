@@ -13,11 +13,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.nhom5.databinding.DialogConfirmExitBinding;
+import com.example.nhom5.databinding.CommonDialogExitBinding;
 
 public class ConfirmExitDialogFragment extends DialogFragment {
 
-    private DialogConfirmExitBinding binding;
+    private CommonDialogExitBinding binding;
     private Runnable onConfirmCallback;
 
     public static ConfirmExitDialogFragment newInstance(Runnable onConfirmCallback) {
@@ -29,7 +29,7 @@ public class ConfirmExitDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = DialogConfirmExitBinding.inflate(inflater, container, false);
+        binding = CommonDialogExitBinding.inflate(inflater, container, false);
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);

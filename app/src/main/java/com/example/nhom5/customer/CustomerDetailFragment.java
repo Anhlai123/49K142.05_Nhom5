@@ -9,16 +9,16 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
-import com.example.nhom5.databinding.FragmentCustomerDetailsBinding;
+import com.example.nhom5.databinding.CustomerMgmtDetailsBinding;
 
 public class CustomerDetailFragment extends Fragment {
 
-    private FragmentCustomerDetailsBinding binding;
+    private CustomerMgmtDetailsBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentCustomerDetailsBinding.inflate(inflater, container, false);
+        binding = CustomerMgmtDetailsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

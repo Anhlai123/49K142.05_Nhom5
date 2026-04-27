@@ -17,7 +17,7 @@ import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.Bill.OrderAdapter;
 import com.example.nhom5.booking.OrderDetailsBottomSheet;
-import com.example.nhom5.databinding.FragmentSecondBinding;
+import com.example.nhom5.databinding.OrderHistoryMainBinding;
 import com.example.nhom5.Bill.OrderModel;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import retrofit2.Response;
 
 public class SecondFragment extends Fragment {
 
-    private FragmentSecondBinding binding;
+    private OrderHistoryMainBinding binding;
     private OrderAdapter adapter;
     private final List<OrderModel> fullOrderList = new ArrayList<>();
     private String currentFilter = "all";
@@ -38,7 +38,7 @@ public class SecondFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentSecondBinding.inflate(inflater, container, false);
+        binding = OrderHistoryMainBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

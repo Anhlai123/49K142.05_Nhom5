@@ -17,18 +17,18 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
-import com.example.nhom5.databinding.ActivityMainBinding;
+import com.example.nhom5.databinding.AppMainActivityBinding;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ActivityMainBinding binding;
+    private AppMainActivityBinding binding;
     private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ApiClient.init(this);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        binding = AppMainActivityBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         
         setupNavigation();

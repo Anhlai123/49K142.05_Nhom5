@@ -13,11 +13,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.nhom5.databinding.DialogSuccessBinding;
+import com.example.nhom5.databinding.CommonDialogSuccessBinding;
 
 public class SuccessDialogFragment extends DialogFragment {
 
-    private DialogSuccessBinding binding;
+    private CommonDialogSuccessBinding binding;
     private Runnable onExitCallback;
     private String message;
 
@@ -31,7 +31,7 @@ public class SuccessDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = DialogSuccessBinding.inflate(inflater, container, false);
+        binding = CommonDialogSuccessBinding.inflate(inflater, container, false);
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);

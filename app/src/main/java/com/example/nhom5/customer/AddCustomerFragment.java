@@ -13,18 +13,18 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.nhom5.booking.SuccessDialogFragment;
-import com.example.nhom5.databinding.FragmentAddCustomerBinding;
+import com.example.nhom5.databinding.CustomerMgmtAddBinding;
 import com.example.nhom5.price.ConfirmExitDialogFragment;
 
 public class AddCustomerFragment extends Fragment {
 
-    private FragmentAddCustomerBinding binding;
+    private CustomerMgmtAddBinding binding;
     private CustomerViewModel viewModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentAddCustomerBinding.inflate(inflater, container, false);
+        binding = CustomerMgmtAddBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

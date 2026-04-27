@@ -11,7 +11,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom5.R;
-import com.example.nhom5.databinding.ItemCustomerBinding;
+import com.example.nhom5.databinding.CustomerMgmtItemBinding;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
     @NonNull
     @Override
     public CustomerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemCustomerBinding binding = ItemCustomerBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        CustomerMgmtItemBinding binding = CustomerMgmtItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new CustomerViewHolder(binding);
     }
 
@@ -74,9 +74,9 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
     }
 
     static class CustomerViewHolder extends RecyclerView.ViewHolder {
-        final ItemCustomerBinding binding;
+        final CustomerMgmtItemBinding binding;
 
-        public CustomerViewHolder(ItemCustomerBinding binding) {
+        public CustomerViewHolder(CustomerMgmtItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

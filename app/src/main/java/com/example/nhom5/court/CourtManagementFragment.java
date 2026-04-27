@@ -19,11 +19,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.booking.SuccessDialogFragment;
-import com.example.nhom5.databinding.BottomSheetAddCourtBinding;
-import com.example.nhom5.databinding.BottomSheetFilterCourtBinding;
-import com.example.nhom5.databinding.BottomSheetSelectCourtTypeBinding;
-import com.example.nhom5.databinding.BottomSheetUpdateCourtBinding;
-import com.example.nhom5.databinding.FragmentCourtManagementBinding;
+import com.example.nhom5.databinding.CourtMgmtAddSheetBinding;
+import com.example.nhom5.databinding.CourtMgmtFilterSheetBinding;
+import com.example.nhom5.databinding.CourttypeSelectSheetBinding;
+import com.example.nhom5.databinding.CourtMgmtUpdateSheetBinding;
+import com.example.nhom5.databinding.CourtMgmtMainBinding;
 import com.example.nhom5.models.CourtTypeModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import retrofit2.Response;
 
 public class CourtManagementFragment extends Fragment {
 
-    private FragmentCourtManagementBinding binding;
+    private CourtMgmtMainBinding binding;
     private CourtAdapter adapter;
     private CourtTypeModel selectedCourtType;
     private String selectedStatus;
@@ -45,7 +45,7 @@ public class CourtManagementFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentCourtManagementBinding.inflate(inflater, container, false);
+        binding = CourtMgmtMainBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -78,7 +78,7 @@ public class CourtManagementFragment extends Fragment {
 
     private void showFilterBottomSheet() {
         BottomSheetDialog filterDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetFilterCourtBinding filterBinding = BottomSheetFilterCourtBinding.inflate(getLayoutInflater());
+        CourtMgmtFilterSheetBinding filterBinding = CourtMgmtFilterSheetBinding.inflate(getLayoutInflater());
         filterDialog.setContentView(filterBinding.getRoot());
 
         // Set initial state
@@ -128,7 +128,7 @@ public class CourtManagementFragment extends Fragment {
 
     private void showAddCourtBottomSheet() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetAddCourtBinding sheetBinding = BottomSheetAddCourtBinding.inflate(getLayoutInflater());
+        CourtMgmtAddSheetBinding sheetBinding = CourtMgmtAddSheetBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
         selectedCourtType = null;
@@ -198,7 +198,7 @@ public class CourtManagementFragment extends Fragment {
 
     private void showSelectCourtTypeBottomSheet(OnTypeSelectedListener listener) {
         BottomSheetDialog selectDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetSelectCourtTypeBinding selectBinding = BottomSheetSelectCourtTypeBinding.inflate(getLayoutInflater());
+        CourttypeSelectSheetBinding selectBinding = CourttypeSelectSheetBinding.inflate(getLayoutInflater());
         selectDialog.setContentView(selectBinding.getRoot());
 
         selectBinding.btnClose.setOnClickListener(v -> selectDialog.dismiss());
@@ -227,7 +227,7 @@ public class CourtManagementFragment extends Fragment {
 
     private void showUpdateCourtBottomSheet(Court court) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme);
-        BottomSheetUpdateCourtBinding sheetBinding = BottomSheetUpdateCourtBinding.inflate(getLayoutInflater());
+        CourtMgmtUpdateSheetBinding sheetBinding = CourtMgmtUpdateSheetBinding.inflate(getLayoutInflater());
         bottomSheetDialog.setContentView(sheetBinding.getRoot());
 
         sheetBinding.tvCourtId.setText(court.getCode() != null ? court.getCode() : String.valueOf(court.getId()));
@@ -340,7 +340,7 @@ public class CourtManagementFragment extends Fragment {
         dialog.show(getParentFragmentManager(), "confirm_delete_dialog");
     }
 
-    private void updateStatusUI(BottomSheetUpdateCourtBinding sheetBinding, String status) {
+    private void updateStatusUI(CourtMgmtUpdateSheetBinding sheetBinding, String status) {
         sheetBinding.statusAvailable.setBackgroundResource(R.drawable.bg_pill_inactive);
         sheetBinding.statusAvailable.setTextColor(Color.parseColor("#757575"));
         

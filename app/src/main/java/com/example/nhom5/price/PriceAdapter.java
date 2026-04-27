@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom5.R;
-import com.example.nhom5.databinding.ItemPriceManagementBinding;
+import com.example.nhom5.databinding.PriceMgmtItemBinding;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +30,7 @@ public class PriceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemPriceManagementBinding binding = ItemPriceManagementBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        PriceMgmtItemBinding binding = PriceMgmtItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new PriceViewHolder(binding);
     }
 
@@ -75,9 +75,8 @@ public class PriceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     private static class PriceViewHolder extends RecyclerView.ViewHolder {
-        final ItemPriceManagementBinding binding;
-
-        public PriceViewHolder(ItemPriceManagementBinding binding) {
+        final PriceMgmtItemBinding binding;
+        public PriceViewHolder(PriceMgmtItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
