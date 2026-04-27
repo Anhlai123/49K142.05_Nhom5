@@ -41,7 +41,7 @@ public class ConfirmExitDialogFragment extends DialogFragment {
     public void onStart() {
         super.onStart();
         if (getDialog() != null && getDialog().getWindow() != null) {
-            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.80);
             getDialog().getWindow().setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT);
         }
     }
@@ -50,7 +50,7 @@ public class ConfirmExitDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.btnCancel.setOnClickListener(v -> dismiss());
+        binding.btnCloseDialog.setOnClickListener(v -> dismiss());
         binding.btnConfirm.setOnClickListener(v -> {
             dismiss();
             if (onConfirmCallback != null) {
