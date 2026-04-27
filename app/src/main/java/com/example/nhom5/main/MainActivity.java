@@ -96,7 +96,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNavigation() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
+
+        // Thay vì dùng NavigationUI.setupWithNavController mặc định, chúng ta tự xử lý OnItemSelected
+        binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            // Xóa Backstack khi chuyển tab chính để tránh lồng ghép các Fragment quản lý vào tab "Khác"
+            if (id == R.id.navigation_more) {
+                navController.navigate(R.id.navigation_more);
+                return true;
+            }
+
+            // Đối với các tab khác, dùng mặc định của Navigation Component
+            return NavigationUI.onNavDestinationSelected(item, navController);
+        });
 
         binding.bottomNavigation.setOnItemReselectedListener(item -> {
             navController.popBackStack(item.getItemId(), false);
