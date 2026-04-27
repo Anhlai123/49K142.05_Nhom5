@@ -167,6 +167,15 @@ public class CourtTypeManagementFragment extends Fragment {
                                 () -> loadCourtTypesFromServer()
                         );
                         successDialog.show(getParentFragmentManager(), "success_dialog");
+                    } else {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                            String errorMsg = jsonObject.optString("error", "Lỗi: " + response.code());
+                            Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
@@ -225,6 +234,15 @@ public class CourtTypeManagementFragment extends Fragment {
                                     () -> loadCourtTypesFromServer()
                             );
                             successDialog.show(getParentFragmentManager(), "success_dialog");
+                        } else {
+                            try {
+                                String errorBody = response.errorBody().string();
+                                org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                                String errorMsg = jsonObject.optString("error", "Lỗi: " + response.code());
+                                Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -258,8 +276,15 @@ public class CourtTypeManagementFragment extends Fragment {
                                             () -> loadCourtTypesFromServer()
                                     );
                                     successDialog.show(getParentFragmentManager(), "success_dialog");
-                                } else if (response.code() == 500) {
-                                    Toast.makeText(getContext(), "Không thể xóa: Loại sân này đang có dữ liệu liên quan. Hãy xóa chúng trước!", Toast.LENGTH_LONG).show();
+                                } else {
+                                    try {
+                                        String errorBody = response.errorBody().string();
+                                        org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                                        String errorMsg = jsonObject.optString("error", "Lỗi: " + response.code());
+                                        Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                                    } catch (Exception e) {
+                                        Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             }
 

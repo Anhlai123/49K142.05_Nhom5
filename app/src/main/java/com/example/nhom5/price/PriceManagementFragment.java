@@ -317,7 +317,15 @@ public class PriceManagementFragment extends Fragment {
                                 );
                                 successDialog.show(getParentFragmentManager(), "success_dialog");
                             } else {
-                                Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                                // Trích xuất thông báo lỗi chi tiết từ Server
+                                try {
+                                    String errorBody = response.errorBody().string();
+                                    org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                                    String errorMsg = jsonObject.optString("error", "Không thể xóa bảng giá");
+                                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                                } catch (Exception e) {
+                                    Toast.makeText(getContext(), "Lỗi khi xóa: " + response.code(), Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }
 

@@ -361,7 +361,14 @@ public class AddPriceFragment extends Fragment {
                     Toast.makeText(getContext(), "Thêm bảng giá thành công", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).navigateUp();
                 } else {
-                    Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                    try {
+                        String errorBody = response.errorBody().string();
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                        String errorMsg = jsonObject.optString("error", "Lỗi: " + response.code());
+                        Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 

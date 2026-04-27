@@ -170,6 +170,17 @@ public class CustomerViewModel extends ViewModel {
     }
 
     private String buildHttpErrorMessage(String action, Response<?> response) {
+        try {
+            if (response.errorBody() != null) {
+                String errorBody = response.errorBody().string();
+                JsonObject jsonObject = gson.fromJson(errorBody, JsonObject.class);
+                if (jsonObject.has("error")) {
+                    return jsonObject.get("error").getAsString();
+                }
+            }
+        } catch (Exception ignored) {
+            // Nếu không parse được JSON, dùng thông báo mặc định bên dưới
+        }
         return "Không thể " + action + " (HTTP " + response.code() + ")";
     }
 }
