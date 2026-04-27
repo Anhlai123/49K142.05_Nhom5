@@ -204,6 +204,13 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
                 status.equalsIgnoreCase("ĐÃ HỦY")
         );
         binding.btnConfirm.setVisibility(isDone ? View.GONE : View.VISIBLE);
+
+        // Chỉ cho phép XÓA đối với đơn "Chờ xác nhận" hoặc "Hủy"
+        boolean canDelete = status == null || 
+                          status.equalsIgnoreCase("Chờ xác nhận") || 
+                          status.equalsIgnoreCase("Hủy") ||
+                          status.equalsIgnoreCase("ĐÃ HỦY");
+        binding.btnDelete.setVisibility(canDelete ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -225,6 +232,19 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
                     // Reload toàn bộ chi tiết để hiển thị đúng thanh_toan từ server
                     loadOrderDetails();
                     if (listener != null) listener.onOrderUpdated();
+
+                    // Hiển thị thông báo thành công tùy theo trạng thái
+                    String message = null;
+                    if ("Đã xác nhận".equals(newStatus)) {
+                        message = "Xác nhận đơn thành công";
+                    } else if ("Hoàn thành".equals(newStatus)) {
+                        message = "Xác nhận trạng thái hoàn tất đơn được cập nhật thành công";
+                    }
+
+                    if (message != null) {
+                        SuccessDialogFragment dialog = SuccessDialogFragment.newInstance(message, null);
+                        dialog.show(getParentFragmentManager(), "success_dialog");
+                    }
                 } else {
                     // Nếu thất bại vẫn cập nhật UI tạm thời
                     updateStatusUI(newStatus);

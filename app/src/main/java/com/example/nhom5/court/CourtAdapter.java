@@ -54,7 +54,11 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
         
         String status = court.getStatus();
         
-        if ("READY".equalsIgnoreCase(status) || "Sẵn sàng".equalsIgnoreCase(status)) {
+        if (court.isBusy()) {
+            holder.tvStatus.setText("Đang bận");
+            holder.tvStatus.setBackgroundResource(R.drawable.status_bg_busy);
+            holder.tvStatus.setTextColor(Color.parseColor("#E11D48"));
+        } else if ("READY".equalsIgnoreCase(status) || "Sẵn sàng".equalsIgnoreCase(status)) {
             holder.tvStatus.setText("Sẵn sàng");
             holder.tvStatus.setBackgroundResource(R.drawable.status_bg_available);
             holder.tvStatus.setTextColor(Color.parseColor("#00A63E"));

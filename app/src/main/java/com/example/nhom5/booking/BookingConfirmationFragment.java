@@ -290,10 +290,12 @@ public class BookingConfirmationFragment extends Fragment {
     private void checkAllFinished(int finished, int success, int total, List<String> errorMessages) {
         if (finished == total) {
             if (success == total) {
-                Toast.makeText(getContext(), "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
-                if (isAdded()) {
-                    Navigation.findNavController(requireView()).popBackStack(R.id.navigation_schedule, false);
-                }
+                SuccessDialogFragment dialog = SuccessDialogFragment.newInstance("Đặt sân thành công", () -> {
+                    if (isAdded()) {
+                        Navigation.findNavController(requireView()).popBackStack(R.id.navigation_schedule, false);
+                    }
+                });
+                dialog.show(getParentFragmentManager(), "success_dialog");
             } else {
                 if (!errorMessages.isEmpty()) {
                     StringBuilder sb = new StringBuilder();
