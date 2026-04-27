@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
-    <!-- Header Đồng Bộ với các trang chính -->
+    <!-- Header Đồng Bộ -->
     <View
         android:id="@+id/header_bg"
         android:layout_width="match_parent"
@@ -24,7 +24,6 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/tv_user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tính năng khác"
@@ -33,7 +32,6 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tv_user_role"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -57,80 +55,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Thông tin cá nhân -->
-            <TextView
-                android:id="@+id/tv_label_account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="TÀI KHOẢN"
-                android:textColor="#9E9E9E"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_account"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/white"
-                app:strokeColor="#F1F3F4"
-                app:strokeWidth="1dp">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/btn_my_profile"
-                    android:layout_width="match_parent"
-                    android:layout_height="72dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingHorizontal="16dp">
-
-                    <View
-                        android:id="@+id/icon_bg_profile"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="@drawable/profile_icon_bg"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:src="@drawable/ic_user"
-                        app:layout_constraintBottom_toBottomOf="@id/icon_bg_profile"
-                        app:layout_constraintEnd_toEndOf="@id/icon_bg_profile"
-                        app:layout_constraintStart_toStartOf="@id/icon_bg_profile"
-                        app:layout_constraintTop_toTopOf="@id/icon_bg_profile"
-                        app:tint="#6200EE" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Thông tin cá nhân"
-                        android:textColor="#212121"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/icon_bg_profile"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_back"
-                        android:scaleX="-1"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:tint="#D1D1D6" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
-
             <!-- Section Quản lý (Chỉ Admin thấy) -->
             <TextView
                 android:id="@+id/tv_label_manage"
@@ -147,9 +71,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/white"
                 app:strokeColor="#F1F3F4"
                 app:strokeWidth="1dp">
 
@@ -202,8 +126,8 @@
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:src="@drawable/ic_back"
                             android:scaleX="-1"
+                            android:src="@drawable/ic_back"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
@@ -261,8 +185,8 @@
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:src="@drawable/ic_back"
                             android:scaleX="-1"
+                            android:src="@drawable/ic_back"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
@@ -322,8 +246,8 @@
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:src="@drawable/ic_back"
                             android:scaleX="-1"
+                            android:src="@drawable/ic_back"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
@@ -333,43 +257,31 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Đăng xuất -->
-            <LinearLayout
-                android:id="@+id/btn_logout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+            <!-- Đăng xuất Button (Bottom) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="24dp"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="12dp">
+                android:backgroundTint="#FFF5F5"
+                android:text="Đăng xuất"
+                android:textAllCaps="false"
+                android:textColor="#E53E3E"
+                app:cornerRadius="16dp"
+                app:elevation="0dp"
+                app:icon="@drawable/ic_login"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="#E53E3E"
+                app:strokeColor="#FED7D7"
+                app:strokeWidth="1dp" />
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_login"
-                    android:rotation="180"
-                    app:tint="#4A5568" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="Đăng xuất"
-                    android:textColor="#4A5568"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <!-- Copyright Section -->
+            <!-- Copyright -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="40dp"
+                android:layout_marginBottom="24dp"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -378,7 +290,7 @@
                     android:layout_height="wrap_content"
                     android:text="Hệ thống quản lý đặt sân thể thao"
                     android:textColor="#A0AEC0"
-                    android:textSize="13sp" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -386,7 +298,7 @@
                     android:layout_marginTop="4dp"
                     android:text="v1.0.0 · Bản quyền © 2026"
                     android:textColor="#CBD5E0"
-                    android:textSize="11sp" />
+                    android:textSize="10sp" />
             </LinearLayout>
 
         </LinearLayout>

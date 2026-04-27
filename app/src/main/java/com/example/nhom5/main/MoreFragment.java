@@ -29,9 +29,6 @@ public class MoreFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Giữ nguyên tiêu đề tĩnh: "Tính năng khác" và "Hệ thống đặt sân thể thao"
-        // Không gọi displayUserInfo() để tránh ghi đè nội dung header
-
         setupMenuVisibility();
         setupActions();
     }
@@ -42,7 +39,7 @@ public class MoreFragment extends Fragment {
         String role = pref.getString("role", "customer");
         String username = pref.getString("username", "");
 
-        // ĐỒNG BỘ LOGIC: Nếu username là admin HOẶC role là admin/staff thì là Manager
+        // Logic xác định quyền quản lý
         boolean isManager = "admin".equalsIgnoreCase(username.trim()) 
                          || "admin".equalsIgnoreCase(role.trim()) 
                          || "staff".equalsIgnoreCase(role.trim())
@@ -58,10 +55,6 @@ public class MoreFragment extends Fragment {
     }
 
     private void setupActions() {
-        binding.btnMyProfile.setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.action_navigation_more_to_profileFragment);
-        });
-
         binding.btnManageCourts.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_navigation_more_to_courtManagementFragment);
         });
@@ -79,7 +72,7 @@ public class MoreFragment extends Fragment {
 
     private void logout() {
         SharedPreferences pref = requireContext().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        pref.edit().clear().commit();
+        pref.edit().clear().apply();
         if (getView() != null) {
             Navigation.findNavController(getView()).navigate(R.id.loginFragment);
         }

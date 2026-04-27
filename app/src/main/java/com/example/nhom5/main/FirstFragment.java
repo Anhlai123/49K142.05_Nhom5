@@ -47,6 +47,9 @@ public class FirstFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         checkRoleAndSetupUI();
         
+        // Setup RecyclerView
+        setupRecyclerView();
+        
         // Cập nhật ngày tháng hiện tại
         updateDate();
         loadCourtsData();
@@ -91,7 +94,9 @@ public class FirstFragment extends Fragment {
             public void onResponse(Call<List<Court>> call, Response<List<Court>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     courtList = response.body();
-                    adapter.updateData(courtList);
+                    if (adapter != null) {
+                        adapter.updateData(courtList);
+                    }
 
                     // Cập nhật số lượng sân đang bận lên dashboard
                     updateDashboard(courtList);
