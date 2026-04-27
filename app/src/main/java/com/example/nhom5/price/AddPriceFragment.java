@@ -23,19 +23,17 @@ import com.example.nhom5.R;
 import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.court.Court;
 import com.example.nhom5.databinding.FragmentAddPriceBinding;
+import com.example.nhom5.databinding.ItemAddPriceTimeSlotBinding;
 import com.example.nhom5.models.CourtTypeModel;
 import com.example.nhom5.models.PriceTableModel;
 import com.example.nhom5.models.PriceTableTimeSlotModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 
-import org.json.JSONObject;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +52,7 @@ public class AddPriceFragment extends Fragment {
     private final Set<String> selectedDays = new LinkedHashSet<>();
     private final Set<Integer> selectedCourtIds = new LinkedHashSet<>();
     private final List<String> selectedCourtNamesDisplay = new ArrayList<>();
+    private final List<ItemAddPriceTimeSlotBinding> timeSlotBindings = new ArrayList<>();
 
     private List<CourtTypeModel> courtTypeList = new ArrayList<>();
     private CourtTypeModel selectedCourtType = null;
@@ -76,8 +75,11 @@ public class AddPriceFragment extends Fragment {
         setupCourtTypePicker();
         setupDaySelection();
         setupDatePickers();
-        setupTimePickers();
+        setupTimeSlotActions();
         updateScopeUi(true);
+
+        // Add initial time slot
+        addNewTimeSlot();
 
         binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
@@ -253,9 +255,35 @@ public class AddPriceFragment extends Fragment {
         picker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
-    private void setupTimePickers() {
-        binding.etStartTime.setOnClickListener(v -> showTimePicker(binding.etStartTime));
-        binding.etEndTime.setOnClickListener(v -> showTimePicker(binding.etEndTime));
+    private void setupTimeSlotActions() {
+        binding.btnAddFrame.setOnClickListener(v -> addNewTimeSlot());
+    }
+
+    private void addNewTimeSlot() {
+        ItemAddPriceTimeSlotBinding slotBinding = ItemAddPriceTimeSlotBinding.inflate(getLayoutInflater(), binding.layoutTimeSlotsContainer, false);
+        
+        slotBinding.etStartTime.setOnClickListener(v -> showTimePicker(slotBinding.etStartTime));
+        slotBinding.etEndTime.setOnClickListener(v -> showTimePicker(slotBinding.etEndTime));
+        
+        slotBinding.btnRemoveFrame.setOnClickListener(v -> {
+            if (timeSlotBindings.size() > 1) {
+                binding.layoutTimeSlotsContainer.removeView(slotBinding.getRoot());
+                timeSlotBindings.remove(slotBinding);
+                updateSlotTitles();
+            } else {
+                Toast.makeText(getContext(), "Phải có ít nhất một khung giờ", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        binding.layoutTimeSlotsContainer.addView(slotBinding.getRoot());
+        timeSlotBindings.add(slotBinding);
+        updateSlotTitles();
+    }
+
+    private void updateSlotTitles() {
+        for (int i = 0; i < timeSlotBindings.size(); i++) {
+            timeSlotBindings.get(i).tvFrameTitle.setText("Khung giờ " + (i + 1));
+        }
     }
 
     private void showTimePicker(android.widget.EditText target) {
@@ -266,12 +294,50 @@ public class AddPriceFragment extends Fragment {
         String name = binding.etPriceName.getText().toString().trim();
         String startDateStr = binding.etStartDate.getText().toString().trim();
         String endDateStr = binding.etEndDate.getText().toString().trim();
-        String startTime = binding.etStartTime.getText().toString().trim();
-        String endTime = binding.etEndTime.getText().toString().trim();
-        String priceStr = binding.etPrice.getText().toString().trim();
 
-        if (name.isEmpty() || selectedCourtType == null || priceStr.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
-            Toast.makeText(getContext(), "Vui lòng nhập đầy đủ thông tin bắt buộc", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || selectedCourtType == null) {
+            Toast.makeText(getContext(), "Vui lòng nhập tên bảng giá và chọn loại sân", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<PriceTableTimeSlotModel> slots = new ArrayList<>();
+        int index = 1;
+        for (ItemAddPriceTimeSlotBinding slotBinding : timeSlotBindings) {
+            String startTime = slotBinding.etStartTime.getText().toString().trim();
+            String endTime = slotBinding.etEndTime.getText().toString().trim();
+            String priceStr = slotBinding.etPrice.getText().toString().trim();
+
+            if (startTime.isEmpty() || endTime.isEmpty() || priceStr.isEmpty()) {
+                Toast.makeText(getContext(), "Khung giờ " + index + ": Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (convertTimeToMinutes(endTime) <= convertTimeToMinutes(startTime)) {
+                Toast.makeText(getContext(), "Khung giờ " + index + ": Giờ kết thúc phải lớn hơn giờ bắt đầu", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Kiểm tra trùng lặp hoặc giao thoa khung giờ (Overlap check)
+            if (isTimeOverlap(startTime, endTime, slots)) {
+                Toast.makeText(getContext(), "Khung giờ " + index + " bị trùng lặp hoặc giao thoa với các khung giờ trước", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
+            slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
+            slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
+            slot.setUnitPrice(priceStr);
+            try {
+                slot.setPrice(Double.parseDouble(priceStr));
+            } catch (Exception e) {
+                slot.setPrice(0.0);
+            }
+            slots.add(slot);
+            index++;
+        }
+
+        if (slots.isEmpty()) {
+            Toast.makeText(getContext(), "Vui lòng thêm ít nhất một khung giờ", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -281,23 +347,46 @@ public class AddPriceFragment extends Fragment {
         model.setStartDate(convertToApiDate(startDateStr));
         model.setEndDate(convertToApiDate(endDateStr));
         model.setAllCourts(allCourtsSelected);
+        model.setApplyScope(allCourtsSelected ? "ALL" : "SPECIFIC");
         
         if (!allCourtsSelected) {
+            if (selectedCourtIds.isEmpty()) {
+                Toast.makeText(getContext(), "Vui lòng chọn ít nhất một sân", Toast.LENGTH_SHORT).show();
+                return;
+            }
             model.setCourtIds(new ArrayList<>(selectedCourtIds));
         }
 
-        model.setAppliedDays(new ArrayList<>(selectedDays));
+        if (selectedDays.isEmpty()) {
+            Toast.makeText(getContext(), "Vui lòng chọn ít nhất một ngày áp dụng", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
-        slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
-        slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
-        slot.setUnitPrice(priceStr);
-        
-        List<PriceTableTimeSlotModel> slots = new ArrayList<>();
-        slots.add(slot);
+        model.setAppliedDays(new ArrayList<>(selectedDays));
         model.setTimeSlots(slots);
         
         savePriceTable(model);
+    }
+
+    private boolean isTimeOverlap(String start1, String end1, List<PriceTableTimeSlotModel> existingSlots) {
+        int s1 = convertTimeToMinutes(start1);
+        int e1 = convertTimeToMinutes(end1);
+        
+        for (PriceTableTimeSlotModel slot : existingSlots) {
+            int s2 = convertTimeToMinutes(slot.getStartTime());
+            int e2 = convertTimeToMinutes(slot.getEndTime());
+            
+            // Overlap condition: (Start1 < End2) and (End1 > Start2)
+            if (s1 < e2 && e1 > s2) return true;
+        }
+        return false;
+    }
+
+    private int convertTimeToMinutes(String time) {
+        try {
+            String[] parts = time.split(":");
+            return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+        } catch (Exception e) { return 0; }
     }
 
     private String convertToApiDate(String uiDate) {
@@ -318,13 +407,21 @@ public class AddPriceFragment extends Fragment {
                     Navigation.findNavController(binding.getRoot()).navigateUp();
                 } else {
                     binding.btnSave.setEnabled(true);
-                    Toast.makeText(getContext(), "Lỗi khi lưu bảng giá", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Lỗi khi lưu bảng giá";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += ": " + response.errorBody().string();
+                        }
+                    } catch (Exception e) { Log.e(TAG, "Error parsing error body", e); }
+                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Save failed: " + response.code() + " " + response.message());
                 }
             }
             @Override
             public void onFailure(@NonNull Call<PriceTableModel> call, @NonNull Throwable t) {
                 binding.btnSave.setEnabled(true);
-                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Save price table failure", t);
             }
         });
     }
