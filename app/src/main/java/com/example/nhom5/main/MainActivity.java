@@ -88,12 +88,19 @@ public class MainActivity extends AppCompatActivity {
             applyRolePermissions();
 
             int id = destination.getId();
-            if (id == R.id.loginFragment || id == R.id.customerDetailFragment || id == R.id.addCustomerFragment 
+            if (id == R.id.loginFragment || id == R.id.forgotPasswordFragment
+                || id == R.id.customerDetailFragment || id == R.id.addCustomerFragment 
                 || id == R.id.addPriceFragment || id == R.id.updatePriceFragment
                 || id == R.id.bookingConfirmationFragment) {
                 binding.bottomNavigation.setVisibility(View.GONE);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().hide();
+                }
             } else {
                 binding.bottomNavigation.setVisibility(View.VISIBLE);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().show();
+                }
             }
         });
     }
