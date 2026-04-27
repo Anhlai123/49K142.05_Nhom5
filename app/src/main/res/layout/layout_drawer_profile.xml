@@ -29,11 +29,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp">
 
-        <View
+        <ImageView
             android:id="@+id/avatar_placeholder"
             android:layout_width="80dp"
             android:layout_height="80dp"
+            android:padding="16dp"
             android:background="@drawable/profile_icon_bg"
+            android:src="@drawable/ic_user"
+            app:tint="@color/primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
