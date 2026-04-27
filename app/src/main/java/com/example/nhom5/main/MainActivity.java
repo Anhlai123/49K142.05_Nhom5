@@ -7,8 +7,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -30,11 +32,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         
         setupNavigation();
-        // Nạp dữ liệu lần đầu ngay khi app khởi động (nếu đã login)
-        updateDrawerUI();
+        
+        // Listener để cập nhật UI mỗi khi Drawer được mở
+        binding.drawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                if (drawerView.getId() == R.id.nav_view_right) {
+                    updateDrawerUI();
+                }
+            }
+        });
     }
 
     private void updateDrawerUI() {
+        if (binding == null) return;
+        
         SharedPreferences pref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String username = pref.getString("username", "N/A");
         String fullName = pref.getString("fullName", username);
@@ -52,22 +64,17 @@ public class MainActivity extends AppCompatActivity {
         binding.drawerProfileLayout.tvDrawerEmail.setText(email);
 
         if (isManager) {
-            // Chế độ Admin: Căn giữa, hiện Badge, ẩn chi tiết
             binding.drawerProfileLayout.tvRoleBadge.setVisibility(View.VISIBLE);
             binding.drawerProfileLayout.tvRoleBadge.setText(role.toUpperCase());
             binding.drawerProfileLayout.layoutEmailInfo.setVisibility(View.VISIBLE);
-            
             binding.drawerProfileLayout.layoutDetailsContainer.setVisibility(View.GONE);
         } else {
-            // Chế độ Khách hàng: Hiện chi tiết, ẩn Badge
             binding.drawerProfileLayout.tvRoleBadge.setVisibility(View.GONE);
             binding.drawerProfileLayout.layoutDetailsContainer.setVisibility(View.VISIBLE);
-            
             binding.drawerProfileLayout.tvDrawerPhone.setText(phone);
             binding.drawerProfileLayout.tvDrawerAddress.setText(address);
         }
 
-        // Cài đặt Listeners (chỉ cần cài 1 lần hoặc cập nhật lại)
         binding.drawerProfileLayout.btnEditProfile.setOnClickListener(v -> {
             binding.drawerLayout.closeDrawer(GravityCompat.END);
             Navigation.findNavController(this, R.id.nav_host_fragment_content_main).navigate(R.id.profileFragment);
@@ -81,8 +88,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openProfileDrawer() {
-        if (binding.drawerLayout != null) {
-            updateDrawerUI(); // Cập nhật dữ liệu ngay trước khi mở
+        if (binding != null && binding.drawerLayout != null) {
+            updateDrawerUI(); // Cập nhật dữ liệu ngay trước khi yêu cầu mở
             binding.drawerLayout.openDrawer(GravityCompat.END);
         }
     }
@@ -133,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        updateDrawerUI(); // Cập nhật lại mỗi khi quay lại màn hình chính
+        updateDrawerUI();
         applyRolePermissions();
     }
 }
