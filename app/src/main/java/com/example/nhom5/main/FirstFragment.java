@@ -53,6 +53,7 @@ public class FirstFragment extends Fragment {
         // Cập nhật ngày tháng hiện tại
         updateDate();
         loadCourtsData();
+        loadDashboardStats();
 
         // Xử lý sự kiện icon account (iv_profile)
         binding.ivProfile.setOnClickListener(v -> {
@@ -88,6 +89,24 @@ public class FirstFragment extends Fragment {
         binding.rvTodaySchedule.setAdapter(adapter);
     }
 
+    private void loadDashboardStats() {
+        ApiClient.getApiService().getDashboardStats().enqueue(new Callback<com.example.nhom5.models.DashboardStatsResponse>() {
+            @Override
+            public void onResponse(Call<com.example.nhom5.models.DashboardStatsResponse> call, Response<com.example.nhom5.models.DashboardStatsResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    double revenueToday = response.body().getRevenueToday();
+                    java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+                    binding.tvRevenueToday.setText(df.format(revenueToday) + "đ");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.example.nhom5.models.DashboardStatsResponse> call, Throwable t) {
+                Log.e("FirstFragment", "Lỗi stats: " + t.getMessage());
+            }
+        });
+    }
+
     private void loadCourtsData() {
         ApiClient.getApiService().getCourts().enqueue(new Callback<List<Court>>() {
             @Override
@@ -118,8 +137,8 @@ public class FirstFragment extends Fragment {
     private void updateDashboard(List<Court> courts) {
         long busyCount = 0;
         for (Court court : courts) {
-            String status = court.getStatus();
-            if (status != null && (status.equalsIgnoreCase("busy") || status.equalsIgnoreCase("bận"))) {
+            // Sử dụng trường isBusy() mới được tính toán từ Backend
+            if (court.isBusy()) {
                 busyCount++;
             }
         }
@@ -164,7 +183,8 @@ public class FirstFragment extends Fragment {
     public void onResume() {
         super.onResume();
         checkRoleAndSetupUI();
-        loadCourtsData(); // Cập nhật lại dữ liệu khi quay lại màn hình
+        loadCourtsData(); 
+        loadDashboardStats(); // Cập nhật cả doanh thu khi quay lại
     }
 
     @Override

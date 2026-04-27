@@ -204,6 +204,13 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
                 status.equalsIgnoreCase("ĐÃ HỦY")
         );
         binding.btnConfirm.setVisibility(isDone ? View.GONE : View.VISIBLE);
+
+        // Chỉ cho phép XÓA đối với đơn "Chờ xác nhận" hoặc "Hủy"
+        boolean canDelete = status == null || 
+                          status.equalsIgnoreCase("Chờ xác nhận") || 
+                          status.equalsIgnoreCase("Hủy") ||
+                          status.equalsIgnoreCase("ĐÃ HỦY");
+        binding.btnDelete.setVisibility(canDelete ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -225,17 +232,39 @@ public class OrderDetailsBottomSheet extends BottomSheetDialogFragment {
                     // Reload toàn bộ chi tiết để hiển thị đúng thanh_toan từ server
                     loadOrderDetails();
                     if (listener != null) listener.onOrderUpdated();
+
+                    // Hiển thị thông báo thành công tùy theo trạng thái
+                    String message = null;
+                    if ("Đã xác nhận".equals(newStatus)) {
+                        message = "Xác nhận đơn thành công";
+                    } else if ("Hoàn thành".equals(newStatus)) {
+                        message = "Xác nhận trạng thái hoàn tất đơn được cập nhật thành công";
+                    }
+
+                    if (message != null) {
+                        SuccessDialogFragment dialog = SuccessDialogFragment.newInstance(message, null);
+                        dialog.show(getParentFragmentManager(), "success_dialog");
+                    }
                 } else {
-                    // Nếu thất bại vẫn cập nhật UI tạm thời
-                    updateStatusUI(newStatus);
+                    // Xử lý khi Server trả về lỗi (Ví dụ lỗi 400: Không cho phép chuyển trạng thái)
+                    try {
+                        String errorBody = response.errorBody().string();
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                        String errorMsg = jsonObject.optString("error", "Không thể cập nhật trạng thái");
+                        android.widget.Toast.makeText(getContext(), errorMsg, android.widget.Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        android.widget.Toast.makeText(getContext(), "Lỗi: " + response.code(), android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                    // Tải lại dữ liệu gốc để giao diện quay về đúng trạng thái thực tế trên server
+                    loadOrderDetails();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<OrderModel> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
-                t.printStackTrace();
-                updateStatusUI(newStatus);
+                android.widget.Toast.makeText(getContext(), "Lỗi kết nối Server", android.widget.Toast.LENGTH_SHORT).show();
+                loadOrderDetails();
             }
         });
     }

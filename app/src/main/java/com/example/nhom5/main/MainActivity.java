@@ -120,16 +120,14 @@ public class MainActivity extends AppCompatActivity {
             applyRolePermissions();
 
             int id = destination.getId();
-
-            // Đảm bảo tab "Khác" luôn được chọn khi ở màn hình MoreFragment
-            if (id == R.id.navigation_more) {
-                binding.bottomNavigation.getMenu().findItem(R.id.navigation_more).setChecked(true);
-            }
-
+            // Ẩn Bottom Navigation ở màn hình Login, Đăng ký và các màn hình quản lý chi tiết
             if (id == R.id.loginFragment || id == R.id.forgotPasswordFragment
                 || id == R.id.customerDetailFragment || id == R.id.addCustomerFragment 
                 || id == R.id.addPriceFragment || id == R.id.updatePriceFragment
-                || id == R.id.bookingConfirmationFragment) {
+                || id == R.id.bookingConfirmationFragment || id == R.id.courtManagementFragment
+                || id == R.id.courtTypeManagementFragment || id == R.id.priceManagementFragment
+                || id == R.id.profileFragment) {
+
                 binding.bottomNavigation.setVisibility(View.GONE);
                 if (getSupportActionBar() != null) getSupportActionBar().hide();
             } else {

@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,9 +82,16 @@ public class AddPriceFragment extends Fragment {
         // Add initial time slot
         addNewTimeSlot();
 
-        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.btnBack.setOnClickListener(v -> showExitConfirmDialog());
+        binding.btnCancel.setOnClickListener(v -> showExitConfirmDialog());
         binding.btnSave.setOnClickListener(v -> validateAndSave());
+    }
+
+    private void showExitConfirmDialog() {
+        ConfirmExitDialogFragment dialog = ConfirmExitDialogFragment.newInstance(() -> {
+            Navigation.findNavController(requireView()).navigateUp();
+        });
+        dialog.show(getParentFragmentManager(), "confirm_exit_price_dialog");
     }
 
     private void loadCourtTypes() {
@@ -145,8 +153,8 @@ public class AddPriceFragment extends Fragment {
     }
 
     private void styleScopePill(TextView view, boolean selected) {
-        view.setBackgroundResource(selected ? R.drawable.bg_pill_active : R.drawable.bg_pill_inactive);
-        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.white : R.color.inactive));
+        view.setBackgroundResource(selected ? R.drawable.bg_pill_active_light : R.drawable.bg_pill_inactive);
+        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.primary : R.color.inactive));
     }
 
     private void setupCourtTypePicker() {
@@ -326,106 +334,84 @@ public class AddPriceFragment extends Fragment {
             PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
             slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
             slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
-            slot.setUnitPrice(priceStr);
             try {
                 slot.setPrice(Double.parseDouble(priceStr));
             } catch (Exception e) {
-                slot.setPrice(0.0);
+                Toast.makeText(getContext(), "Khung giờ " + index + ": Giá tiền không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
             }
             slots.add(slot);
             index++;
         }
 
-        if (slots.isEmpty()) {
-            Toast.makeText(getContext(), "Vui lòng thêm ít nhất một khung giờ", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        PriceTableModel priceTable = new PriceTableModel();
+        priceTable.setName(name);
+        priceTable.setCourtTypeId(selectedCourtType.getId());
+        priceTable.setAllCourts(allCourtsSelected);
+        priceTable.setCourtIds(new ArrayList<>(selectedCourtIds));
+        priceTable.setAppliedDays(new ArrayList<>(selectedDays));
+        priceTable.setStartDate(startDateStr.isEmpty() ? null : convertDateFormat(startDateStr));
+        priceTable.setEndDate(endDateStr.isEmpty() ? null : convertDateFormat(endDateStr));
+        priceTable.setTimeSlots(slots);
 
-        PriceTableModel model = new PriceTableModel();
-        model.setName(name);
-        model.setCourtTypeId(selectedCourtType.getId());
-        model.setStartDate(convertToApiDate(startDateStr));
-        model.setEndDate(convertToApiDate(endDateStr));
-        model.setAllCourts(allCourtsSelected);
-        model.setApplyScope(allCourtsSelected ? "ALL" : "SPECIFIC");
-        
-        if (!allCourtsSelected) {
-            if (selectedCourtIds.isEmpty()) {
-                Toast.makeText(getContext(), "Vui lòng chọn ít nhất một sân", Toast.LENGTH_SHORT).show();
-                return;
+        ApiClient.getApiService().createPriceTable(priceTable).enqueue(new Callback<PriceTableModel>() {
+            @Override
+            public void onResponse(@NonNull Call<PriceTableModel> call, @NonNull Response<PriceTableModel> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Thêm bảng giá thành công", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                } else {
+                    try {
+                        String errorBody = response.errorBody().string();
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                        String errorMsg = jsonObject.optString("error", "Lỗi: " + response.code());
+                        Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Lỗi: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
-            model.setCourtIds(new ArrayList<>(selectedCourtIds));
-        }
 
-        if (selectedDays.isEmpty()) {
-            Toast.makeText(getContext(), "Vui lòng chọn ít nhất một ngày áp dụng", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        model.setAppliedDays(new ArrayList<>(selectedDays));
-        model.setTimeSlots(slots);
-        
-        savePriceTable(model);
+            @Override
+            public void onFailure(@NonNull Call<PriceTableModel> call, @NonNull Throwable t) {
+                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private boolean isTimeOverlap(String start1, String end1, List<PriceTableTimeSlotModel> existingSlots) {
-        int s1 = convertTimeToMinutes(start1);
-        int e1 = convertTimeToMinutes(end1);
-        
+    private int convertTimeToMinutes(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+    }
+
+    private boolean isTimeOverlap(String start, String end, List<PriceTableTimeSlotModel> existingSlots) {
+        int s1 = convertTimeToMinutes(start);
+        int e1 = convertTimeToMinutes(end);
         for (PriceTableTimeSlotModel slot : existingSlots) {
-            int s2 = convertTimeToMinutes(slot.getStartTime());
-            int e2 = convertTimeToMinutes(slot.getEndTime());
-            
-            // Overlap condition: (Start1 < End2) and (End1 > Start2)
+            int s2 = convertTimeToMinutes(slot.getStartTime().substring(0, 5));
+            int e2 = convertTimeToMinutes(slot.getEndTime().substring(0, 5));
             if (s1 < e2 && e1 > s2) return true;
         }
         return false;
     }
 
-    private int convertTimeToMinutes(String time) {
+    private String convertDateFormat(String date) {
         try {
-            String[] parts = time.split(":");
-            return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
-        } catch (Exception e) { return 0; }
+            SimpleDateFormat in = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            SimpleDateFormat out = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            return out.format(in.parse(date));
+        } catch (Exception e) {
+            return date;
+        }
     }
 
-    private String convertToApiDate(String uiDate) {
-        if (TextUtils.isEmpty(uiDate) || uiDate.equals("dd/MM/yyyy")) return null;
-        try {
-            Date date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(uiDate);
-            return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
-        } catch (Exception e) { return null; }
+    private int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
 
-    private void savePriceTable(PriceTableModel model) {
-        binding.btnSave.setEnabled(false);
-        ApiClient.getApiService().createPriceTable(model).enqueue(new Callback<PriceTableModel>() {
-            @Override
-            public void onResponse(@NonNull Call<PriceTableModel> call, @NonNull Response<PriceTableModel> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Lưu thành công!", Toast.LENGTH_SHORT).show();
-                    Navigation.findNavController(binding.getRoot()).navigateUp();
-                } else {
-                    binding.btnSave.setEnabled(true);
-                    String errorMsg = "Lỗi khi lưu bảng giá";
-                    try {
-                        if (response.errorBody() != null) {
-                            errorMsg += ": " + response.errorBody().string();
-                        }
-                    } catch (Exception e) { Log.e(TAG, "Error parsing error body", e); }
-                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Save failed: " + response.code() + " " + response.message());
-                }
-            }
-            @Override
-            public void onFailure(@NonNull Call<PriceTableModel> call, @NonNull Throwable t) {
-                binding.btnSave.setEnabled(true);
-                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "Save price table failure", t);
-            }
-        });
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
-
-    private int dpToPx(int dp) { return Math.round(dp * getResources().getDisplayMetrics().density); }
-    @Override public void onDestroyView() { super.onDestroyView(); binding = null; }
 }

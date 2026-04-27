@@ -4,85 +4,57 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet"
-    android:padding="24dp">
-
-    <View
-        android:id="@+id/icon_bg"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:background="@drawable/bg_circle_light_grey"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:padding="16dp">
 
     <ImageView
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:id="@+id/btn_close_dialog"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:src="@drawable/ic_close"
-        app:layout_constraintBottom_toBottomOf="@id/icon_bg"
-        app:layout_constraintEnd_toEndOf="@id/icon_bg"
-        app:layout_constraintStart_toStartOf="@id/icon_bg"
-        app:layout_constraintTop_toTopOf="@id/icon_bg"
-        app:tint="#757575" />
-
-    <TextView
-        android:id="@+id/tv_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Xác nhận thoát"
-        android:textColor="#212121"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/icon_bg" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="#757575"
+        android:padding="4dp"/>
 
     <TextView
         android:id="@+id/tv_message"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="Thông tin chưa được lưu sẽ bị mất. Bạn có chắc chắn muốn thoát?"
-        android:textColor="#757575"
-        android:textSize="15sp"
+        android:text="Chưa lưu thông tin. Bạn có muốn hủy?"
+        android:textColor="#212121"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_title" />
+        app:layout_constraintTop_toBottomOf="@id/btn_close_dialog" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_confirm"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/tv_message">
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"
+        android:backgroundTint="#00A643"
+        android:text="Đồng ý"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:minWidth="120dp"
+        app:cornerRadius="20dp"
+        app:elevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_message" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_cancel"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:text="Hủy"
-            android:textAllCaps="false"
-            android:textColor="#616161"
-            app:cornerRadius="16dp"
-            app:strokeColor="#E0E0E0" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_confirm"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:backgroundTint="#757575"
-            android:text="Thoát"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            app:cornerRadius="16dp"
-            app:elevation="0dp" />
-    </LinearLayout>
+    <!-- Keep btn_cancel hidden if not needed by design but present in Binding -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_cancel"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

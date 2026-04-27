@@ -437,7 +437,14 @@ public class UpdatePriceFragment extends Fragment {
                     Navigation.findNavController(binding.getRoot()).navigateUp();
                 } else {
                     binding.btnSave.setEnabled(true);
-                    Toast.makeText(getContext(), "Lỗi khi cập nhật", Toast.LENGTH_SHORT).show();
+                    try {
+                        String errorBody = response.errorBody().string();
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(errorBody);
+                        String errorMsg = jsonObject.optString("error", "Lỗi khi cập nhật");
+                        Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Lỗi khi cập nhật: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
             @Override
