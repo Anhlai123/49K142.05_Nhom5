@@ -13,6 +13,7 @@ import com.example.nhom5.auth.model.RegisterResponse;
 import com.example.nhom5.auth.model.UserDto;
 import com.example.nhom5.auth.model.ForgotPasswordRequest;
 import com.example.nhom5.court.Court;
+import com.example.nhom5.models.DashboardStatsResponse;
 import com.example.nhom5.models.PriceTableCourtModel;
 import com.example.nhom5.models.PriceTableModel;
 import com.example.nhom5.models.PriceTableTimeSlotModel;
@@ -142,4 +143,7 @@ public interface ApiService {
 
     @POST("api/price-table-courts/")
     Call<PriceTableCourtModel> createPriceTableCourt(@Body PriceTableCourtModel priceTableCourt);
+
+    @GET("api/dashboard-stats/")
+    Call<DashboardStatsResponse> getDashboardStats();
 }

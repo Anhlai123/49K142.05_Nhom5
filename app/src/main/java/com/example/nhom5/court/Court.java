@@ -21,6 +21,9 @@ public class Court {
     @SerializedName("status")
     private String status;
 
+    @SerializedName("is_busy")
+    private boolean isBusy;
+
     public Court() {}
 
     public Court(String name, Integer courtTypeId) {
@@ -58,4 +61,7 @@ public class Court {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public boolean isBusy() { return isBusy; }
+    public void setBusy(boolean busy) { isBusy = busy; }
 }
