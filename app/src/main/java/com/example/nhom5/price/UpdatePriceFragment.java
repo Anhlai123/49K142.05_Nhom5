@@ -341,7 +341,8 @@ public class UpdatePriceFragment extends Fragment {
         }
 
         List<PriceTableTimeSlotModel> slots = new ArrayList<>();
-        for (View slotView : timeSlotViews) {
+        for (int i = 0; i < timeSlotViews.size(); i++) {
+            View slotView = timeSlotViews.get(i);
             EditText etStart = slotView.findViewById(R.id.et_start_time);
             EditText etEnd = slotView.findViewById(R.id.et_end_time);
             EditText etPrice = slotView.findViewById(R.id.et_price);
@@ -355,6 +356,15 @@ public class UpdatePriceFragment extends Fragment {
                 return;
             }
             
+            // Kiểm tra trùng giờ với các khung giờ trước đó
+            for (int j = 0; j < slots.size(); j++) {
+                PriceTableTimeSlotModel existing = slots.get(j);
+                if (isTimeOverlapping(startTime, endTime, existing.getStartTime(), existing.getEndTime())) {
+                    Toast.makeText(getContext(), "Khung giờ " + (i + 1) + " bị trùng với khung giờ " + (j + 1), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+
             PriceTableTimeSlotModel slot = new PriceTableTimeSlotModel();
             slot.setStartTime(startTime.length() == 5 ? startTime + ":00" : startTime);
             slot.setEndTime(endTime.length() == 5 ? endTime + ":00" : endTime);
@@ -377,6 +387,28 @@ public class UpdatePriceFragment extends Fragment {
         model.setTimeSlots(slots);
         
         updatePriceTableOnServer(model);
+    }
+
+    private boolean isTimeOverlapping(String start1, String end1, String start2, String end2) {
+        // Chỉ lấy HH:mm để so sánh
+        String s1 = start1.substring(0, 5);
+        String e1 = end1.substring(0, 5);
+        String s2 = start2.substring(0, 5);
+        String e2 = end2.substring(0, 5);
+
+        // Chuyển về phút để so sánh dễ hơn
+        int startMin1 = timeToMinutes(s1);
+        int endMin1 = timeToMinutes(e1);
+        int startMin2 = timeToMinutes(s2);
+        int endMin2 = timeToMinutes(e2);
+
+        // Logic kiểm tra chồng lấn: (StartA < EndB) AND (EndA > StartB)
+        return startMin1 < endMin2 && endMin1 > startMin2;
+    }
+
+    private int timeToMinutes(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
     }
 
     private String convertToApiDate(String uiDate) {
