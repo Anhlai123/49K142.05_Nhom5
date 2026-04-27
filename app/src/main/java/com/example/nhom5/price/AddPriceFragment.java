@@ -81,9 +81,16 @@ public class AddPriceFragment extends Fragment {
         // Add initial time slot
         addNewTimeSlot();
 
-        binding.btnBack.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
-        binding.btnCancel.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        binding.btnBack.setOnClickListener(v -> showExitConfirmDialog());
+        binding.btnCancel.setOnClickListener(v -> showExitConfirmDialog());
         binding.btnSave.setOnClickListener(v -> validateAndSave());
+    }
+
+    private void showExitConfirmDialog() {
+        ConfirmExitPriceDialogFragment dialog = ConfirmExitPriceDialogFragment.newInstance(() -> {
+            Navigation.findNavController(requireView()).navigateUp();
+        });
+        dialog.show(getParentFragmentManager(), "confirm_exit_price_dialog");
     }
 
     private void loadCourtTypes() {
@@ -145,8 +152,8 @@ public class AddPriceFragment extends Fragment {
     }
 
     private void styleScopePill(TextView view, boolean selected) {
-        view.setBackgroundResource(selected ? R.drawable.bg_pill_active : R.drawable.bg_pill_inactive);
-        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.white : R.color.inactive));
+        view.setBackgroundResource(selected ? R.drawable.bg_pill_active_light : R.drawable.bg_pill_inactive);
+        view.setTextColor(ContextCompat.getColor(requireContext(), selected ? R.color.primary : R.color.inactive));
     }
 
     private void setupCourtTypePicker() {
