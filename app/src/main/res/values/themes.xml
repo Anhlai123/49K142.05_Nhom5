@@ -18,8 +18,14 @@
         <item name="colorAccent">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/PickerButtonStyle</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/PickerButtonStyle</item>
         <!-- For Material3 components, this often controls selection highlights -->
         <item name="colorContainer">@color/primary</item>
+    </style>
+
+    <style name="PickerButtonStyle" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/primary</item>
     </style>
 
     <style name="BottomNavTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
@@ -93,5 +99,7 @@
         <item name="colorAccent">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:textColorPrimaryInverse">@color/white</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/PickerButtonStyle</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/PickerButtonStyle</item>
     </style>
 </resources>
