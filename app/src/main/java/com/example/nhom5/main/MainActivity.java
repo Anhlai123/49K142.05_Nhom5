@@ -96,21 +96,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNavigation() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        
+        // Thiết lập chuẩn kết nối giữa BottomNav và NavController
+        NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
-        // Thay vì dùng NavigationUI.setupWithNavController mặc định, chúng ta tự xử lý OnItemSelected
+        // Tùy chỉnh sự kiện click để luôn quay về gốc của Tab nếu đang ở trang con
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            // Xóa Backstack khi chuyển tab chính để tránh lồng ghép các Fragment quản lý vào tab "Khác"
-            if (id == R.id.navigation_more) {
-                navController.navigate(R.id.navigation_more);
-                return true;
-            }
-
-            // Đối với các tab khác, dùng mặc định của Navigation Component
+            // Điều hướng chuẩn và xóa backstack phía trên đích đến
             return NavigationUI.onNavDestinationSelected(item, navController);
         });
 
+        // Xử lý khi nhấn lại vào Tab đang chọn (Reselect) để quay về màn hình đầu của Tab đó
         binding.bottomNavigation.setOnItemReselectedListener(item -> {
             navController.popBackStack(item.getItemId(), false);
         });
@@ -120,14 +117,18 @@ public class MainActivity extends AppCompatActivity {
             applyRolePermissions();
 
             int id = destination.getId();
-            // Ẩn Bottom Navigation ở màn hình Login, Đăng ký và các màn hình quản lý chi tiết
+            
+            // Logic để highlight tab "Khác" khi ở các màn hình quản lý con
+            if (id == R.id.navigation_more || id == R.id.courtManagementFragment 
+                || id == R.id.courtTypeManagementFragment || id == R.id.priceManagementFragment
+                || id == R.id.profileFragment) {
+                binding.bottomNavigation.getMenu().findItem(R.id.navigation_more).setChecked(true);
+            }
+
             if (id == R.id.loginFragment || id == R.id.forgotPasswordFragment
                 || id == R.id.customerDetailFragment || id == R.id.addCustomerFragment 
                 || id == R.id.addPriceFragment || id == R.id.updatePriceFragment
-                || id == R.id.bookingConfirmationFragment || id == R.id.courtManagementFragment
-                || id == R.id.courtTypeManagementFragment || id == R.id.priceManagementFragment
-                || id == R.id.profileFragment) {
-
+                || id == R.id.bookingConfirmationFragment) {
                 binding.bottomNavigation.setVisibility(View.GONE);
                 if (getSupportActionBar() != null) getSupportActionBar().hide();
             } else {
