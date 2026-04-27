@@ -26,6 +26,8 @@ import com.example.nhom5.api.ApiClient;
 import com.example.nhom5.models.BookingRequest;
 import com.example.nhom5.models.BookingResponse;
 
+import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -248,6 +250,7 @@ public class BookingConfirmationFragment extends Fragment {
         final int totalRequests = groupedByCourt.size();
         final int[] finishedCount = {0};
         final int[] successCount = {0};
+        final List<String> errorMessages = Collections.synchronizedList(new ArrayList<>());
         String date = normalizeDate(mDate);
 
         for (Map.Entry<Integer, List<BookingRequest.TimeSlot>> entry : groupedByCourt.entrySet()) {
@@ -257,35 +260,50 @@ public class BookingConfirmationFragment extends Fragment {
                 public void onResponse(@NonNull Call<BookingResponse> call, @NonNull Response<BookingResponse> response) {
                     synchronized (finishedCount) {
                         finishedCount[0]++;
-                        if (response.isSuccessful()) successCount[0]++;
-                        checkAllFinished(finishedCount[0], successCount[0], totalRequests);
+                        if (response.isSuccessful()) {
+                            successCount[0]++;
+                        } else {
+                            try {
+                                String errorBody = response.errorBody().string();
+                                JSONObject jsonObject = new JSONObject(errorBody);
+                                String errorMsg = jsonObject.optString("error", "Lỗi không xác định");
+                                errorMessages.add(errorMsg);
+                            } catch (Exception e) {
+                                errorMessages.add("Lỗi hệ thống: " + response.code());
+                            }
+                        }
+                        checkAllFinished(finishedCount[0], successCount[0], totalRequests, errorMessages);
                     }
                 }
                 @Override
                 public void onFailure(@NonNull Call<BookingResponse> call, @NonNull Throwable t) {
                     synchronized (finishedCount) {
                         finishedCount[0]++;
-                        checkAllFinished(finishedCount[0], successCount[0], totalRequests);
+                        errorMessages.add("Lỗi kết nối Server");
+                        checkAllFinished(finishedCount[0], successCount[0], totalRequests, errorMessages);
                     }
                 }
             });
         }
     }
 
-    private void checkAllFinished(int finished, int success, int total) {
+    private void checkAllFinished(int finished, int success, int total, List<String> errorMessages) {
         if (finished == total) {
             if (success == total) {
                 Toast.makeText(getContext(), "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
                 if (isAdded()) {
                     Navigation.findNavController(requireView()).popBackStack(R.id.navigation_schedule, false);
                 }
-            } else if (success > 0) {
-                Toast.makeText(getContext(), "Một số sân đặt thất bại. Vui lòng kiểm tra lại!", Toast.LENGTH_LONG).show();
-                if (isAdded()) {
-                    Navigation.findNavController(requireView()).popBackStack(R.id.navigation_schedule, false);
-                }
             } else {
-                Toast.makeText(getContext(), "Đặt sân thất bại! Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                if (!errorMessages.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (String msg : errorMessages) {
+                        sb.append(msg).append("\n");
+                    }
+                    Toast.makeText(getContext(), sb.toString().trim(), Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getContext(), "Đặt sân thất bại! Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                }
                 btnConfirm.setEnabled(true);
                 btnConfirm.setText("XÁC NHẬN");
             }

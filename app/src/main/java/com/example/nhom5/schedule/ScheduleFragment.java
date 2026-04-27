@@ -64,9 +64,13 @@ public class ScheduleFragment extends Fragment {
     private BottomSheetDialog currentDialog;
     
     private String selectedDateApi;
-    private Calendar selectedCalendar;
-    private int currentCourtTypeId = -1; 
-    private int selectedCourtId = -1; 
+    
+    // BIẾN STATIC: Để giữ trạng thái ngày và loại sân khi quay lại từ màn hình khác
+    private static Calendar sSelectedCalendar;
+    private static int sCurrentCourtTypeId = -1;
+    private static String sCurrentCourtTypeName = "";
+    private static int sSelectedCourtId = -1;
+
     private List<CourtTypeModel> courtTypeList = new ArrayList<>();
     private List<CourtData> currentCourtsData = new ArrayList<>();
 
@@ -105,7 +109,14 @@ public class ScheduleFragment extends Fragment {
         
         view.findViewById(R.id.boxCourtType).setOnClickListener(this::showCourtTypePopupMenu);
 
-        selectedCalendar = Calendar.getInstance();
+        // Khôi phục trạng thái từ các biến static
+        if (sSelectedCalendar == null) {
+            sSelectedCalendar = Calendar.getInstance();
+        }
+        if (sCurrentCourtTypeId != -1 && !sCurrentCourtTypeName.isEmpty()) {
+            tvSelectedCourtType.setText(sCurrentCourtTypeName);
+        }
+        
         updateDateDisplay();
 
         return view;
@@ -114,9 +125,9 @@ public class ScheduleFragment extends Fragment {
     private void updateDateDisplay() {
         SimpleDateFormat apiFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        selectedDateApi = apiFormat.format(selectedCalendar.getTime());
+        selectedDateApi = apiFormat.format(sSelectedCalendar.getTime());
         if (tvSelectedDate != null) {
-            tvSelectedDate.setText(displayFormat.format(selectedCalendar.getTime()));
+            tvSelectedDate.setText(displayFormat.format(sSelectedCalendar.getTime()));
         }
     }
 
@@ -129,8 +140,12 @@ public class ScheduleFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (currentCourtTypeId != -1) {
-            loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+        selectedSlotKeys.clear();
+        if (currentDialog != null) currentDialog.dismiss();
+        
+        // Luôn tải lại lịch khi màn hình quay trở lại (onResume)
+        if (sCurrentCourtTypeId != -1) {
+            loadCourtSchedule(selectedDateApi, sCurrentCourtTypeId);
         }
     }
 
@@ -141,10 +156,22 @@ public class ScheduleFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null && isAdded()) {
                     courtTypeList = response.body();
                     if (!courtTypeList.isEmpty()) {
-                        CourtTypeModel firstType = courtTypeList.get(0);
-                        currentCourtTypeId = firstType.getId();
-                        tvSelectedCourtType.setText(firstType.getName());
-                        loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+                        if (sCurrentCourtTypeId == -1) {
+                            // Chỉ set mặc định sân đầu tiên nếu là lần đầu vào ứng dụng
+                            CourtTypeModel firstType = courtTypeList.get(0);
+                            sCurrentCourtTypeId = firstType.getId();
+                            sCurrentCourtTypeName = firstType.getName();
+                        } else {
+                            // Nếu đã chọn sân trước đó, đảm bảo UI hiển thị đúng tên sân đó
+                            for (CourtTypeModel type : courtTypeList) {
+                                if (type.getId() == sCurrentCourtTypeId) {
+                                    sCurrentCourtTypeName = type.getName();
+                                    break;
+                                }
+                            }
+                        }
+                        tvSelectedCourtType.setText(sCurrentCourtTypeName);
+                        loadCourtSchedule(selectedDateApi, sCurrentCourtTypeId);
                     }
                 }
             }
@@ -155,16 +182,16 @@ public class ScheduleFragment extends Fragment {
 
     private void loadCourtSchedule(String date, int courtTypeId) {
         if (courtTypeId == -1) return;
+        Log.d("ScheduleStatus", "Tải lịch: " + date + ", Loại sân ID: " + courtTypeId);
         apiService.getCourtSchedule(date, courtTypeId).enqueue(new Callback<CourtScheduleResponse>() {
             @Override
             public void onResponse(Call<CourtScheduleResponse> call, Response<CourtScheduleResponse> response) {
                 if (!isAdded() || getContext() == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     currentCourtsData = response.body().getData();
-                    selectedSlotKeys.clear();
                     
-                    if (selectedCourtId == -1 && !currentCourtsData.isEmpty()) {
-                        selectedCourtId = currentCourtsData.get(0).getCourtId();
+                    if (sSelectedCourtId == -1 && !currentCourtsData.isEmpty()) {
+                        sSelectedCourtId = currentCourtsData.get(0).getCourtId();
                     }
                     
                     displayTableSchedule(response.body());
@@ -173,13 +200,15 @@ public class ScheduleFragment extends Fragment {
                 }
             }
             @Override
-            public void onFailure(Call<CourtScheduleResponse> call, Throwable t) {}
+            public void onFailure(Call<CourtScheduleResponse> call, Throwable t) {
+                Log.e("ScheduleStatus", "Lỗi tải lịch: " + t.getMessage());
+            }
         });
     }
 
     private boolean isBooked(String status) {
         if (status == null) return false;
-        String s = status.toLowerCase();
+        String s = status.toLowerCase().trim();
         return s.equals("booked") || s.equals("pending") || s.equals("confirmed") || s.equals("completed");
     }
 
@@ -188,7 +217,7 @@ public class ScheduleFragment extends Fragment {
         tableLayout.removeAllViews();
         layoutDayColumnScrollable.removeAllViews();
         
-        String dayName = new SimpleDateFormat("EEEE", new Locale("vi", "VN")).format(selectedCalendar.getTime());
+        String dayName = new SimpleDateFormat("EEEE", new Locale("vi", "VN")).format(sSelectedCalendar.getTime());
         if (dayName.equalsIgnoreCase("Thứ Hai")) dayName = "Thứ 2";
         else if (dayName.equalsIgnoreCase("Thứ Ba")) dayName = "Thứ 3";
         else if (dayName.equalsIgnoreCase("Thứ Tư")) dayName = "Thứ 4";
@@ -224,7 +253,7 @@ public class ScheduleFragment extends Fragment {
             layoutDayColumnScrollable.addView(dayContent);
         }
 
-        // 2. TableLayout
+        // 2. TableLayout (Header giờ)
         TableRow headerRow = new TableRow(getContext());
         headerRow.addView(createStyledHeaderCell("SÂN", Color.WHITE, Color.parseColor("#1A202C"), 80));
         
@@ -264,15 +293,17 @@ public class ScheduleFragment extends Fragment {
                     spanCell.setLayoutParams(params);
                     spanCell.setPadding(0, 0, 0, 0);
                     if (typeIsBooked) {
-                        spanCell.setBackgroundResource(R.drawable.bg_booked_status);
-                        spanCell.setTextColor(Color.parseColor("#FF5252"));
+                        // HIỂN THỊ ĐÃ ĐẶT: Theo hình mẫu (Màu đỏ, viền đứt đoạn)
+                        spanCell.setBackgroundResource(R.drawable.bg_booked_status_dashed); 
+                        spanCell.setTextColor(Color.parseColor("#E53935")); // Màu đỏ đậm
+                        spanCell.setTypeface(null, Typeface.BOLD);
+                        spanCell.setTextSize(12);
                         spanCell.setOnClickListener(v -> showBookedBottomSheet());
                     } else {
                         spanCell.setBackgroundResource(R.drawable.bg_maintenance_status);
                         spanCell.setTextColor(Color.parseColor("#757575"));
                         spanCell.setOnClickListener(v -> showMaintenanceBottomSheet());
                     }
-                    spanCell.setTypeface(null, Typeface.BOLD);
                     row.addView(spanCell);
                     k = next - 1;
                 } else {
@@ -310,7 +341,7 @@ public class ScheduleFragment extends Fragment {
             );
             params.setMargins(8, 8, 8, 8);
             tv.setLayoutParams(params);
-            if (court.getCourtId() == selectedCourtId) {
+            if (court.getCourtId() == sSelectedCourtId) {
                 tv.setBackgroundResource(R.drawable.bg_court_card_selected);
                 tv.setTextColor(ContextCompat.getColor(getContext(), R.color.primary));
             } else {
@@ -318,7 +349,7 @@ public class ScheduleFragment extends Fragment {
                 tv.setTextColor(ContextCompat.getColor(getContext(), R.color.dark_green_text));
             }
             tv.setOnClickListener(v -> {
-                selectedCourtId = court.getCourtId();
+                sSelectedCourtId = court.getCourtId();
                 updateCourtSelectorUI();
                 setupTimeGrid();
             });
@@ -425,7 +456,7 @@ public class ScheduleFragment extends Fragment {
         timeGrid.removeAllViews();
         CourtData court = null;
         for (CourtData c : currentCourtsData) {
-            if (c.getCourtId() == selectedCourtId) {
+            if (c.getCourtId() == sSelectedCourtId) {
                 court = c;
                 break;
             }
@@ -445,14 +476,31 @@ public class ScheduleFragment extends Fragment {
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f); 
             params.setMargins(8, 8, 8, 8);
             tv.setLayoutParams(params);
+            
+            String status = slot.getStatus();
             String slotKey = court.getCourtId() + "|" + court.getCourtName() + "|" + slot.getStartTime() + "|" + slot.getPrice();
-            if (isBooked(slot.getStatus())) updateSlotUI(tv, SlotStatus.BOOKED);
-            else if ("maintenance".equalsIgnoreCase(slot.getStatus())) updateSlotUI(tv, SlotStatus.MAINTENANCE);
-            else if (selectedSlotKeys.contains(slotKey)) updateSlotUI(tv, SlotStatus.SELECTED);
-            else updateSlotUI(tv, SlotStatus.AVAILABLE);
+            
+            if (isBooked(status)) {
+                // HIỂN THỊ ĐÃ ĐẶT: Trong GridView
+                tv.setText("Đã đặt");
+                tv.setTextSize(12);
+                tv.setBackgroundResource(R.drawable.bg_booked_status_dashed);
+                tv.setTextColor(Color.parseColor("#E53935"));
+            }
+            else if ("maintenance".equalsIgnoreCase(status)) {
+                tv.setText("BẢO TRÌ");
+                updateSlotUI(tv, SlotStatus.MAINTENANCE);
+            }
+            else if (selectedSlotKeys.contains(slotKey)) {
+                updateSlotUI(tv, SlotStatus.SELECTED);
+            }
+            else {
+                updateSlotUI(tv, SlotStatus.AVAILABLE);
+            }
+            
             tv.setOnClickListener(v -> {
-                if (isBooked(slot.getStatus())) showBookedBottomSheet();
-                else if ("maintenance".equalsIgnoreCase(slot.getStatus())) showMaintenanceBottomSheet();
+                if (isBooked(status)) showBookedBottomSheet();
+                else if ("maintenance".equalsIgnoreCase(status)) showMaintenanceBottomSheet();
                 else toggleSlotSelection(slotKey, tv);
             });
             timeGrid.addView(tv);
@@ -461,9 +509,14 @@ public class ScheduleFragment extends Fragment {
 
     private void updateSlotUI(TextView tv, SlotStatus status) {
         int bgColor = Color.WHITE, textColor = Color.parseColor("#808080");
-        if (status == SlotStatus.BOOKED) { bgColor = ContextCompat.getColor(getContext(), R.color.booked_cell_bg); textColor = Color.RED; }
+        if (status == SlotStatus.BOOKED) { 
+            tv.setBackgroundResource(R.drawable.bg_booked_status_dashed);
+            tv.setTextColor(Color.parseColor("#E53935"));
+            return;
+        }
         else if (status == SlotStatus.MAINTENANCE) { bgColor = Color.parseColor("#F5F5F5"); textColor = Color.parseColor("#757575"); }
         else if (status == SlotStatus.SELECTED) { bgColor = ContextCompat.getColor(getContext(), R.color.selected_slot_bg); textColor = ContextCompat.getColor(getContext(), R.color.selected_slot_text); }
+        
         GradientDrawable drawable = new GradientDrawable();
         drawable.setCornerRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
         drawable.setColor(bgColor);
@@ -497,15 +550,15 @@ public class ScheduleFragment extends Fragment {
 
     private void showDatePickerDialog() {
         if (getContext() == null) return;
-        int year = selectedCalendar.get(Calendar.YEAR);
-        int month = selectedCalendar.get(Calendar.MONTH);
-        int day = selectedCalendar.get(Calendar.DAY_OF_MONTH);
+        int year = sSelectedCalendar.get(Calendar.YEAR);
+        int month = sSelectedCalendar.get(Calendar.MONTH);
+        int day = sSelectedCalendar.get(Calendar.DAY_OF_MONTH);
         DatePickerDialog dialog = new DatePickerDialog(getContext(), (view, yearSelected, monthOfYear, dayOfMonth) -> {
-            selectedCalendar.set(yearSelected, monthOfYear, dayOfMonth);
+            sSelectedCalendar.set(yearSelected, monthOfYear, dayOfMonth);
             updateDateDisplay();
             selectedSlotKeys.clear();
             if (currentDialog != null) currentDialog.dismiss();
-            loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+            loadCourtSchedule(selectedDateApi, sCurrentCourtTypeId);
         }, year, month, day);
         dialog.show();
     }
@@ -519,11 +572,12 @@ public class ScheduleFragment extends Fragment {
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 0) return false;
             tvSelectedCourtType.setText(item.getTitle());
-            currentCourtTypeId = item.getItemId();
+            sCurrentCourtTypeId = item.getItemId();
+            sCurrentCourtTypeName = item.getTitle().toString();
             selectedSlotKeys.clear();
-            selectedCourtId = -1; 
+            sSelectedCourtId = -1; 
             if (currentDialog != null) currentDialog.dismiss();
-            loadCourtSchedule(selectedDateApi, currentCourtTypeId);
+            loadCourtSchedule(selectedDateApi, sCurrentCourtTypeId);
             return true;
         });
         popupMenu.show();

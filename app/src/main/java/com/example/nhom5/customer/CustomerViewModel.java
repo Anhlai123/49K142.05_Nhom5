@@ -58,7 +58,9 @@ public class CustomerViewModel extends ViewModel {
             public void onResponse(@NonNull Call<JsonElement> call, @NonNull Response<JsonElement> response) {
                 loading.setValue(false);
                 if (!response.isSuccessful() || response.body() == null) {
-                    errorMessage.setValue(buildHttpErrorMessage("tải danh sách khách hàng", response));
+                    // Sửa từ "tạo khách hàng" thành "tải danh sách khách hàng"
+                    String message = buildHttpErrorMessage("tải danh sách khách hàng", response);
+                    errorMessage.setValue(message);
                     return;
                 }
 
@@ -108,10 +110,7 @@ public class CustomerViewModel extends ViewModel {
     }
 
     private CustomerFragment.Customer mapToUi(CustomerApiModel item) {
-        // Ưu tiên lấy trường 'code' từ API (KH0000001) thay vì tự chế 'KH' + id
         String id = item.getCode();
-        
-        // Chỉ khi code bị null hoặc trống thì mới dùng fallback
         if (id == null || id.trim().isEmpty()) {
             id = (item.getId() != null) ? "KH" + item.getId() : "KH---";
         }
@@ -126,7 +125,6 @@ public class CustomerViewModel extends ViewModel {
 
     private List<CustomerApiModel> parseCustomers(JsonElement jsonElement) {
         List<CustomerApiModel> list = new ArrayList<>();
-        
         if (jsonElement == null || jsonElement.isJsonNull()) return list;
 
         if (jsonElement.isJsonArray()) {
@@ -160,21 +158,7 @@ public class CustomerViewModel extends ViewModel {
                 if (item != null && item.getId() != null) list.add(item);
             }
         }
-        
         return list;
-    }
-
-    private JsonArray extractCustomerArray(JsonElement root) {
-        if (root == null) return null;
-        if (root.isJsonArray()) return root.getAsJsonArray();
-        if (!root.isJsonObject()) return null;
-
-        JsonObject object = root.getAsJsonObject();
-        for (String key : Arrays.asList("results", "data", "customers", "items", "rows")) {
-            JsonElement value = object.get(key);
-            if (value != null && value.isJsonArray()) return value.getAsJsonArray();
-        }
-        return null;
     }
 
     private CustomerApiModel safeParseCustomer(JsonElement element) {
