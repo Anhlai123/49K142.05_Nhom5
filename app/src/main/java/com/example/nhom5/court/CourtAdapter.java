@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +39,9 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
     public void onBindViewHolder(@NonNull CourtViewHolder holder, int position) {
         Court court = courtList.get(position);
         holder.tvName.setText(court.getName());
+        
+        // Hiển thị nút sửa xóa trong trang quản lý sân
+        holder.layoutActions.setVisibility(View.VISIBLE);
         
         // Ưu tiên hiển thị mã code (SAN001) thay vì ID số (1)
         String displayCode = court.getCode();
@@ -86,6 +90,7 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
     static class CourtViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvId, tvType, tvStatus;
         MaterialButton btnEdit, btnDelete;
+        LinearLayout layoutActions;
 
         public CourtViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -95,6 +100,7 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.CourtViewHol
             tvStatus = itemView.findViewById(R.id.tv_status);
             btnEdit = itemView.findViewById(R.id.btn_edit);
             btnDelete = itemView.findViewById(R.id.btn_delete);
+            layoutActions = itemView.findViewById(R.id.layout_actions);
         }
     }
 }
